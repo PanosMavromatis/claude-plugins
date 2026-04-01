@@ -1,0 +1,5 @@
+{
+    "name": "tokalign-dev",
+    "description": "Development toolkit for the tokalign package: guides algorithm implementation through prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.",
+    "version": "0.1.0"
+}
