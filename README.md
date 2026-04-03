@@ -113,6 +113,10 @@ tokalign-dev/
 └── README.md
 ```
 
+## Decisions
+
+Architectural decisions for this plugin and the `tokalign` package are recorded together in the parent repository at [`docs/decisions/adr/`](../docs/decisions/adr/) (available when using the nested co-location layout). The shared log is intentional: this plugin exists to enforce the package's architecture, so decisions about the algorithm lifecycle (ADRs 0004–0014) simultaneously define what the package must do and what this plugin must guide. Keeping them in one place avoids cross-repository duplication and makes the relationship between package decisions and plugin skills explicit.
+
 ## Naming
 
 `tok` is a placeholder prefix that will be replaced before publication. The `package-release` skill includes a rename checklist for when the time comes.
