@@ -26,6 +26,8 @@ tokalign-dev/
 │   └── {{agent-name}}.md
 ├── commands/                 # Slash commands (each .md file → /plugin-name:command-name)
 │   └── {{command-name}}.md
+├── dev/                      # Developer-only tooling (not part of the plugin runtime)
+│   └── smoke-test.sh
 ├── hooks/                    # Deterministic event handlers
 │   ├── hooks.json
 │   └── scripts/             # Hook helper scripts
@@ -60,9 +62,14 @@ claude --plugin-dir .
 # Verify plugin loaded correctly
 claude --debug  # look for "loading plugin" messages
 
+# Smoke test: validate syntax and check component placement
+./dev/smoke-test.sh
+
 # Test a specific command
 /tokalign-dev:{{command-name}} <test-args>
 ```
+
+When adding a new skill, command, or other component, update the `expected` array in `dev/smoke-test.sh` so the smoke test covers it.
 
 <!-- Marketplace install workflow (for when you're ready to distribute):
 
@@ -103,6 +110,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 -->
 
 - NEVER put commands/, agents/, or skills/ inside .claude-plugin/. They will silently fail to load.
+- Before writing a test or diagnostic script, verify that the underlying CLI tool actually supports what you need. `claude plugin validate` checks syntax only — there is no CLI command to verify runtime component loading. Don't waste time scripting around a capability that doesn't exist.
 - Hooks are **deterministic** (always run), unlike CLAUDE.md instructions which are advisory. Use hooks for actions that must happen every time (formatting, linting, security checks). Use skills for guidance Claude should consider.
 - Agent definitions do NOT support `hooks`, `mcpServers`, or `permissionMode` in frontmatter — these are stripped for security.
 - If a skill's `description` doesn't trigger when expected, the keywords likely don't match. Test by asking Claude to explain when it would invoke the skill.

@@ -67,12 +67,26 @@ Compiled backends split into a thin Python wrapper (handles encode/decode) and a
 
 Tests are parametrized across backends via `conftest.py`. Adding a new backend automatically runs the full existing test suite against it. If any test fails, the new backend is wrong — not the tests.
 
+## Development
+
+### Smoke test
+
+After modifying the plugin, verify all components have valid syntax and load correctly:
+
+```bash
+./dev/smoke-test.sh
+```
+
+When adding a new skill, command, or other component, update the `expected` array in `dev/smoke-test.sh` so the smoke test covers it.
+
 ## Directory Structure
 
 ```
 tokalign-dev/
 ├── .claude-plugin/
 │   └── plugin.json
+├── dev/
+│   └── smoke-test.sh             # Verify all plugin components load
 ├── skills/
 │   ├── algorithm-prototype/       # Phase 1 skill
 │   ├── cython-translation/        # Phase 2 skill
