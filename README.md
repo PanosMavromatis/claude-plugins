@@ -1,11 +1,12 @@
 # tokalign-dev
 
-Development toolkit for the tokalign package: guides algorithm implementation through prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.
+Development toolkit for the tokalign package: guides algorithm implementation through formalization → prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.
 
 ## Overview
 
-This Claude Code plugin supports the full lifecycle of sequence-alignment algorithm development in the `tokalign` package. Every algorithm progresses through three phases:
+This Claude Code plugin supports the full lifecycle of sequence-alignment algorithm development in the `tokalign` package. Every algorithm progresses through four phases, starting with a formalization and then producing three executable backends:
 
+0. **Formalize** (`FORMALIZATION.md`) — Language-agnostic pseudocode, understanding & adaptation focus
 1. **Prototype** (`_python.py`) — Pure Python, correctness focus
 2. **Compile** (`_cython.pyx`) — Cython with typed memoryviews, performance focus
 3. **Parallelize** (`_numba.py`) — Numba CUDA kernels, scalability focus
@@ -16,6 +17,7 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 | Skill                    | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
+| `algorithm-formalize`    | Guide Phase 0: pseudocode formalization from source material |
 | `algorithm-prototype`    | Guide Phase 1: pure Python implementation + tests        |
 | `cython-translation`     | Guide Phase 2: Cython translation with equivalence check |
 | `gpu-parallelization`    | Guide Phase 3: Numba CUDA parallelization                |
@@ -28,7 +30,7 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 | Command          | Description                                        |
 | ---------------- | -------------------------------------------------- |
-| `/new-algorithm` | Scaffold a new algorithm and start Phase 1         |
+| `/new-algorithm` | Scaffold a new algorithm and start Phase 0 (formalization) |
 | `/phase-check`   | Validate whether the current phase is complete     |
 | `/next-phase`    | Advance an algorithm to the next implementation phase |
 | `/benchmark`     | Run cross-backend benchmarks for an algorithm      |
@@ -41,7 +43,10 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 ```
 /tokalign-dev:new-algorithm
-  → implement in pure Python → all tests pass
+  → produce FORMALIZATION.md → human reviews and approves
+
+/tokalign-dev:next-phase needleman_wunsch
+  → implement in pure Python from formalization → all tests pass
 
 /tokalign-dev:next-phase needleman_wunsch
   → Cython translation → same tests pass automatically
@@ -88,6 +93,7 @@ tokalign-dev/
 ├── dev/
 │   └── smoke-test.sh             # Verify all plugin components load
 ├── skills/
+│   ├── algorithm-formalize/       # Phase 0 skill
 │   ├── algorithm-prototype/       # Phase 1 skill
 │   ├── cython-translation/        # Phase 2 skill
 │   ├── gpu-parallelization/       # Phase 3 skill

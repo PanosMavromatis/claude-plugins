@@ -29,6 +29,7 @@ echo
 # Update this list when adding new skills, commands, agents, or hooks.
 
 expected=(
+  "skills/algorithm-formalize/SKILL.md"
   "skills/algorithm-prototype/SKILL.md"
   "skills/cython-translation/SKILL.md"
   "skills/gpu-parallelization/SKILL.md"
