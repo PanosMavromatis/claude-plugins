@@ -114,12 +114,38 @@ to its module path.
 ### 4. Create the test file
 
 Create `tests/algorithms/test_<name>.py` using the parametrized backend pattern from
-`tests/conftest.py` (see `references/test-patterns.md` for the full fixture pattern).
+`tests/conftest.py` (see `references/test-patterns.md` for the full fixture pattern
+and worked examples).
 
 **Implement the TC-XX test case specifications from `FORMALIZATION.md` directly** —
 each test case identifier and name in the formalization becomes a named test function.
 The formalization is the source of truth for what inputs to use and what properties to
 assert (exact values, property-based, or relational, as specified per case).
+
+#### TC-XX to pytest translation rules
+
+1. **Naming**: Each `TC-XX: <Descriptive Name>` becomes
+   `test_tcXX_<snake_case_name>(align_fn, ...)`. Do not invent test cases beyond what
+   the formalization specifies.
+
+2. **Integer-to-string mapping**: FORMALIZATION.md specifies integer arrays (e.g.,
+   `a = [4, 5, 6]`) where indices 0-3 are reserved and user symbols start at 4.
+   Tests must translate these to string sequences for the `align()` API:
+   - Create an `Alphabet` with enough symbols to cover the highest index used
+   - Map integer index `N` to `alphabet.symbols[N - 4]`
+   - Map `GAP` in expected output to `alphabet.gap_symbol`
+
+3. **Fixture grouping**: Group test cases that share identical scoring parameters
+   (match, mismatch, gap_open, gap_extend) under shared fixtures. Cases with unique
+   parameters build their `Alphabet` and `ScoringMatrix` inline. Always pass
+   `gap_open` and `gap_extend` explicitly — do not rely on defaults.
+
+4. **Assertion precision**: Match the formalization's precision level for each TC:
+   - **Exact**: `assert result.score == pytest.approx(X)` and
+     `assert result.aligned_a == [...]`
+   - **Property-based**: assert exact score, then check structural properties
+     (gap count, match count, alignment length)
+   - **Relational**: call `align_fn` with swapped/varied inputs and compare results
 
 If a test scenario seems necessary but is not in the formalization, do not silently add
 it. Instead: alert the user, add the test case specification to `FORMALIZATION.md`
