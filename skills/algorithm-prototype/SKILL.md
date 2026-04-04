@@ -155,6 +155,26 @@ first, then implement it in the test file.
 
 Run `uv run pytest tests/algorithms/test_<name>.py -v` and confirm all tests pass.
 
+### When a test failure traces back to FORMALIZATION.md
+
+If a test fails and investigation reveals the cause is an error in `FORMALIZATION.md`'s
+Test Cases section (wrong expected score, incorrect index mapping, impossible expected
+alignment, arithmetic error in the rationale), you **must not** silently adjust the test
+or the implementation to paper over it. Follow this order strictly:
+
+1. **Verify** — manually compute the correct expected value from the algorithm's
+   recurrence and inputs to confirm the formalization is wrong (not the implementation)
+2. **Amend `FORMALIZATION.md` first** — fix the erroneous TC-XX entry (expected values,
+   rationale, index mappings) so the formalization is self-consistent and correct
+3. **Then update the test** — write or revise the pytest case against the amended spec
+4. **Do not modify `_python.py` to match a wrong spec** — the implementation is a
+   mechanical translation of the pseudocode sections, which are independent of the
+   test case expected values
+
+This ensures FORMALIZATION.md remains the single source of truth. If the test is
+adjusted without fixing the spec, later phases (Cython, GPU) will inherit the
+discrepancy.
+
 ## When edge cases are discovered
 
 If an edge case surfaces during implementation that the formalization does not cover:
