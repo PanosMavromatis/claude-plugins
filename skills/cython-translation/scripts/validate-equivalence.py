@@ -41,7 +41,7 @@ def _make_alphabet_and_scoring(symbols: tuple[str, ...]) -> tuple[Any, Any]:
         for b in symbols:
             scores[(a, b)] = 2.0 if a == b else -1.0
 
-    sm = ScoringMatrix.from_dict(scores, alphabet, gap_open=-2.0, gap_extend=-0.5)
+    sm = ScoringMatrix.from_dict(alphabet, scores, gap_open=-2.0, gap_extend=-0.5)
     return alphabet, sm
 
 
