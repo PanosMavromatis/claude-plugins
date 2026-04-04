@@ -42,6 +42,7 @@ expected=(
   "commands/next-phase.md"
   "commands/benchmark.md"
   "hooks/hooks.json"
+  "hooks/scripts/pre-commit-check.sh"
 )
 
 missing=0
