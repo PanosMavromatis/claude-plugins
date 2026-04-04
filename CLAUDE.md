@@ -111,6 +111,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 -->
 
 - NEVER put commands/, agents/, or skills/ inside .claude-plugin/. They will silently fail to load.
+- `/phase-check` and `/next-phase` use `make`-like timestamp logic: a backend file is **stale** if its prerequisite has a newer mtime, even if both exist. Staleness is transitive. The **effective phase** is the phase just before the first stale file — route skill invocations from there, not from file existence alone.
 - Before writing a test or diagnostic script, verify that the underlying CLI tool actually supports what you need. `claude plugin validate` checks syntax only — there is no CLI command to verify runtime component loading. Don't waste time scripting around a capability that doesn't exist.
 - Hooks are **deterministic** (always run), unlike CLAUDE.md instructions which are advisory. Use hooks for actions that must happen every time (formatting, linting, security checks). Use skills for guidance Claude should consider.
 - Agent definitions do NOT support `hooks`, `mcpServers`, or `permissionMode` in frontmatter — these are stripped for security.

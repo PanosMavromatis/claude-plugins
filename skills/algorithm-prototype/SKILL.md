@@ -26,7 +26,15 @@ Before writing any code:
 1. Confirm `src/tokalign/algorithms/<name>/FORMALIZATION.md` exists. If it does not, stop:
    "Phase 0 is required before Phase 1. Run `/tokalign-dev:new-algorithm` to produce the
    formalization first."
-2. Read `FORMALIZATION.md` in full — pseudocode, test cases (TC-XX), and notes sections.
+2. **Check for stale artifact (regeneration case).** If `_python.py` already exists,
+   compare modification times: if `FORMALIZATION.md` is newer than `_python.py`, the
+   Python backend is stale and must be regenerated from the updated formalization. Tell
+   the user: "FORMALIZATION.md has been updated since `_python.py` was last generated.
+   Regenerating the Python backend." Then proceed with the translation as normal — read
+   the formalization, rewrite `_python.py`, and re-run all tests. Do **not** attempt to
+   patch the existing `_python.py` — regenerate it from scratch to maintain the
+   mechanical-translation guarantee.
+3. Read `FORMALIZATION.md` in full — pseudocode, test cases (TC-XX), and notes sections.
    The implementation is a translation of this document, not an independent design.
 
 ### 1. Create the algorithm directory

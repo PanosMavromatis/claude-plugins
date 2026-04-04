@@ -11,7 +11,7 @@ This Claude Code plugin supports the full lifecycle of sequence-alignment algori
 2. **Compile** (`_cython.pyx`) — Cython with typed memoryviews, performance focus
 3. **Parallelize** (`_numba.py`) — Numba CUDA kernels, scalability focus
 
-The plugin ensures the agent follows this sequence without skipping phases, losing test coverage, or introducing behavioral differences between backends.
+The plugin ensures the agent follows this sequence without skipping phases, losing test coverage, or introducing behavioral differences between backends. Phase advancement uses `make`-like timestamp logic: a backend is considered **stale** if its prerequisite file has a newer modification time, even if the file exists. Staleness propagates transitively — updating `FORMALIZATION.md` marks `_python.py`, `_cython.pyx`, and `_numba.py` all stale in sequence.
 
 ## Skills
 
@@ -31,8 +31,8 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 | Command          | Description                                        |
 | ---------------- | -------------------------------------------------- |
 | `/new-algorithm` | Scaffold a new algorithm and start Phase 0 (formalization) |
-| `/phase-check`   | Validate whether the current phase is complete     |
-| `/next-phase`    | Advance an algorithm to the next implementation phase |
+| `/phase-check`   | Validate the current phase; detect stale artifacts via timestamp comparison |
+| `/next-phase`    | Advance to the next phase, or regenerate stale artifacts if a prerequisite was updated |
 | `/benchmark`     | Run cross-backend benchmarks for an algorithm      |
 
 ## Hooks
@@ -56,6 +56,25 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 /tokalign-dev:benchmark needleman_wunsch
   → see performance comparison across backends
+```
+
+### Updating a formalization mid-lifecycle
+
+If `FORMALIZATION.md` is edited after `_python.py` (or later backends) already exist,
+`/phase-check` will report the **effective phase** as 0 and flag the downstream files as
+stale. Running `/next-phase` will regenerate `_python.py` from the updated formalization —
+not patch it — and cascade from there:
+
+```
+# Edit FORMALIZATION.md after Cython backend already exists
+/tokalign-dev:phase-check needleman_wunsch
+  → Phase 0 (effective) — _python.py and _cython.pyx are stale
+
+/tokalign-dev:next-phase needleman_wunsch
+  → regenerates _python.py from updated formalization → tests pass
+
+/tokalign-dev:next-phase needleman_wunsch
+  → regenerates _cython.pyx from updated _python.py → tests pass
 ```
 
 ## Key Architectural Patterns

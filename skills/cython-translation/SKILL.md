@@ -18,7 +18,21 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
    `src/tokalign/algorithms/needleman_wunsch/_python.py`). If it does not exist,
    stop and invoke the `algorithm-prototype` skill instead.
 
-2. **All Python tests pass.** Run:
+2. **`_python.py` is not stale.** Compare modification times: if
+   `FORMALIZATION.md` is newer than `_python.py`, the Python backend is stale and
+   must be regenerated before Cython translation can proceed. Stop and invoke the
+   `algorithm-prototype` skill first — do not translate from a stale source.
+
+3. **Check for stale artifact (regeneration case).** If `_cython.pyx` already
+   exists, compare modification times: if `_python.py` is newer than
+   `_cython.pyx`, the Cython backend is stale and must be regenerated. Tell the
+   user: "`_python.py` has been updated since `_cython.pyx` was last generated.
+   Regenerating the Cython backend." Then proceed with the translation as
+   normal — read `_python.py`, rewrite `_cython.pyx` from scratch, and re-run
+   all tests. Do **not** attempt to patch the existing `.pyx` — regenerate it to
+   maintain the mechanical-translation guarantee.
+
+4. **All Python tests pass.** Run:
 
    ```bash
    uv run pytest tests/algorithms/test_<algorithm>.py -k python
@@ -26,11 +40,11 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
 
    Do not proceed if any test fails — the Cython version will inherit any bugs.
 
-3. **Read `_python.py` in full** before writing a single line of Cython. The
+5. **Read `_python.py` in full** before writing a single line of Cython. The
    translation must be mechanical, not creative. Every line of Cython should
    trace back to a line in the Python.
 
-4. **Read `src/tokalign/_types.py`** to understand `Alphabet`, `ScoringMatrix`,
+6. **Read `src/tokalign/_types.py`** to understand `Alphabet`, `ScoringMatrix`,
    and `AlignmentResult` — specifically the integer index conventions and how
    `scoring_matrix._matrix` is laid out as a numpy array.
 
