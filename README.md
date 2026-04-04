@@ -37,7 +37,7 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 ## Hooks
 
-- **pre-commit**: Compiles Cython extensions and runs the full test suite before each commit, ensuring no existing backend is broken.
+- **pre-commit**: Runs the full test suite before each commit, ensuring no existing backend is broken. Cython extensions are recompiled only when a `.pyx` file is staged.
 
 ## Typical Workflow
 

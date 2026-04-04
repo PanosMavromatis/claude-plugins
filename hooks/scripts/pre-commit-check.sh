@@ -4,8 +4,10 @@
 
 set -uo pipefail
 
-# Build any Cython extensions before testing
-uv run python setup.py build_ext --inplace 2>/dev/null
+# Only recompile Cython extensions if a .pyx file is staged
+if git diff --cached --name-only | grep -q '\.pyx$'; then
+  uv run python setup.py build_ext --inplace 2>/dev/null
+fi
 
 # Run the full test suite (parametrized across backends)
 if uv run pytest tests/ -x --tb=short; then
