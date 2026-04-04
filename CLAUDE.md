@@ -36,7 +36,8 @@ tokalign-dev/
 │   └── {{skill-name}}/
 │       ├── SKILL.md          # Skill entrypoint — goals and constraints, not step-by-step
 │       ├── references/       # Domain knowledge, API docs, specs (optional)
-│       └── scripts/          # Composable utilities (optional)
+│       ├── scripts/          # Composable utilities (optional)
+│       └── examples/         # Annotated examples the agent composes from (optional)
 ├── .mcp.json                 # MCP server definitions (optional)
 ├── CLAUDE.md
 └── README.md
