@@ -31,8 +31,8 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 | Command          | Description                                        |
 | ---------------- | -------------------------------------------------- |
 | `/new-algorithm` | Scaffold a new algorithm and start Phase 0 (formalization) |
-| `/phase-check`   | Validate the current phase; detect stale artifacts via timestamp comparison |
-| `/next-phase`    | Advance to the next phase, or regenerate stale artifacts if a prerequisite was updated |
+| `/phase-check`   | Report phase and staleness status for one algorithm (or all); exits without suggesting next steps |
+| `/next-phase`    | Advance one algorithm to the next phase; requires an explicit name argument (asks if missing) |
 | `/benchmark`     | Run cross-backend benchmarks for an algorithm      |
 
 ## Hooks
@@ -124,7 +124,9 @@ tokalign-dev/
 │   ├── new-algorithm.md
 │   ├── phase-check.md
 │   ├── next-phase.md
-│   └── benchmark.md
+│   ├── benchmark.md
+│   └── references/
+│       └── phase-detection.md    # Shared phase/staleness logic (@-included by phase-check and next-phase)
 ├── hooks/
 │   ├── hooks.json
 │   └── scripts/
