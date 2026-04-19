@@ -6,11 +6,11 @@ set -uo pipefail
 
 # Only recompile Cython extensions if a .pyx file is staged
 if git diff --cached --name-only | grep -q '\.pyx$'; then
-  uv run python setup.py build_ext --inplace 2>/dev/null
+  uv run --extra dev python setup.py build_ext --inplace 2>/dev/null
 fi
 
 # Run the full test suite (parametrized across backends)
-if uv run pytest tests/ -x --tb=short; then
+if uv run --extra dev pytest tests/ -x --tb=short; then
   echo "All tests passed."
   exit 0
 else
