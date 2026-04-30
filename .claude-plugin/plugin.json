@@ -1,5 +1,5 @@
 {
-    "name": "workspace-claude",
+    "name": "workflow-claude",
     "description": "A collection of Claude Code commands, skills, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.",
     "version": "0.1.0",
     "author": {
