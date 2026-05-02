@@ -25,6 +25,8 @@ Build a list of documentation files to consider for updates:
 - `docs/agents/core.md` — tool-agnostic agent context (shared by Claude Code, Cursor, Codex)
 - `docs/agents/claude.md` — Claude-Code-specific context
 - `docs/agents/codex.md` — Codex-specific context (review priorities, gotchas)
+- All `.md` files under `docs/git/` (find recursively)
+- All `.md` files under `docs/ops/` (find recursively)
 
 **Do not consider** `CLAUDE.md`, `AGENTS.md`, or `AGENTS.override.md`. `CLAUDE.md` is an `@import` dispatcher; the other two are generated artifacts built from the `docs/agents/` sources by `dev/build-agents-md.sh`. A PreToolUse hook will block direct edits to all three.
 
