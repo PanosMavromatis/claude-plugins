@@ -1,22 +1,20 @@
 ---
-allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Bash(dev/build-agents-md.sh:*), Read, Write, Glob, Grep
+allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Bash(dev/build-agents-md.sh:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-update)
 description: Update docs to match staged changes, commit with an appropriate message, and push.
 argument-hint: "[extra doc paths...]"
 ---
 
 # Smart Commit
 
-End-to-end commit workflow: sync documentation with the staged diff via `/agents-docs-update`, then commit and push.
+End-to-end commit workflow: sync documentation with the staged diff via `/workflow-claude:agents-docs-update`, then commit and push.
 
-This command delegates all documentation handling to the imported update command below. Do not duplicate or override those steps here — follow them as written, using this command's `$ARGUMENTS` (`$ARGUMENTS`) as the extra doc paths for the imported Step 2.
+This command delegates all documentation handling to that command via the SlashCommand tool. Do not duplicate or override its steps here — let it run to completion, then resume with the commit and push.
 
 ## Step 1: Sync Documentation
 
-Execute the steps from the following imported command to completion before proceeding. Treat its `$ARGUMENTS` as identical to this command's `$ARGUMENTS`.
+Invoke `/workflow-claude:agents-docs-update` via the SlashCommand tool, passing this command's `$ARGUMENTS` through unchanged as its arguments. Wait for it to complete its Step 6 (Report) before proceeding.
 
-@.claude/commands/agents-docs-update.md
-
-Once the imported Step 6 (Report) has printed its summary, continue with Step 2 below.
+The invoked command stops at staging — it stages any documentation updates it makes but does not commit. Continue with Step 2 below using the staged set it produced (the original staged changes plus any doc edits or regenerated artifacts).
 
 ## Step 2: Generate Commit Message
 
