@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Bash(dev/build-agents-md.sh:*), Read, Write, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-build)
 description: Update project docs and regenerate agent artifacts to match staged changes.
 argument-hint: "[extra doc paths...]"
 ---
@@ -22,13 +22,11 @@ Build a list of documentation files to consider for updates:
 
 **Defaults (always check if they exist in the repo):**
 - `README.md` — human-facing documentation
-- `docs/agents/core.md` — tool-agnostic agent context (shared by Claude Code, Cursor, Codex)
-- `docs/agents/claude.md` — Claude-Code-specific context
-- `docs/agents/codex.md` — Codex-specific context (review priorities, gotchas)
+- All `.md` files under `docs/agents/` — discover with a single recursive find (e.g., `find docs/agents -type f -name '*.md'`). This covers the root sources `docs/agents/{core,claude,codex}.md` and, in a monorepo layout, the per-component sources at `docs/agents/<path>/{core,claude,codex}.md` at any nesting depth. The directory tree under `docs/agents/` is the source of truth for whether components exist; in a non-monorepo project the recursive find simply returns the root files at no extra cost.
 - All `.md` files under `docs/git/` (find recursively)
 - All `.md` files under `docs/ops/` (find recursively)
 
-**Do not consider** `CLAUDE.md`, `AGENTS.md`, or `AGENTS.override.md`. `CLAUDE.md` is an `@import` dispatcher; the other two are generated artifacts built from the `docs/agents/` sources by `dev/build-agents-md.sh`. A PreToolUse hook will block direct edits to all three.
+**Do not consider** any `CLAUDE.md`, `AGENTS.md`, or `AGENTS.override.md` at any path — root-level (`CLAUDE.md`, `AGENTS.md`, `AGENTS.override.md`) or, in a monorepo layout, component-level (`<path>/CLAUDE.md`, `<path>/AGENTS.md`, `<path>/AGENTS.override.md`). Every `CLAUDE.md` is an `@import` dispatcher; the `AGENTS.*` files are generated artifacts built from the corresponding `docs/agents/[<path>/]` sources by `/agents-docs-build`. The PreToolUse hook shipped by the workflow-claude plugin blocks direct edits to all of them.
 
 **Extra paths from arguments:** `$ARGUMENTS`
 - For each extra path provided:
@@ -57,15 +55,19 @@ For **each** documentation file in the list:
 - `claude.md` — Claude-Code-specific: skill references, slash commands, workflow patterns that name Claude Code features.
 - `codex.md` — Codex-specific: review priorities, high-signal targets, gotchas discovered during Codex review sessions.
 
-When an edit could plausibly belong in more than one, prefer `core.md` — broader reach, and the others can reference it.
+In a monorepo layout, the same three files exist both at the root of `docs/agents/` (project-wide) and within each `docs/agents/<path>/` subdirectory (component-scoped). Route an edit to the most specific component whose scope it falls under; if it spans multiple components or is genuinely project-wide, route to the root.
+
+When an edit could plausibly belong in more than one of `core.md` / `claude.md` / `codex.md` *at the same scope*, prefer `core.md` — broader reach, and the others can reference it.
 
 **Idempotency note:** If a source file is already staged with edits that match the diff (e.g., because this command was run earlier), treat it as up-to-date and make no further changes.
 
 ## Step 4: Rebuild Generated Artifacts
 
-If `docs/agents/core.md` or `docs/agents/codex.md` was modified in Step 3, run `dev/build-agents-md.sh` to regenerate `AGENTS.md` and `AGENTS.override.md`. Skip this step if neither was modified.
+If any `core.md` or `codex.md` source was modified in Step 3 — at the root (`docs/agents/core.md`, `docs/agents/codex.md`) or under any component directory (`docs/agents/<path>/core.md`, `docs/agents/<path>/codex.md`) — invoke `/agents-docs-build` once (via the SlashCommand tool) to regenerate the corresponding generated artifacts: the root `AGENTS.md` and `AGENTS.override.md`, and in a monorepo layout the per-component `<path>/AGENTS.md` and `<path>/AGENTS.override.md` files. Skip this step if no `core.md` or `codex.md` was modified.
 
-If only `docs/agents/claude.md` was modified, no build is needed — `CLAUDE.md` picks up changes via `@import` at the next session.
+If only `claude.md` files (root or component) were modified, no build is needed — the corresponding `CLAUDE.md` dispatcher picks up changes via `@import` at the next session.
+
+`/agents-docs-build` is shipped by the workflow-claude plugin; it walks `docs/agents/` and handles root + every component subdirectory at any nesting depth.
 
 ## Step 5: Stage Documentation Changes
 

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Bash(dev/build-agents-md.sh:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-update)
+allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-update)
 description: Update docs to match staged changes, commit with an appropriate message, and push.
 argument-hint: "[extra doc paths...]"
 ---
