@@ -16,12 +16,17 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
 
 1. **`_python.py` exists** in the algorithm directory (e.g.,
    `src/tokalign/algorithms/needleman_wunsch/_python.py`). If it does not exist,
-   stop and invoke the `algorithm-prototype` skill instead.
+   stop and hand off to the `algorithm-prototype` skill instead, using the
+   `Skill` tool with `skill: "tokalign-dev:algorithm-prototype"`. Do NOT use
+   `Read` on the sibling `SKILL.md` — only the `Skill` tool activates the skill
+   through the harness so it runs with its own references and examples.
 
 2. **`_python.py` is not stale.** Compare modification times: if
    `FORMALIZATION.md` is newer than `_python.py`, the Python backend is stale and
-   must be regenerated before Cython translation can proceed. Stop and invoke the
-   `algorithm-prototype` skill first — do not translate from a stale source.
+   must be regenerated before Cython translation can proceed. Stop and hand off
+   to the `algorithm-prototype` skill first via the `Skill` tool with
+   `skill: "tokalign-dev:algorithm-prototype"` (not `Read`) — do not translate
+   from a stale source.
 
 3. **Check for stale artifact (regeneration case).** If `_cython.pyx` already
    exists, compare modification times: if `_python.py` is newer than

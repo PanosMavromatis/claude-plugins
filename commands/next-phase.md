@@ -38,8 +38,8 @@ Do not attempt to infer or guess — wait for an explicit answer.
 2. Apply the phase-detection logic above to determine the **effective phase**.
 3. If the current phase is failing (tests fail or formalization not approved), stop and tell the user what needs to be fixed before advancing.
 4. **Handle stale artifacts.** If the effective phase is earlier than the nominal phase (i.e., a prerequisite was updated after a downstream file was generated), target the first stale artifact for regeneration — not the next missing file. For example, if `FORMALIZATION.md` was modified after `_python.py`, the effective phase is 0 and the task is to regenerate `_python.py`, not to write `_cython.pyx`.
-5. Route to the appropriate skill based on the effective phase:
-   - Phase 0 → Phase 1: invoke `algorithm-prototype` skill.
-   - Phase 1 → Phase 2: invoke `cython-translation` skill.
-   - Phase 2 → Phase 3: invoke `gpu-parallelization` skill.
+5. Route to the appropriate skill based on the effective phase. **Use the `Skill` tool** with the fully namespaced skill name — do NOT use `Read` on the corresponding `SKILL.md` file. `Read` just loads the file's contents as context; only `Skill` activates the skill through the harness so its references and examples are wired up correctly.
+   - Phase 0 → Phase 1: `Skill` with `skill: "tokalign-dev:algorithm-prototype"`.
+   - Phase 1 → Phase 2: `Skill` with `skill: "tokalign-dev:cython-translation"`.
+   - Phase 2 → Phase 3: `Skill` with `skill: "tokalign-dev:gpu-parallelization"`.
    - Phase 3 with no stale artifacts: report "This algorithm is fully implemented across all backends." and stop.
