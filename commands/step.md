@@ -73,6 +73,11 @@ Once the task is fully done:
 ```
 
 3. Save `DO.md`.
+4. **Commit checkpoint.** After saving, pause and ask the user whether they want to commit the completed task before `/step` continues:
+
+   > Task "<task text>" is complete. Would you like to commit now (`git commit` or `/smart-commit`) before I move on, or keep going?
+
+   Wait for the user's response. **Do not run the commit yourself** — the user runs their preferred commit command (they can use the `!` prefix in the prompt to surface output, or invoke `/smart-commit` themselves). Only after they answer do you proceed to Step 5. This pause fires every iteration, including the last one before Step 6.
 
 ## Step 5: Loop or Stop
 

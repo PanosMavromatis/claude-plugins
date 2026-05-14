@@ -95,7 +95,17 @@ If the goal requires creating or modifying files (Dockerfile, script, config):
 
 For commands that affect systems outside the local repo (`docker build`, `gcloud`, registry pushes, Vertex AI job submission), **do not run them**. Show the exact command and let the user run it themselves (they can use the `!` prefix in the prompt to surface output into the conversation). Record the outcome inline under the goal as a `> **Ran:**` or `> **Result:**` note if it's worth preserving.
 
-### 3e. Escape hatches (any time during Step 3)
+### 3e. Commit checkpoint (after each subgoal)
+
+After a subgoal is flipped to `[x]` — a real completion, not `[~]`, `[!]`, or `[-]` — **pause before starting the next subgoal** and ask the user whether they want to commit the work so far:
+
+> Subgoal "<subgoal text>" is complete. Would you like to commit now (`git commit` or `/smart-commit`) before I continue, or keep going?
+
+Wait for the user's response. **Do not run the commit yourself** — the user runs their preferred commit command (they can use the `!` prefix to surface output, or invoke `/smart-commit` themselves). If they say continue, move to the next subgoal. Optionally record the decision under the parent goal as `> **Commit:** committed here` or `> **Commit:** deferred` if it's worth preserving across sessions.
+
+This pause is non-negotiable: every `[x]` subgoal gets one. The point is to give the user a clean checkpoint to capture before more diff piles up.
+
+### 3f. Escape hatches (any time during Step 3)
 
 - **Block a subgoal**: if progress requires an external change you can't make (missing credentials, quota approval, upstream bugfix, unavailable hardware), mark the subgoal `[!]` and append `> **Blocked:** reason` under it. Do not flip the parent to `[x]` while any subgoal is `[!]` — see Step 4 for the parent-state rules.
 - **Defer or descope a subgoal**: if the subgoal is intentionally being skipped (optional work, out of scope, replaced by a different approach), mark it `[-]` and append `> **Deferred:** reason` or `> **Descoped:** reason` under it. The parent can still complete as `[x]` — `[-]` subgoals count as "resolved" for parent-state purposes.
@@ -125,6 +135,11 @@ Determine the parent goal's final state based on the states of its subgoals and 
     ```
 
 4. Save `TODO.md`.
+5. **Commit checkpoint (after the parent goal).** Once the parent goal's marker has been flipped — whether to `[x]`, `[!]`, `[-]`, or left at `[~]` with real progress made — pause and ask the user whether they want to commit before `/hitl-step` moves on:
+
+   > Goal "<goal text>" is now `[<state>]`. Would you like to commit (`git commit` or `/smart-commit`) before I continue to the next goal?
+
+   Wait for the user's response. **Do not run the commit yourself.** Only after they answer do you proceed to Step 5. This pause fires every iteration, including the last one before Step 6.
 
 ## Step 5: Loop or Stop
 
