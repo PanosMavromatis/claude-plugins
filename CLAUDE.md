@@ -29,7 +29,7 @@ The commands are designed to chain, not just stand alone. The intended end-to-en
 
 - **`/new-branch`** creates `<type>/<slug>` and writes `docs/git/<branch>.md` (purpose, scope, context). That doc is a working artifact for the branch's lifetime.
 - **`/step`** executes the next unchecked item from `DO.md`; **`/hitl-step`** does the same against `TODO.md` but with a richer status-marker model (`[ ] [~] [x] [!] [-]`) and inline `> **Q:** / > **A:**` logging under each goal so reasoning survives `/clear` or compaction.
-- **`/smart-commit`** *imports* `/agents-docs-update` via `@.claude/commands/agents-docs-update.md`, then commits and pushes. It deliberately delegates all doc-sync logic rather than duplicating it.
+- **`/smart-commit`** invokes `/agents-docs-update` via the SlashCommand tool, then handles any version bump (tag + component-manifest sync), commits, tags, and pushes. It deliberately delegates all doc-sync logic rather than duplicating it.
 - **`/smart-merge`** reads `docs/git/<branch>.md` to draft the PR title/body, deletes that doc as part of the merge (so it stays in branch history but doesn't pollute `main`), then merges via `gh pr merge`.
 
 `/agents-docs-update` is the shared module for keeping documentation in sync with staged changes — it's both standalone and imported by `/smart-commit`. When editing one, consider whether the change belongs in the shared module instead.
