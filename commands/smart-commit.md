@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-update)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git fetch:*), Bash(git tag:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git branch --show-current:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-update)
 description: Update docs to match staged changes, commit with an appropriate message, sync component versions, tag any version bump, and push.
 argument-hint: "[extra doc paths...]"
 ---

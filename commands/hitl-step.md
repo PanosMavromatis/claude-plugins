@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next top-level goal from TODO.md with human-in-the-loop Q&A, logged inline.
 argument-hint: "[count]"
 ---

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep
 description: Execute the next N unchecked items in DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count]"
 ---

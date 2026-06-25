@@ -1,4 +1,5 @@
 ---
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*)
 description: Create a new feature branch with documented purpose
 ---
 

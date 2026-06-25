@@ -1,4 +1,5 @@
 ---
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(gh pr view:*), Bash(gh pr list:*)
 description: Interactive guided workflow to merge current branch into main via GitHub PR
 ---
 

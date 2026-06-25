@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-build)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch --show-current:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-build)
 description: Update project docs and regenerate agent artifacts to match staged changes.
 argument-hint: "[extra doc paths...]"
 ---
