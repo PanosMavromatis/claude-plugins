@@ -88,6 +88,7 @@ Summarize:
 
 - **Confirm before every deletion**: worktree removal and branch deletion. State exactly what will run, then wait for approval. Batch approval for the whole set is fine; a prominent count and the `>1` warning are what protect against an "I assumed one branch" mental model.
 - **Read-only commands run freely**: `git fetch --prune`, `git branch -vv`, `git worktree list`, `git branch --show-current`, `git status`, `git log`.
+- **`git branch -D` and `git worktree remove` are deliberately absent from `allowed-tools`.** This is not drift — do not "fix" it by adding them. They are the two irreversible operations in this command, and the harness permission prompt is a second gate behind the confirmation in step 3. Adding `Bash(git branch:*)` would be worse still: it is a prefix pattern, so it would authorize `git branch -D` on any branch, which is precisely the failure this omission prevents.
 - **Never use placeholders in actual commands** — always substitute the real branch name and worktree path before running.
 - **Never delete the current branch or `main`.** Skip and warn instead.
 - **If anything unexpected happens** (a `[gone]` `main`, a locked worktree, an unmerged-branch refusal), stop and explain before proceeding.
