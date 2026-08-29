@@ -55,7 +55,10 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
   > **Branch:** feat/smart-merge-mcp
   > **Done:** New step 9a deletes remote and local branch on the MCP path (`git branch -d`, not `-D`), skipped on the `gh` path where `--delete-branch` already does it; step 11 reports which path ran — PR #1
 - [ ] Add a pre-merge CI check using `pull_request_read` with `get_check_runs` / `get_status` — currently `/smart-merge` merges without ever looking at CI. Report failing checks and confirm before merging; skip cleanly when the MCP path is unavailable.
+  > **Branch:** feat/smart-merge-ci-prune
 - [ ] Resolve the deferred `allowed-tools` drift, now that the reshaping input has arrived. Decide per command whether to allow-list the `gh`/`git` fallback patterns narrowly, and leave MCP tool names off the allow-list (see the portability finding above) so they prompt rather than silently failing to match.
+- [ ] Fix the stale remote-tracking ref in `/smart-merge` step 10: `git pull` does not prune, so `origin/<branch>` survives a `--delete-branch` merge. Use `git fetch --prune` (or `git pull --prune`) before reporting. This is not cosmetic — `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears after a prune, so the lifecycle's final command currently depends on a prune the flow never performs. Found by running the flow on PR #1, not by review.
+  > **Branch:** feat/smart-merge-ci-prune
 - [ ] Update `README.md` and `CLAUDE.md` for the MCP-preferred convention: the 404-or-403 rule, the announce-on-fallback rule and why it exists, the branch-cleanup divergence, and the tool-name portability constraint.
 
 ## Deferred
