@@ -58,6 +58,7 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
   > **Branch:** feat/smart-merge-ci-prune
   > **Done:** New step 8 with four explicit outcomes — none configured, all passing, failing (named, confirmation required), pending (named, user chooses). Both-paths-failed reports as undetermined, not passing — PR #2
 - [ ] Resolve the deferred `allowed-tools` drift, now that the reshaping input has arrived. Decide per command whether to allow-list the `gh`/`git` fallback patterns narrowly, and leave MCP tool names off the allow-list (see the portability finding above) so they prompt rather than silently failing to match.
+  > **Branch:** fix/allowed-tools-sync
 - [x] Fix the stale remote-tracking ref in `/smart-merge` step 10: `git pull` does not prune, so `origin/<branch>` survives a `--delete-branch` merge. Use `git fetch --prune` (or `git pull --prune`) before reporting. This is not cosmetic — `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears after a prune, so the lifecycle's final command currently depends on a prune the flow never performs. Found by running the flow on PR #1, not by review.
   > **Branch:** feat/smart-merge-ci-prune
   > **Done:** Step 11 now uses `git pull --prune`, with the `/clean-gone` dependency spelled out in the step so it does not get 'simplified' away later — PR #2
