@@ -1,6 +1,6 @@
 # fix/allowed-tools-sync
 
-**Status**: active
+**Status**: merged — PR #4 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Resolve the `allowed-tools` drift, extended to `/clean-gone`.
 
