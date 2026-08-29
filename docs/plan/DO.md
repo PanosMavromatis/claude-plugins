@@ -48,10 +48,12 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
 
 ## Subgoals — revision 2: MCP-preferred GitHub access
 
-- [ ] Rework `/smart-merge`'s GitHub operations to prefer MCP with a `gh` fallback: `pull_request_read` for status/checks, `create_pull_request` (body as a string, dropping the temp file), `merge_pull_request` for the merge. Every fallback announced per the rule above. Phrase availability as "if a GitHub MCP tool is present in your tool list" — there is no shell probe for this.
+- [x] Rework `/smart-merge`'s GitHub operations to prefer MCP with a `gh` fallback: `pull_request_read` for status/checks, `create_pull_request` (body as a string, dropping the temp file), `merge_pull_request` for the merge. Every fallback announced per the rule above. Phrase availability as "if a GitHub MCP tool is present in your tool list" — there is no shell probe for this.
   > **Branch:** feat/smart-merge-mcp
-- [ ] Handle the branch-cleanup divergence: after an MCP merge, explicitly delete the remote branch (`git push origin --delete <branch>`) and the local one, or state that `/clean-gone` is now required. Both paths must end in the same repository state, and the command should say which path it took.
+  > **Done:** Preamble states the rule once; steps 1, 6 and 9 gained MCP paths with `gh` fallbacks; fallback triggers on 404 **or** 403 and is always announced with repo and operation named — PR #1
+- [x] Handle the branch-cleanup divergence: after an MCP merge, explicitly delete the remote branch (`git push origin --delete <branch>`) and the local one, or state that `/clean-gone` is now required. Both paths must end in the same repository state, and the command should say which path it took.
   > **Branch:** feat/smart-merge-mcp
+  > **Done:** New step 9a deletes remote and local branch on the MCP path (`git branch -d`, not `-D`), skipped on the `gh` path where `--delete-branch` already does it; step 11 reports which path ran — PR #1
 - [ ] Add a pre-merge CI check using `pull_request_read` with `get_check_runs` / `get_status` — currently `/smart-merge` merges without ever looking at CI. Report failing checks and confirm before merging; skip cleanly when the MCP path is unavailable.
 - [ ] Resolve the deferred `allowed-tools` drift, now that the reshaping input has arrived. Decide per command whether to allow-list the `gh`/`git` fallback patterns narrowly, and leave MCP tool names off the allow-list (see the portability finding above) so they prompt rather than silently failing to match.
 - [ ] Update `README.md` and `CLAUDE.md` for the MCP-preferred convention: the 404-or-403 rule, the announce-on-fallback rule and why it exists, the branch-cleanup divergence, and the tool-name portability constraint.

@@ -1,6 +1,6 @@
 # feat/smart-merge-mcp
 
-**Status**: active
+**Status**: merged — PR #1 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Revision-2 subgoals 1 and 2 — MCP-preferred GitHub access in `/smart-merge`, and branch-cleanup parity between the two paths.
 
