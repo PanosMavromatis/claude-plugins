@@ -1,20 +1,33 @@
 ---
 allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep
-description: Execute the next N unchecked items in DO.md (default 1) and log all Q&A under each item.
-argument-hint: "[count]"
+description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
+argument-hint: "[count] [plan-path]"
 ---
 
 # Step
 
-You are executing pending tasks from the project's `DO.md` file.
+You are executing pending tasks from the project's `DO.md` plan file.
 
-**`$ARGUMENTS`** is the number of items to complete. If empty or missing, default to **1**. Call this value **N**.
+**`$ARGUMENTS`** may contain up to two whitespace-separated tokens, in any order:
+
+- a **bare integer** — the number of items to complete. Call this value **N**. If absent, default to **1**.
+- **anything else** — a path selecting the plan file (see Step 1). If absent, discover it.
 
 Loop through Steps 2–4 exactly **N** times, then hard-stop. Do **not** continue beyond N items even if unchecked items remain.
 
-## Step 1: Read DO.md
+## Step 1: Locate and read the plan file
 
-Read `DO.md` from the project root. If it does not exist, inform the user and stop.
+By convention the plan file lives at `docs/plan/DO.md` or in a sub-directory of `docs/plan/` (e.g. `docs/plan/auth-rewrite/DO.md`) — **not** at the project root. Resolve it as follows, and call the result **the plan file**:
+
+1. **Path argument given.** Interpret it as a repo-relative path, a path relative to `docs/plan/`, or the name of a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `DO.md` inside it. If it resolves to nothing, say so and stop; do not silently fall back to discovery.
+2. **No path argument.** Glob `docs/plan/**/DO.md`.
+   - Exactly one match → use it.
+   - Several matches → list them and ask the user which to use. Wait for the answer; do not guess.
+   - No matches → go to 3.
+3. **Legacy fallback.** If `DO.md` exists at the project root, use it, but tell the user the convention is now `docs/plan/` and suggest moving it (`git mv DO.md docs/plan/DO.md`).
+4. If nothing is found anywhere, inform the user and stop.
+
+State which plan file you resolved to before doing any work. Every later reference to `DO.md` in this command means the resolved plan file, and all its paths (log entries, checkbox edits) apply to that file.
 
 The file uses standard Markdown checkbox syntax:
 
@@ -40,7 +53,7 @@ If you need clarification or input from the user before you can proceed:
 
 1. Ask your question(s) clearly.
 2. **Wait for the user's response.**
-3. Once the user answers, **immediately append a log entry** under the current task item in `DO.md` using this format:
+3. Once the user answers, **immediately append a log entry** under the current task item in the plan file using this format:
 
 ```
 - [ ] The original task description
@@ -64,7 +77,7 @@ Use `>` blockquote lines, indented with 2 spaces to nest under the task item. If
 
 Once the task is fully done:
 
-1. Replace `- [ ]` with `- [x]` on the task's line in `DO.md`.
+1. Replace `- [ ]` with `- [x]` on the task's line in the plan file.
 2. If no Q&A was logged but you want to note what was done, you may optionally add a brief completion note:
 
 ```
@@ -72,7 +85,7 @@ Once the task is fully done:
   > Done: brief summary of what was accomplished.
 ```
 
-3. Save `DO.md`.
+3. Save the plan file.
 4. **Commit checkpoint.** After saving, pause and ask the user whether they want to commit the completed task before `/step` continues:
 
    > Task "<task text>" is complete. Would you like to commit now (`git commit` or `/smart-commit`) before I move on, or keep going?
@@ -83,7 +96,7 @@ Once the task is fully done:
 
 - Increment your completed-task counter.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 (re-read `DO.md` to pick up your latest edits) and execute the next unchecked item.
+- Otherwise, go back to Step 2 (re-read the plan file to pick up your latest edits) and execute the next unchecked item.
 - If you run out of unchecked items before reaching N, proceed to Step 6.
 
 ## Step 6: Report

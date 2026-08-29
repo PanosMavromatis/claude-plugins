@@ -1,20 +1,23 @@
 ---
 allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
-description: Execute the next top-level goal from TODO.md with human-in-the-loop Q&A, logged inline.
-argument-hint: "[count]"
+description: Execute the next top-level goal from a docs/plan TODO.md with human-in-the-loop Q&A, logged inline.
+argument-hint: "[count] [plan-path]"
 ---
 
 # HITL Step
 
-Execute pending top-level goals from the project's `TODO.md` with a human-in-the-loop protocol: every decision is surfaced to the user, and every Q&A is logged **inline under the goal**, so the reasoning survives compaction, `/clear`, or a fresh session.
+Execute pending top-level goals from the project's `TODO.md` plan file with a human-in-the-loop protocol: every decision is surfaced to the user, and every Q&A is logged **inline under the goal**, so the reasoning survives compaction, `/clear`, or a fresh session.
 
-**`$ARGUMENTS`** is the number of top-level goals to complete. If empty or missing, default to **1**. Call this value **N**. The default is 1 because each iteration typically involves Q&A — batching defeats the interactive purpose.
+**`$ARGUMENTS`** may contain up to two whitespace-separated tokens, in any order:
+
+- a **bare integer** — the number of top-level goals to complete. Call this value **N**. If absent, default to **1**. The default is 1 because each iteration typically involves Q&A — batching defeats the interactive purpose.
+- **anything else** — a path selecting the plan file (see Step 1). If absent, discover it.
 
 Loop through Steps 2–4 exactly **N** times, then hard-stop. Do **not** continue beyond N goals even if unchecked items remain.
 
 ## Status markers
 
-Top-level goals and subgoals use these markers. `TODO.md` may include a legend at the top for readability, but this skill defines the canonical meanings:
+Top-level goals and subgoals use these markers. The plan file may include a legend at the top for readability, but this skill defines the canonical meanings:
 
 | Marker | Meaning                                                        |
 |--------|----------------------------------------------------------------|
@@ -26,9 +29,19 @@ Top-level goals and subgoals use these markers. `TODO.md` may include a legend a
 
 All five markers apply to both top-level goals and subgoals. Parent-state rules are defined in Step 4.
 
-## Step 1: Read TODO.md
+## Step 1: Locate and read the plan file
 
-Read `TODO.md` from the project root. If it does not exist, inform the user and stop.
+By convention the plan file lives at `docs/plan/TODO.md` or in a sub-directory of `docs/plan/` (e.g. `docs/plan/auth-rewrite/TODO.md`) — **not** at the project root. Resolve it as follows, and call the result **the plan file**:
+
+1. **Path argument given.** Interpret it as a repo-relative path, a path relative to `docs/plan/`, or the name of a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `TODO.md` inside it. If it resolves to nothing, say so and stop; do not silently fall back to discovery.
+2. **No path argument.** Glob `docs/plan/**/TODO.md`.
+   - Exactly one match → use it.
+   - Several matches → list them and ask the user which to use. Wait for the answer; do not guess.
+   - No matches → go to 3.
+3. **Legacy fallback.** If `TODO.md` exists at the project root, use it, but tell the user the convention is now `docs/plan/` and suggest moving it (`git mv TODO.md docs/plan/TODO.md`).
+4. If nothing is found anywhere, inform the user and stop.
+
+State which plan file you resolved to before doing any work. Every later reference to `TODO.md` in this command means the resolved plan file, and all its edits apply to that file.
 
 The file has a three-tier structure:
 
@@ -49,7 +62,7 @@ Scan top-to-bottom and select the **first top-level goal whose marker is `[ ]` o
 
 ## Step 3: Execute the Goal
 
-**At the start of execution**, flip the selected goal's marker from `[ ]` → `[~]` (leave it alone if already `[~]`) and save `TODO.md`. This makes mid-work state visible across sessions — if the work is interrupted, the next `/hitl-step` resumes here. Flip subgoals to `[~]` as you actively work on each one (optional for fast-finishing goals, but recommended for any subgoal spanning more than one conversational turn).
+**At the start of execution**, flip the selected goal's marker from `[ ]` → `[~]` (leave it alone if already `[~]`) and save the plan file. This makes mid-work state visible across sessions — if the work is interrupted, the next `/hitl-step` resumes here. Flip subgoals to `[~]` as you actively work on each one (optional for fast-finishing goals, but recommended for any subgoal spanning more than one conversational turn).
 
 Work through the goal and its subgoals. **Every write operation and every external command requires user confirmation first.**
 
@@ -109,7 +122,7 @@ This pause is non-negotiable: every `[x]` subgoal gets one. The point is to give
 
 - **Block a subgoal**: if progress requires an external change you can't make (missing credentials, quota approval, upstream bugfix, unavailable hardware), mark the subgoal `[!]` and append `> **Blocked:** reason` under it. Do not flip the parent to `[x]` while any subgoal is `[!]` — see Step 4 for the parent-state rules.
 - **Defer or descope a subgoal**: if the subgoal is intentionally being skipped (optional work, out of scope, replaced by a different approach), mark it `[-]` and append `> **Deferred:** reason` or `> **Descoped:** reason` under it. The parent can still complete as `[x]` — `[-]` subgoals count as "resolved" for parent-state purposes.
-- **Split a goal**: if a top-level goal turns out to contain two independent decisions, rewrite it in place into two separate `- [ ]` lines in `TODO.md` before continuing.
+- **Split a goal**: if a top-level goal turns out to contain two independent decisions, rewrite it in place into two separate `- [ ]` lines in the plan file before continuing.
 - **Descope a whole goal**: if a top-level goal becomes irrelevant, flip it to `[-]` with a `> **Descoped:** reason` note under it. This is distinct from `[x]` — it records that the work wasn't done, but by design.
 
 ## Step 4: Mark Complete
@@ -134,7 +147,7 @@ Determine the parent goal's final state based on the states of its subgoals and 
       > **Done:** brief summary of what was accomplished.
     ```
 
-4. Save `TODO.md`.
+4. Save the plan file.
 5. **Commit checkpoint (after the parent goal).** Once the parent goal's marker has been flipped — whether to `[x]`, `[!]`, `[-]`, or left at `[~]` with real progress made — pause and ask the user whether they want to commit before `/hitl-step` moves on:
 
    > Goal "<goal text>" is now `[<state>]`. Would you like to commit (`git commit` or `/smart-commit`) before I continue to the next goal?
@@ -145,7 +158,7 @@ Determine the parent goal's final state based on the states of its subgoals and 
 
 - Increment the counter only if the parent goal's final state in Step 4 was `[x]`, `[!]`, or `[-]`. If it was left as `[~]`, the iteration still counts (we did work), but the user will almost certainly want to stop here and debrief — in that case, still increment and proceed to Step 6.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 (re-read `TODO.md` to pick up your latest edits) and execute the next top-level goal.
+- Otherwise, go back to Step 2 (re-read the plan file to pick up your latest edits) and execute the next top-level goal.
 - If no top-level goals remain in `[ ]` or `[~]` state, proceed to Step 6.
 
 ## Step 6: Report
