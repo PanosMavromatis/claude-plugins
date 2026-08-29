@@ -161,7 +161,28 @@ git push
 
 Pushing to the open PR's branch updates the PR, so this change is included in the merge and reviewable alongside the work it describes.
 
-### 8. Suggest merge strategy
+### 8. Check CI status — before choosing a strategy
+
+Checks run against the branch head, and step 7 just pushed to it, so this is the earliest point the result is meaningful. `/smart-merge` used to merge without ever looking at CI.
+
+**MCP path (preferred).** `pull_request_read` with method `get_check_runs` for GitHub Actions and other check runs, and `get_status` for legacy commit statuses. A repo may use either or both.
+
+**`gh` fallback.**
+
+```bash
+gh pr checks <pr-number>
+```
+
+**How to act on the result:**
+
+- **No checks configured** → say so in one line and continue. Many repos have none, and a gate that nags on every merge is a gate that gets ignored.
+- **All passing** → say so in one line and continue.
+- **Any failing** → list each failing check by name, with its URL if available, and **require explicit confirmation before merging**. Do not merge over a red check on your own judgement; do not refuse either — the user may be merging a docs change past a flaky integration suite.
+- **Any still pending** → name them and ask whether to wait or proceed. Do not poll in a loop.
+
+If the MCP call fails with 404 or 403, announce and fall back per the "GitHub access" rule. If both paths fail for any other reason, say the CI state could not be determined and let the user decide — an undetermined result is not a passing one.
+
+### 9. Suggest merge strategy
 
 Based on the shape of the branch, recommend one of three strategies and explain the tradeoffs:
 
@@ -177,11 +198,11 @@ Heuristic:
 
 Let the user choose. Default to `--merge` if they're unsure.
 
-### 9. Merge the PR — CONFIRM FIRST
+### 10. Merge the PR — CONFIRM FIRST
 
-The two paths differ in what they clean up, and that difference is the reason step 9a exists. State which path you are taking before running it.
+The two paths differ in what they clean up, and that difference is the reason step 10a exists. State which path you are taking before running it.
 
-**MCP path (preferred).** Call `merge_pull_request` with `owner`, `repo`, `pullNumber`, and `merge_method` mapped from the strategy chosen in step 8 — `merge`, `squash`, or `rebase`.
+**MCP path (preferred).** Call `merge_pull_request` with `owner`, `repo`, `pullNumber`, and `merge_method` mapped from the strategy chosen in step 9 — `merge`, `squash`, or `rebase`.
 
 **`gh` fallback.**
 
@@ -189,9 +210,9 @@ The two paths differ in what they clean up, and that difference is the reason st
 gh pr merge <pr-number> --<strategy> --delete-branch
 ```
 
-`--delete-branch` removes the branch both locally and on GitHub, which completes the cleanup in one call. **On the `gh` path, skip step 9a.**
+`--delete-branch` removes the branch both locally and on GitHub, which completes the cleanup in one call. **On the `gh` path, skip step 10a.**
 
-### 9a. Branch cleanup — MCP path only, CONFIRM FIRST
+### 10a. Branch cleanup — MCP path only, CONFIRM FIRST
 
 `merge_pull_request` takes no `delete_branch` parameter and deletes nothing: after an MCP merge, the branch survives **both** locally and on the remote. Left alone, the two paths would end in different repository states and the branch would linger as `[gone]`-less clutter.
 
@@ -207,21 +228,24 @@ Use `-d`, not `-D` — it refuses to delete a branch whose commits are not reach
 
 Alternatively, if the user prefers, `/clean-gone` sweeps the local branch once the remote one is gone — but the remote deletion above still has to happen first.
 
-### 10. Sync local main
+### 11. Sync local main
 
 ```bash
 git checkout main
-git pull
+git pull --prune
 git log --oneline -5
 ```
 
 Confirm the merge commit (or squashed/rebased commits) is present on local main.
 
-### 11. Final report
+**`--prune` is not optional.** A plain `git pull` leaves the deleted branch's remote-tracking ref (`origin/<branch>`) behind, so `git branch -r` keeps listing a branch that no longer exists. This matters beyond tidiness: `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears once the stale ref is pruned. Without this, the last command in the branch lifecycle silently has nothing to find.
+
+### 12. Final report
 
 Summarize:
 
 - PR #N merged via `<strategy>` strategy
+- CI at merge time: all passing / N failing (merged anyway, confirmed) / none configured / undetermined
 - New `main` tip: `<short-sha> <subject>`
 - Branch `<name>` deleted locally and on remote
 - Merged via **MCP** or **`gh`** — say which, and note any fallback that occurred and why
