@@ -1,6 +1,6 @@
 # feat/smart-merge-ci-prune
 
-**Status**: active
+**Status**: merged — PR #2 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Revision-2 subgoal "pre-merge CI check", with the `git fetch --prune` fix folded in.
 
