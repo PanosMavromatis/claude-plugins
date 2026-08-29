@@ -1,6 +1,6 @@
 # docs/mcp-convention
 
-**Status**: active
+**Status**: merged — PR #5 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Update `README.md` and `CLAUDE.md` for the MCP-preferred convention.
 
