@@ -200,7 +200,7 @@ Let the user choose. Default to `--merge` if they're unsure.
 
 ### 10. Merge the PR — CONFIRM FIRST
 
-The two paths differ in what they clean up, and that difference is the reason step 10a exists. State which path you are taking before running it.
+The two paths differ in what they clean up, and that difference is the reason steps 10a and 11a exist. State which path you are taking before running it.
 
 **MCP path (preferred).** Call `merge_pull_request` with `owner`, `repo`, `pullNumber`, and `merge_method` mapped from the strategy chosen in step 9 — `merge`, `squash`, or `rebase`.
 
@@ -210,23 +210,19 @@ The two paths differ in what they clean up, and that difference is the reason st
 gh pr merge <pr-number> --<strategy> --delete-branch
 ```
 
-`--delete-branch` removes the branch both locally and on GitHub, which completes the cleanup in one call. **On the `gh` path, skip step 10a.**
+`--delete-branch` removes the branch both locally and on GitHub, which completes the cleanup in one call. **On the `gh` path, skip steps 10a and 11a.**
 
-### 10a. Branch cleanup — MCP path only, CONFIRM FIRST
+### 10a. Delete the remote branch — MCP path only, CONFIRM FIRST
 
-`merge_pull_request` takes no `delete_branch` parameter and deletes nothing: after an MCP merge, the branch survives **both** locally and on the remote. Left alone, the two paths would end in different repository states and the branch would linger as `[gone]`-less clutter.
+`merge_pull_request` takes no `delete_branch` parameter and deletes nothing: after an MCP merge, the branch survives **both** locally and on the remote. Left alone, the two paths would end in different repository states.
 
-Delete both explicitly, substituting the real branch name:
+Delete the remote branch now, substituting the real name:
 
 ```bash
 git push origin --delete <branch-name>
-git checkout main
-git branch -d <branch-name>
 ```
 
-Use `-d`, not `-D` — it refuses to delete a branch whose commits are not reachable, which is exactly the safety check wanted right after a merge. If `-d` refuses, stop and investigate rather than forcing: it means the merge did not land what you think it did.
-
-Alternatively, if the user prefers, `/clean-gone` sweeps the local branch once the remote one is gone — but the remote deletion above still has to happen first.
+The **local** branch is deleted in step 11a, after the sync — not here. Deleting it before local `main` has caught up would make `git branch -d` refuse for the wrong reason; see 11a.
 
 ### 11. Sync local main
 
@@ -240,6 +236,23 @@ Confirm the merge commit (or squashed/rebased commits) is present on local main.
 
 **`--prune` is not optional.** A plain `git pull` leaves the deleted branch's remote-tracking ref (`origin/<branch>`) behind, so `git branch -r` keeps listing a branch that no longer exists. This matters beyond tidiness: `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears once the stale ref is pruned. Without this, the last command in the branch lifecycle silently has nothing to find.
 
+### 11a. Delete the local branch — MCP path only, CONFIRM FIRST
+
+Now that `main` carries the merge commit, the branch is reachable from `HEAD` and can be deleted safely:
+
+```bash
+git branch -d <branch-name>
+```
+
+Use `-d`, never `-D`. **What the refusal means depends on when you run it**, which is the whole reason this step sits after the sync rather than beside 10a:
+
+- **After the sync (here)** — a refusal means the merge genuinely did not land what you think it did. Stop and investigate; do not force.
+- **Before the sync** — a refusal means only that local `main` is stale. The branch *is* merged on the remote, but `HEAD` cannot see it yet, so `-d` refuses on every single MCP merge and the "stop and investigate" advice above would halt every cycle.
+
+Running it here is what makes the refusal informative instead of routine.
+
+Alternatively, if the user prefers, `/clean-gone` sweeps the local branch once the remote one is gone and the prune in step 11 has marked its upstream `[gone]`.
+
 ### 12. Final report
 
 Summarize:
@@ -247,7 +260,7 @@ Summarize:
 - PR #N merged via `<strategy>` strategy
 - CI at merge time: all passing / N failing (merged anyway, confirmed) / none configured / undetermined
 - New `main` tip: `<short-sha> <subject>`
-- Branch `<name>` deleted locally and on remote
+- Branch `<name>` deleted locally and on remote — on the MCP path say that steps 10a and 11a did it; on the `gh` path, `--delete-branch`
 - Merged via **MCP** or **`gh`** — say which, and note any fallback that occurred and why
 - Plan preserved on `main` at `docs/plan/<flattened-branch>/<DO|TODO>.md`, stamped `merged`
 - PR URL for future reference
