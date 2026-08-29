@@ -167,18 +167,22 @@ Checks run against the branch head, and step 7 just pushed to it, so this is the
 
 **MCP path (preferred).** `pull_request_read` with method `get_check_runs` for GitHub Actions and other check runs, and `get_status` for legacy commit statuses. A repo may use either or both.
 
+`get_check_runs` **403s on any install backed by a fine-grained PAT** — GitHub does not offer a `Checks` permission for that token type at all, so this is a property of the credential, not a misconfiguration. Announce the fallback as normal, but do not tell the user to go and grant a permission that does not exist. `get_status` needs the **Commit statuses** permission, which *is* grantable.
+
 **`gh` fallback.**
 
 ```bash
 gh pr checks <pr-number>
 ```
 
+**Count before you read state.** `get_status` returns `state: "pending"` with `total_count: 0` for a commit that has **no** statuses — "pending" there means "nothing has reported", not "something is running". Inspect `total_count` (and the length of `statuses` / `check_runs`) **first**: zero means *none configured*, whatever `state` says. Reading `state` first makes every CI-less repo look like it has work in flight, and the gate stops to wait for something that will never arrive. Keep this check; do not simplify it away.
+
 **How to act on the result:**
 
-- **No checks configured** → say so in one line and continue. Many repos have none, and a gate that nags on every merge is a gate that gets ignored.
+- **No checks configured** — zero check runs *and* zero statuses → say so in one line and continue. Many repos have none, and a gate that nags on every merge is a gate that gets ignored.
 - **All passing** → say so in one line and continue.
 - **Any failing** → list each failing check by name, with its URL if available, and **require explicit confirmation before merging**. Do not merge over a red check on your own judgement; do not refuse either — the user may be merging a docs change past a flaky integration suite.
-- **Any still pending** → name them and ask whether to wait or proceed. Do not poll in a loop.
+- **Any genuinely pending** — at least one check or status exists and has not concluded → name them and ask whether to wait or proceed. Do not poll in a loop.
 
 If the MCP call fails with 404 or 403, announce and fall back per the "GitHub access" rule. If both paths fail for any other reason, say the CI state could not be determined and let the user decide — an undetermined result is not a passing one.
 
