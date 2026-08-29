@@ -3,7 +3,25 @@ allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git b
 description: Interactive guided workflow to merge current branch into main via GitHub PR
 ---
 
-You are guiding the user through merging their current Git branch into `main` via a GitHub Pull Request using `gh`. The user wants to learn by doing — **explain each step before running it, and wait for explicit approval before any write action** (push, file deletion, commit, PR create, merge). Read-only diagnostic commands can run freely.
+You are guiding the user through merging their current Git branch into `main` via a GitHub Pull Request. The user wants to learn by doing — **explain each step before running it, and wait for explicit approval before any write action** (push, file deletion, commit, PR create, merge). Read-only diagnostic commands can run freely.
+
+## GitHub access: MCP preferred, `gh` as fallback
+
+GitHub operations in this command have two implementations. **Prefer the GitHub MCP server** when one of its tools is present in your tool list; otherwise use `gh`. There is no shell command that reports MCP availability — you can see your own tools, so judge from that.
+
+**Fall back on 404 *or* 403.** A fine-grained PAT that does not cover the repository returns **404, not 403** — GitHub masks the existence of private repositories deliberately. A fallback keyed only on 403 would never fire in the exact case it exists for. Treat either status from an MCP GitHub call as "not permitted here" and fall back.
+
+**Announce every fallback, naming the repository and the operation:**
+
+> MCP `merge_pull_request` returned 404 for `owner/repo` — falling back to `gh pr merge`, which is separately authenticated with broader scope.
+
+This is not decoration. A silent fallback turns a permission boundary into a speed bump nobody notices; an announced one makes repeated fallbacks a legible signal that the PAT's repository selection or permissions should be widened. **Never fall back silently.**
+
+**Do not diagnose a 404 by guessing.** If it is unclear whether the repository is outside the PAT's scope, misnamed, or the server is failing, run the three-call diagnostic: `get_me` (identity), the failing call (target access), then `search_repositories` with `user:<owner>` (what the PAT actually covers).
+
+**Complete one operation on one mechanism.** Do not begin an operation via MCP and finish it with `gh`; fall back at operation boundaries, not mid-sequence.
+
+Local git operations — commits, pushes, branch deletion, file removal — have no MCP equivalent and always use the shell.
 
 ## Workflow
 
@@ -18,6 +36,8 @@ git log --all --graph --oneline -20
 git log main..HEAD --oneline
 git diff main..HEAD --stat
 ```
+
+These are local and always run as shown. If you need to check whether a PR already exists for this branch, prefer MCP `list_pull_requests` (filter by `head`) or `pull_request_read` with method `get`; fall back to `gh pr list` / `gh pr view` per the rule above.
 
 Confirm with the user:
 
@@ -87,29 +107,25 @@ git push -u origin <branch>
 
 ### 6. Create the PR — CONFIRM FIRST
 
-To avoid the editor (nano) friction, write the approved body to a temp file and pass it directly:
+**MCP path (preferred).** Call `create_pull_request` with `owner`, `repo`, `head` (the branch), `base` (`main`), `title`, and `body`. The body is a plain string parameter, so the approved body goes straight in — no temp file, and no heredoc quoting hazard when the body contains backticks or `$`.
+
+**`gh` fallback.** `gh pr create` reads the body from a file to avoid editor friction:
 
 ```bash
-# Save body to a temp file
 cat > /tmp/pr-body-<branch>.md <<'EOF'
 <approved body>
 EOF
 
-# Create the PR
 gh pr create \
   --base main \
   --head <branch> \
   --title "<approved title>" \
   --body-file /tmp/pr-body-<branch>.md
-```
 
-Clean up the temp file afterward:
-
-```bash
 rm /tmp/pr-body-<branch>.md
 ```
 
-Report the PR URL returned by `gh`.
+Report the PR number and URL, and note which path created it — the PR number is needed by step 7.
 
 ### 7. Record the merge in the plans — CONFIRM FIRST
 
@@ -163,13 +179,33 @@ Let the user choose. Default to `--merge` if they're unsure.
 
 ### 9. Merge the PR — CONFIRM FIRST
 
-Run:
+The two paths differ in what they clean up, and that difference is the reason step 9a exists. State which path you are taking before running it.
+
+**MCP path (preferred).** Call `merge_pull_request` with `owner`, `repo`, `pullNumber`, and `merge_method` mapped from the strategy chosen in step 8 — `merge`, `squash`, or `rebase`.
+
+**`gh` fallback.**
 
 ```bash
 gh pr merge <pr-number> --<strategy> --delete-branch
 ```
 
-`--delete-branch` removes the branch both locally and on GitHub. This is the right default after a successful feature merge.
+`--delete-branch` removes the branch both locally and on GitHub, which completes the cleanup in one call. **On the `gh` path, skip step 9a.**
+
+### 9a. Branch cleanup — MCP path only, CONFIRM FIRST
+
+`merge_pull_request` takes no `delete_branch` parameter and deletes nothing: after an MCP merge, the branch survives **both** locally and on the remote. Left alone, the two paths would end in different repository states and the branch would linger as `[gone]`-less clutter.
+
+Delete both explicitly, substituting the real branch name:
+
+```bash
+git push origin --delete <branch-name>
+git checkout main
+git branch -d <branch-name>
+```
+
+Use `-d`, not `-D` — it refuses to delete a branch whose commits are not reachable, which is exactly the safety check wanted right after a merge. If `-d` refuses, stop and investigate rather than forcing: it means the merge did not land what you think it did.
+
+Alternatively, if the user prefers, `/clean-gone` sweeps the local branch once the remote one is gone — but the remote deletion above still has to happen first.
 
 ### 10. Sync local main
 
@@ -188,13 +224,15 @@ Summarize:
 - PR #N merged via `<strategy>` strategy
 - New `main` tip: `<short-sha> <subject>`
 - Branch `<name>` deleted locally and on remote
+- Merged via **MCP** or **`gh`** — say which, and note any fallback that occurred and why
 - Plan preserved on `main` at `docs/plan/<flattened-branch>/<DO|TODO>.md`, stamped `merged`
 - PR URL for future reference
 
 ## Guidelines
 
 - **Confirm before every write action**: push, file deletion, commit, PR create, merge, branch delete. State what will run, then wait for approval.
-- **Read-only commands run freely**: `git status`, `git log`, `git diff`, `git branch`, `gh pr view`, `gh pr list`.
+- **Read-only commands run freely**: `git status`, `git log`, `git diff`, `git branch`, `gh pr view`, `gh pr list`, and the read-only GitHub MCP tools (`pull_request_read`, `list_pull_requests`, `get_me`, `search_repositories`).
+- **Announce every MCP→`gh` fallback**, naming the repo and the operation. See "GitHub access" above — a silent fallback defeats the point of a narrowly-scoped PAT.
 - **Never use placeholders in actual commands** — always substitute the real branch name, PR number, title, etc.
 - **If anything unexpected happens** (merge conflicts, auth errors, divergent branches, failed push), stop immediately and explain before proceeding.
 - **Preserve user agency**: the user is learning. When choices exist (merge strategy, title wording, scope of body), present options with tradeoffs and let them decide.
