@@ -61,6 +61,8 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
 - [x] Fix the stale remote-tracking ref in `/smart-merge` step 10: `git pull` does not prune, so `origin/<branch>` survives a `--delete-branch` merge. Use `git fetch --prune` (or `git pull --prune`) before reporting. This is not cosmetic — `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears after a prune, so the lifecycle's final command currently depends on a prune the flow never performs. Found by running the flow on PR #1, not by review.
   > **Branch:** feat/smart-merge-ci-prune
   > **Done:** Step 11 now uses `git pull --prune`, with the `/clean-gone` dependency spelled out in the step so it does not get 'simplified' away later — PR #2
+- [ ] Fix step 10a's ordering in `/smart-merge`: `git branch -d` runs before local `main` is synced, so the branch is not yet reachable from HEAD and `-d` refuses with "not fully merged" on **every** MCP merge. The safety check is correct; the ordering makes it a false alarm, and the step's own advice ("stop and investigate rather than forcing") would halt every cycle. Fix by deleting the remote branch in 10a, then syncing (step 11), then deleting the local branch — i.e. the local delete moves after the pull. Found executing PR #2.
+  > **Branch:** fix/smart-merge-10a-ordering
 - [ ] Update `README.md` and `CLAUDE.md` for the MCP-preferred convention: the 404-or-403 rule, the announce-on-fallback rule and why it exists, the branch-cleanup divergence, and the tool-name portability constraint.
 
 ## Deferred
