@@ -27,13 +27,36 @@ The commands are designed to chain, not just stand alone. The intended end-to-en
 /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
 ```
 
-- **`/new-branch`** creates `<type>/<slug>` and writes `docs/git/<branch>.md` (purpose, scope, context). That doc is a working artifact for the branch's lifetime.
-- **`/step`** executes the next unchecked item from `DO.md`; **`/hitl-step`** does the same against `TODO.md` but with a richer status-marker model (`[ ] [~] [x] [!] [-]`) and inline `> **Q:** / > **A:**` logging under each goal so reasoning survives `/clear` or compaction. Both resolve the plan file under `docs/plan/` (root or any sub-directory) — glob, ask when ambiguous, honour an optional path argument, and fall back to a root-level file with a migration nudge. Keep both commands' Step 1 in sync when changing this.
+- **`/new-branch`** creates `<type>/<slug>`, writes `docs/git/<branch>.md` (purpose, scope, context) and a status-stamped branch plan under `docs/plan/<type>-<slug>/`. The doc is a working artifact for the branch's lifetime; the plan outlives it.
+- **`/step`** executes the next unchecked item from a `DO.md`; **`/hitl-step`** does the same against a `TODO.md` but with a richer status-marker model (`[ ] [~] [x] [!] [-]`) and inline `> **Q:** / > **A:**` logging under each goal so reasoning survives `/clear` or compaction. Both resolve the plan file through the five-rung order described under "The plan convention" below. **Their Step 1 sections are byte-identical apart from the filename — keep them that way**; drift between them is a bug you only hit on whichever command you use less.
 - **`/smart-commit`** invokes `/agents-docs-update` via the SlashCommand tool, then handles any version bump (tag + component-manifest sync), commits, tags, and pushes. It deliberately delegates all doc-sync logic rather than duplicating it.
-- **`/smart-merge`** reads `docs/git/<branch>.md` to draft the PR title/body, deletes that doc as part of the merge (so it stays in branch history but doesn't pollute `main`), then merges via `gh pr merge`.
+- **`/smart-merge`** reads `docs/git/<branch>.md` and the branch plan to draft the PR title/body, deletes the doc as part of the merge (so it stays in branch history but doesn't pollute `main`), stamps the plan `merged` and closes the master-plan item, then merges via `gh pr merge`. It deletes the doc but **never** the plan.
 - **`/clean-gone`** deletes local branches whose upstream is `[gone]` (deleted on the remote, e.g. after a merge) and their worktrees. It is confirmation-required and warns prominently when more than one branch is in scope. It is the `workflow-claude` equivalent of `commit-commands`' `/clean_gone`, ported so the branch lifecycle is self-contained — but adapted to this plugin's confirm-before-delete and no-placeholder conventions (the original deletes without confirmation).
 
 `/agents-docs-update` is the shared module for keeping documentation in sync with staged changes — it's both standalone and imported by `/smart-commit`. When editing one, consider whether the change belongs in the shared module instead.
+
+## The plan convention (consuming-project convention)
+
+Plans are two-tier, and unlike the branch doc, **both tiers are durable and land on `main`**:
+
+- **Master plan** — `docs/plan/DO.md` or `docs/plan/TODO.md`. Its items are subgoals, each spawning a branch. Long-lived.
+- **Branch plan** — `docs/plan/<flattened-branch>/{DO,TODO}.md`, where the directory is the branch name with `/` flattened to `-` (`feat/user-auth` → `docs/plan/feat-user-auth/`). Flattening avoids a `docs/plan/feat/` pseudo-namespace and stops `feat/export` and `fix/export` colliding.
+
+`/step` and `/hitl-step` resolve in strict priority order, stopping at the first rung that yields a file:
+
+1. explicit path argument — if it doesn't resolve, **stop**, never fall through (a typo would silently run a different plan);
+2. `docs/plan/<flattened-current-branch>/<file>` — the answer on a feature branch;
+3. `docs/plan/<file>` — the answer on `main`;
+4. glob `docs/plan/**/<file>`, filter out merged plans, ask if several remain;
+5. legacy root-level `DO.md`/`TODO.md`, with a migration nudge.
+
+Rungs 2 and 3 mean neither normal working position ever prompts, which is what keeps accumulated merged plans from turning rung 4 into a permanent tax.
+
+**The status stamp is a contract between three commands.** `/new-branch` writes `**Status**: active`; `/smart-merge` rewrites it to `**Status**: merged — PR #<n> — <date>`; `/step` and `/hitl-step` read it to filter rung 4. A plan counts as merged **only** if a `**Status**:` line's value begins with `merged` — everything else, including no stamp at all, counts as active. That asymmetry is deliberate: plans merged outside `/smart-merge` never get stamped, and a stale option in a list is cheaper than a hidden live plan. When changing the format, change all four commands together.
+
+**Merge-time writes go on the branch, not `main`.** `/smart-merge` stamps the plan and closes the master-plan item in one commit between `gh pr create` and `gh pr merge` — the only window where the PR number exists and the branch still does. Recording it after the merge would mean committing directly to `main`, which branch protection commonly forbids.
+
+**The PR body points at the plan; it does not contain it.** GitHub caps PR bodies at 65,536 characters, and a HITL plan's `> **Q:** / > **A:**` logs can approach that. Since the plan lands on `main`, a `Plan: docs/plan/…/DO.md` pointer resolves permanently — don't add logic that inlines plan contents into a PR body.
 
 ## The agent-docs system (consuming-project convention)
 
@@ -66,4 +89,5 @@ To make that self-enforcing, the plugin ships a second hook, `hooks/remind-disab
 - **Hard stops on counters.** `/step` and `/hitl-step` take an `N` argument and must hard-stop at N iterations even if work remains. Don't add "would you like to continue?" prompts at the boundary.
 - **Idempotency.** `/agents-docs-update` is designed to be run repeatedly during a session (standalone and via `/smart-commit`); preserve the "if the source already reflects the diff, do nothing" behavior when editing it.
 - **No placeholders in emitted commands.** Commands like `/new-branch` and `/smart-merge` are explicit that branch names, PR numbers, etc. must be substituted before any shell command runs — never emitted with `<branch>` literals.
+- **Plan-file lockstep.** `/step` and `/hitl-step` share one resolution algorithm; their Step 1 sections must stay byte-identical apart from the filename. The status-stamp format is a four-command contract (`/new-branch` writes, `/smart-merge` rewrites, both step commands read) — see "The plan convention". Never add logic that deletes a branch plan at merge; only the branch doc is ephemeral.
 - **Scoped `allowed-tools`.** Every command allow-lists read-only git/diagnostics plus only the writes it actually performs; no command uses a blanket `Bash(git:*)`. Preserve this — broad patterns silently authorize destructive ops (`git reset --hard`, `git branch -D`, `git clean`) a command never needs, and for listing flags note the trap that `Bash(git branch:*)` also matches `git branch -D` (use `Bash(git branch --show-current:*)` / `Bash(git branch -vv:*)` instead).

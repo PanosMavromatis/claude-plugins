@@ -27,11 +27,21 @@ Confirm with the user:
 
 Report a brief summary: branch name, N commits ahead of main, clean/dirty state.
 
-### 2. Read the branch doc
+### 2. Read the branch doc and the branch plan
 
-Check for `docs/git/<current-branch>.md`. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
+**Branch doc.** Check for `docs/git/<current-branch>.md`. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
 
-If no doc exists, note this and proceed using only the commit log and diff as input.
+**Branch plan.** Check for `docs/plan/<flattened-branch>/DO.md` or `TODO.md`, where the directory is the branch name with `/` flattened to `-` (branch `feat/user-auth` → `docs/plan/feat-user-auth/`). If it exists, read it — the completed items and their `> **Q:** / > **A:**` logs record how the work actually went, which is useful input for the PR body's Summary.
+
+Unlike the branch doc, **the plan is not deleted at merge.** It lands on `main` as the durable record; step 7 only stamps it.
+
+**Warn on unfinished items.** If the plan still has items in `[ ]`, `[~]`, or `[!]`, list them and say so plainly:
+
+> The plan for this branch has N unfinished items: <list>. Merging is fine — the plan survives on `main` and you can keep working it — but flagging in case something was meant to land in this PR.
+
+This is a **warning, not a gate**. Do not block the merge; the user may be deliberately landing partial work, and nothing is lost either way.
+
+If neither file exists, note this and proceed using only the commit log and diff as input.
 
 ### 3. Draft PR title and body
 
@@ -39,12 +49,15 @@ Based on the branch doc (if present), the commits in `main..HEAD`, and the diff 
 
 - **Title**: one line, imperative mood, sentence case, ~50-72 chars, no trailing period. Describes the umbrella scope of the whole branch, not any single commit.
 - **Body**: Markdown-formatted. Group commits thematically (not chronologically) under section headers. Include Summary, and sections for the major themes present (e.g., Implementation, Infrastructure, Documentation, Testing). Keep it scannable.
+- **Plan pointer**: if a branch plan exists, end the body with a line pointing at it — `Plan: \`docs/plan/feat-user-auth/DO.md\`` (substituting the real path). The plan lands on `main` with this merge, so the pointer resolves permanently. Do **not** paste the plan's contents into the body: PR bodies cap at 65,536 characters, and the file itself is the record.
 
 Present both to the user. Let them edit, replace, or approve. Do not proceed until approved.
 
 ### 4. Delete the branch doc — CONFIRM FIRST
 
 Explain: the branch doc was a working artifact for this branch; deleting it now means it stays in the branch's history (recoverable via SHA) but won't pollute `main`.
+
+**Only the branch doc is deleted.** Leave `docs/plan/<flattened-branch>/` alone — it is meant to land on `main`.
 
 If the doc exists, run:
 
@@ -98,7 +111,41 @@ rm /tmp/pr-body-<branch>.md
 
 Report the PR URL returned by `gh`.
 
-### 7. Suggest merge strategy
+### 7. Record the merge in the plans — CONFIRM FIRST
+
+The PR number now exists, and the branch is still open — this is the only window where both are true, so both plan updates happen here, on the branch, in one commit. Doing it after the merge would mean committing directly to `main`, which branch protection commonly forbids.
+
+Skip this step entirely if no branch plan and no master plan exist.
+
+**Stamp the branch plan.** Rewrite its status line to record the merge:
+
+```
+**Status**: merged — PR #123 — 2026-08-29
+```
+
+`/step` and `/hitl-step` read this line to filter merged plans out of their disambiguation prompt. The value must begin with `merged` for that filter to see it.
+
+**Update the master plan.** If `docs/plan/DO.md` or `docs/plan/TODO.md` has an item backlinked to this branch (a `> **Branch:** <branch-name>` blockquote beneath it, written by `/new-branch`), mark that item complete and log the outcome beneath it:
+
+```markdown
+- [x] The master-plan subgoal this branch executed
+  > **Branch:** feat/user-auth
+  > **Done:** One-or-two-sentence summary of what landed — PR #123
+```
+
+For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare `[x]`: `[!]` if the work is blocked, `[-]` if the subgoal was descoped, `[~]` if real progress was made but the subgoal isn't finished. The summary should say what changed, not restate the subgoal.
+
+**Commit and push**, substituting real names throughout:
+
+```bash
+git add docs/plan/feat-user-auth/DO.md docs/plan/DO.md
+git commit -m "Record merge of feat/user-auth in plans (PR #123)"
+git push
+```
+
+Pushing to the open PR's branch updates the PR, so this change is included in the merge and reviewable alongside the work it describes.
+
+### 8. Suggest merge strategy
 
 Based on the shape of the branch, recommend one of three strategies and explain the tradeoffs:
 
@@ -114,7 +161,7 @@ Heuristic:
 
 Let the user choose. Default to `--merge` if they're unsure.
 
-### 8. Merge the PR — CONFIRM FIRST
+### 9. Merge the PR — CONFIRM FIRST
 
 Run:
 
@@ -124,7 +171,7 @@ gh pr merge <pr-number> --<strategy> --delete-branch
 
 `--delete-branch` removes the branch both locally and on GitHub. This is the right default after a successful feature merge.
 
-### 9. Sync local main
+### 10. Sync local main
 
 ```bash
 git checkout main
@@ -134,13 +181,14 @@ git log --oneline -5
 
 Confirm the merge commit (or squashed/rebased commits) is present on local main.
 
-### 10. Final report
+### 11. Final report
 
 Summarize:
 
 - PR #N merged via `<strategy>` strategy
 - New `main` tip: `<short-sha> <subject>`
 - Branch `<name>` deleted locally and on remote
+- Plan preserved on `main` at `docs/plan/<flattened-branch>/<DO|TODO>.md`, stamped `merged`
 - PR URL for future reference
 
 ## Guidelines

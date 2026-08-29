@@ -31,17 +31,35 @@ All five markers apply to both top-level goals and subgoals. Parent-state rules 
 
 ## Step 1: Locate and read the plan file
 
-By convention the plan file lives at `docs/plan/TODO.md` or in a sub-directory of `docs/plan/` (e.g. `docs/plan/auth-rewrite/TODO.md`) — **not** at the project root. Resolve it as follows, and call the result **the plan file**:
+Plan files live under `docs/plan/`. There are two kinds:
 
-1. **Path argument given.** Interpret it as a repo-relative path, a path relative to `docs/plan/`, or the name of a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `TODO.md` inside it. If it resolves to nothing, say so and stop; do not silently fall back to discovery.
-2. **No path argument.** Glob `docs/plan/**/TODO.md`.
-   - Exactly one match → use it.
-   - Several matches → list them and ask the user which to use. Wait for the answer; do not guess.
-   - No matches → go to 3.
-3. **Legacy fallback.** If `TODO.md` exists at the project root, use it, but tell the user the convention is now `docs/plan/` and suggest moving it (`git mv TODO.md docs/plan/TODO.md`).
-4. If nothing is found anywhere, inform the user and stop.
+- the **master plan**, `docs/plan/TODO.md`, whose items are subgoals that each spawn a branch;
+- a **branch plan**, `docs/plan/<flattened-branch>/TODO.md`, covering the work of one branch. The directory name is the branch name with `/` flattened to `-`: branch `feat/user-auth` → `docs/plan/feat-user-auth/`.
 
-State which plan file you resolved to before doing any work. Every later reference to `TODO.md` in this command means the resolved plan file, and all its edits apply to that file.
+Resolve in the order below and **stop at the first rung that yields a file**. Call the result **the plan file**, and state which one you resolved to before doing any work.
+
+1. **Path argument.** If `$ARGUMENTS` contained a path, interpret it as a repo-relative path, a path relative to `docs/plan/`, or a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `TODO.md` inside it. If it resolves to nothing, say so and **stop**; do not fall through to the later rungs, since a typo would silently run a different plan.
+2. **Branch plan.** Run `git branch --show-current`, flatten `/` to `-`, and check `docs/plan/<flattened>/TODO.md`. If it exists, use it — on a branch created by `/new-branch`, this is normally the answer. If it carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
+3. **Master plan.** If `docs/plan/TODO.md` exists, use it — on `main`, this is normally the answer.
+4. **Glob and ask.** Glob `docs/plan/**/TODO.md` and partition the matches by status stamp:
+   - Exactly one **active** match → use it.
+   - Several active matches → list them and ask which to use. Wait for the answer; do not guess. If any merged plans were excluded, add a line `(N merged plans not shown — name one explicitly to use it)`.
+   - No active matches but some merged ones → list the merged plans and ask whether to use one. Never auto-select a merged plan.
+   - No matches at all → go to rung 5.
+5. **Legacy root file.** If `TODO.md` exists at the project root, use it, but tell the user that plans now live under `docs/plan/` and suggest moving it (`git mv TODO.md docs/plan/TODO.md`).
+
+If no rung yields a file, inform the user and stop.
+
+### Status stamp
+
+A plan file may carry a status line near the top:
+
+```
+**Status**: active
+**Status**: merged — PR #123 — 2026-08-29
+```
+
+`/new-branch` writes `active` at creation; `/smart-merge` rewrites it to `merged` when the branch lands. For rung 4, a plan counts as **merged** only if it has a `**Status**:` line whose value begins with `merged`. Everything else — `active`, any other value, or no status line at all — counts as **active**. Failing toward "active" is deliberate: plans merged outside `/smart-merge` never get stamped, and showing a stale option costs a second while hiding a live one costs much more.
 
 The file has a three-tier structure:
 

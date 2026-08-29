@@ -80,29 +80,77 @@ Write `docs/git/<branch-name>.md` with this template, filled in from the gathere
 <Running log. Add entries as work progresses — decisions made, things tried, things deferred.>
 ```
 
-### 6. Commit the doc — CONFIRM FIRST
+### 6. Create the branch plan
 
-Explain: this doc will be committed to the branch so the `/smart-merge` command can later use it to inform the PR title and body. It will be deleted automatically at merge time (kept out of `main`'s history).
+The branch gets its own plan file under `docs/plan/<flattened-branch>/` — the branch name with `/` flattened to `-`, so branch `feat/user-auth` → `docs/plan/feat-user-auth/`. This is what `/step` and `/hitl-step` will resolve to while the branch is checked out.
 
-Run:
+Unlike the branch doc, **the plan is not deleted at merge** — it lands on `main` as the durable record of how this piece of work was actually executed. `/smart-merge` only stamps it as merged.
 
-```bash
-git add docs/git/<branch-name>.md
-git commit -m "Add branch doc for <branch-name>"
+**Choose the model.** Check which master plan exists at the root of `docs/plan/`:
+
+- `docs/plan/DO.md` exists → default to `DO.md` (plain checkbox model, driven by `/step`).
+- `docs/plan/TODO.md` exists → default to `TODO.md` (marker model `[ ] [~] [x] [!] [-]`, driven by `/hitl-step`).
+- Both exist → ask which this branch should use.
+- Neither exists → default to `DO.md`.
+
+State the inherited default and offer the override in one line — e.g. "Master plan uses `DO.md`, so this branch gets `DO.md`. Use `TODO.md` (HITL loop) instead?" Don't belabour it; the default is right most of the time.
+
+**Write the file**, seeded from the Scope answer gathered in step 1. For `DO.md`:
+
+```markdown
+# <branch-name>
+
+**Status**: active
+**Created**: <YYYY-MM-DD>
+**Subgoal**: <the master-plan item this branch executes, or "standalone">
+
+## Tasks
+
+- [ ] <first task from the scope discussion>
+- [ ] <second task>
 ```
 
-### 7. Report
+For `TODO.md`, use the same header and the three-tier structure `/hitl-step` expects (top-level goals at indent 0, subgoals indented beneath them).
+
+The `**Status**: active` line is load-bearing: `/step` and `/hitl-step` use it to filter merged plans out of their disambiguation prompt, and `/smart-merge` rewrites it to `merged` at merge time. Always write it.
+
+Keep the task list rough — 2-5 items is plenty. It's a working file, and `/step` will edit it as work proceeds.
+
+**Backlink the master plan.** If a master plan exists and this branch executes one of its items, add a backlink blockquote under that item:
+
+```markdown
+- [ ] The master-plan subgoal this branch executes
+  > **Branch:** feat/user-auth
+```
+
+If no master plan exists, or the branch doesn't correspond to any of its items, skip this and set `**Subgoal**: standalone` in the header.
+
+### 7. Commit the doc and plan — CONFIRM FIRST
+
+Explain: the branch doc informs the PR title and body and is deleted at merge; the plan directory is the durable record and stays on `main`.
+
+Run (substituting the real branch name and the plan filename actually created):
+
+```bash
+git add docs/git/<branch-name>.md docs/plan/<flattened-branch>/DO.md
+git commit -m "Add branch doc and plan for <branch-name>"
+```
+
+If the master plan was backlinked in step 6, include it in the same `git add`.
+
+### 8. Report
 
 Summarize the final state:
 
 - Current branch: `<branch-name>`
 - Doc created at: `docs/git/<branch-name>.md`
-- Next steps: start the work; run `/smart-merge` when ready to merge.
+- Plan created at: `docs/plan/<flattened-branch>/<DO|TODO>.md`
+- Next steps: run `/step` (or `/hitl-step`) to work the plan; `/smart-merge` when ready to merge.
 
 ## Guidelines
 
 - **Confirm before every write**: branch creation, file creation, commit.
 - **Read-only commands** (`git status`, `git log`, `git branch`) can run freely.
 - **Never leave placeholders** in actual commands — always substitute real branch names.
-- **Respect trivial branches**: if the user wants to skip the doc for a quick fix, don't insist. Just create the branch and note that `/smart-merge` will have less context to work with.
+- **Respect trivial branches**: if the user wants to skip the doc or the plan for a quick fix, don't insist. Just create the branch and note that `/smart-merge` will have less context to work with, and that `/step` will fall back to the master plan.
 - **Don't push the branch doc commit specifically** unless the user says so — but make clear that regular `git push` after each working commit is the expected workflow and needs no special handling here.
