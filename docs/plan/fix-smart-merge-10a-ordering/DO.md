@@ -1,6 +1,6 @@
 # fix/smart-merge-10a-ordering
 
-**Status**: active
+**Status**: merged — PR #3 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Fix step 10a's ordering so `git branch -d` runs against a synced `main`.
 
