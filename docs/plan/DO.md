@@ -46,43 +46,11 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
 - **Tool names are installation-dependent.** They are `mcp__plugin_github_github__*` here, but that prefix encodes how the consumer installed the server. Do not hardcode these names in `allowed-tools`; a consumer with a different install would get an allow-list that matches nothing.
 - **Diagnostic before concluding anything from a 404**: `get_me` (identity), the failing call (target access), `search_repositories` with `user:<owner>` (actual PAT scope). Distinguishes "not in PAT scope" from "wrong owner/repo" from "server down".
 
-## Subgoals — revision 02-mcp-github-access
-
-- [x] Rework `/smart-merge`'s GitHub operations to prefer MCP with a `gh` fallback: `pull_request_read` for status/checks, `create_pull_request` (body as a string, dropping the temp file), `merge_pull_request` for the merge. Every fallback announced per the rule above. Phrase availability as "if a GitHub MCP tool is present in your tool list" — there is no shell probe for this.
-  > **Branch:** feat/smart-merge-mcp
-  > **Done:** Preamble states the rule once; steps 1, 6 and 9 gained MCP paths with `gh` fallbacks; fallback triggers on 404 **or** 403 and is always announced with repo and operation named — PR #1
-- [x] Handle the branch-cleanup divergence: after an MCP merge, explicitly delete the remote branch (`git push origin --delete <branch>`) and the local one, or state that `/clean-gone` is now required. Both paths must end in the same repository state, and the command should say which path it took.
-  > **Branch:** feat/smart-merge-mcp
-  > **Done:** New step 9a deletes remote and local branch on the MCP path (`git branch -d`, not `-D`), skipped on the `gh` path where `--delete-branch` already does it; step 11 reports which path ran — PR #1
-- [x] Add a pre-merge CI check using `pull_request_read` with `get_check_runs` / `get_status` — currently `/smart-merge` merges without ever looking at CI. Report failing checks and confirm before merging; skip cleanly when the MCP path is unavailable.
-  > **Branch:** feat/smart-merge-ci-prune
-  > **Done:** New step 8 with four explicit outcomes — none configured, all passing, failing (named, confirmation required), pending (named, user chooses). Both-paths-failed reports as undetermined, not passing — PR #2
-- [x] Resolve the deferred `allowed-tools` drift, now that the reshaping input has arrived. Decide per command whether to allow-list the `gh`/`git` fallback patterns narrowly, and leave MCP tool names off the allow-list (see the portability finding above) so they prompt rather than silently failing to match.
-  > **Branch:** fix/allowed-tools-sync
-  > **Done:** Principle settled as additive-yes/destructive-no and recorded in `CLAUDE.md`. `/new-branch`, `/smart-merge` and `/clean-gone` synced; `gh pr merge`, `git push origin --delete`, branch deletion, worktree removal and `git rm` deliberately omitted so they keep prompting. `Bash(git push:*)` proved unusable in `/smart-merge` — it matches `git push origin --delete` — which is why `/smart-commit` may allow-list push and `/smart-merge` may not. No MCP names anywhere — PR #4
-- [x] Fix the stale remote-tracking ref in `/smart-merge` step 10: `git pull` does not prune, so `origin/<branch>` survives a `--delete-branch` merge. Use `git fetch --prune` (or `git pull --prune`) before reporting. This is not cosmetic — `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears after a prune, so the lifecycle's final command currently depends on a prune the flow never performs. Found by running the flow on PR #1, not by review.
-  > **Branch:** feat/smart-merge-ci-prune
-  > **Done:** Step 11 now uses `git pull --prune`, with the `/clean-gone` dependency spelled out in the step so it does not get 'simplified' away later — PR #2
-- [x] Fix step 10a's ordering in `/smart-merge`: `git branch -d` runs before local `main` is synced, so the branch is not yet reachable from HEAD and `-d` refuses with "not fully merged" on **every** MCP merge. The safety check is correct; the ordering makes it a false alarm, and the step's own advice ("stop and investigate rather than forcing") would halt every cycle. Fix by deleting the remote branch in 10a, then syncing (step 11), then deleting the local branch — i.e. the local delete moves after the pull. Found executing PR #2.
-  > **Branch:** fix/smart-merge-10a-ordering
-  > **Done:** Cleanup split around the sync — 10a deletes the remote branch, new 11a deletes the local one after `git pull --prune`. The `-d` rationale now states what a refusal distinguishes before versus after the sync — PR #3
-- [x] Fix the CI gate's empty-status misclassification in `/smart-merge` step 8. GitHub's combined-status endpoint returns `state: "pending"` with `total_count: 0` for a commit that has **no** statuses — "pending" means "nothing has reported", not "something is running". The gate reads `state` and maps `pending` to "name them and ask whether to wait", so on every repo without CI the MCP path announces phantom pending checks and stops for something that will never arrive. Check `total_count` / `statuses.length` **before** `state`; zero means *none configured*. Masked for four cycles because `get_status` was 403 until the `Commit statuses` permission was granted.
-  > **Branch:** fix/ci-gate-empty-status
-  > **Done:** Step 8 now counts `total_count` and the result-array lengths before reading `state`; the "none configured" and "pending" outcomes reworded to match, with the quirk explained inline — PR #6
-- [x] Document the `Checks` constraint: fine-grained PATs cannot grant it — it is absent from GitHub's permission list for that token type, confirmed against the UI and by a persistent 403 after `Commit statuses` was granted and started working. So `get_check_runs` will 403 on any PAT-backed install and the gate degrades to statuses-only. `/smart-merge` should keep attempting it (a GitHub-App-backed install may have it) but must not imply the 403 is something the user forgot to configure.
-  > **Branch:** fix/ci-gate-empty-status
-  > **Done:** Stated in step 8's MCP paragraph and in `CLAUDE.md`'s GitHub access section: the 403 is a property of the token type, so announce the fallback but do not send the user after a permission that does not exist — PR #6
-- [x] Close the `allowed-tools` gaps in the `/agents-docs-*` commands, found during the survey for the `/smart-merge` pass: ~~`agents-docs-build` allow-lists only its script while performing `Write`, `Edit` and `git add`~~ — **that claim was wrong**: its body *prohibits* those operations, and the survey counted the prohibitions as actions. Script-only is correct there. The real gaps are `agents-docs-init` (no `allowed-tools`) and `agents-docs-codex-init` (**no frontmatter block at all**, so not even a `description`). Kept separate because both init commands write dispatchers via `cat <<'EOF'` heredoc redirects, which is exactly the path `protect-agent-docs.py` lets through on purpose — allow-listing there interacts with the hook and needs its own thought.
-  > **Branch:** fix/agents-docs-frontmatter
-  > **Done:** `agents-docs-codex-init` gained a whole frontmatter block (it had none, so no `description` either); `agents-docs-init` gained `allowed-tools`, with `Bash(cat:*)` deliberately omitted so the dispatcher heredoc keeps prompting. The `agents-docs-build` claim in this subgoal was wrong and is corrected above. `CLAUDE.md` now records that the allow-list and the `PreToolUse` hook are orthogonal layers — PR #7
-- [x] Update `README.md` and `CLAUDE.md` for the MCP-preferred convention: the 404-or-403 rule, the announce-on-fallback rule and why it exists, the branch-cleanup divergence, and the tool-name portability constraint.
-  > **Branch:** docs/mcp-convention
-  > **Done:** README gained two conventions bullets (fallback rule, cleanup divergence) and a refreshed `/smart-merge` row; CLAUDE.md gained a "GitHub access" section documenting each rule beside the case that produced it, plus a refreshed compose bullet. The sweep caught one stale mechanism-specific claim in the plan-convention section — PR #5
-
 ## Closed revisions
 
 Extracted by `/close-revision` once finished. The subgoals, their `> **Done:**` records, and the branch plans that executed them all live in the revision's directory.
 
+- **Revision 02-mcp-github-access** — closed. See `docs/plan/02-mcp-github-access/_DO.md`.
 - **Revision 03-subgoal-plan-management** — plan layout at scale — closed. See `docs/plan/03-subgoal-plan-management/_DO.md`.
 - **Revision 04-revision-lifecycle** — closed. See `docs/plan/04-revision-lifecycle/_DO.md`.
 
