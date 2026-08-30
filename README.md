@@ -113,7 +113,7 @@ Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agent
 The master plan grows as revisions close: every subgoal ever completed stays in it, with its `> **Done:**` annotation. Periodically — when a revision is finished and its branches are all merged and filed — **extract that revision's section into its revision directory**:
 
 1. Cut the whole `## Subgoals — revision N: …` section out of `docs/plan/DO.md` (or `TODO.md`).
-2. Write it to `docs/plan/rev-N/DO.md`, with a status line of `**Status**: closed — revision N — <date>` so it is filtered out of plan-disambiguation prompts.
+2. Write it to `docs/plan/rev-N/_DO.md` (or `_TODO.md`). The leading underscore is deliberate: plan resolution globs for `DO.md`/`TODO.md`, so an archived revision named that way would show up as a selectable plan. `_DO.md` keeps it out of resolution entirely, which is right — a finished revision should never be offered as somewhere to do work. It stays reachable by explicit path.
 3. Leave a one-line pointer in the master plan where the section was, so the master reads as an index of closed revisions plus whatever is currently open.
 
 The master plan then stays roughly constant in size instead of accumulating indefinitely, and everything about a finished revision — its subgoals, its `> **Done:**` records, and the branch plans that executed them — lives together in one directory.
