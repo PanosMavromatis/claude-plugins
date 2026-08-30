@@ -45,7 +45,7 @@ Resolve in the order below and **stop at the first rung that yields a file**. Ca
    - **No match** — fall through to rung 3.
 
    If the resolved plan carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
-3. **Master plan.** If `docs/plan/TODO.md` exists, use it — on `main`, this is normally the answer.
+3. **Master plan.** If `docs/plan/TODO.md` exists, use it — on `main`, this is normally the answer. **Read it differently from a branch plan.** A branch plan covers one branch and stays small, so read it whole. The master plan accumulates every subgoal of every revision, each with its `> **Done:**` annotation, and grows without bound — at 250 subgoals it is around 197 KB, and past roughly 500 it exceeds the default 2000-line read limit and a plain read silently truncates. When the master plan is the resolved file, locate what you need with `Grep` and read a bounded window around it (see Step 2) rather than loading the file. Note that you did so, and say how large the file is.
 4. **Glob and ask.** Glob `docs/plan/**/TODO.md` and partition the matches by status stamp:
    - Exactly one **active** match → use it.
    - Several active matches → list them and ask which to use. Wait for the answer; do not guess. If any merged plans were excluded, add a line `(N merged plans not shown — name one explicitly to use it)`.
@@ -77,7 +77,9 @@ The file has a three-tier structure:
 
 ## Step 2: Find the Next Top-level Goal
 
-Scan top-to-bottom and select the **first top-level goal whose marker is `[ ]` or `[~]`** — a line beginning with `- [ ] ` or `- [~] ` at indent 0 (no leading spaces). `[~]` takes priority: a goal already in progress is where we left off, and should be resumed before starting a new one. Ignore indented subgoals at this stage; they're acceptance criteria, not separate units.
+For a branch plan, which is small, read it whole and scan top-to-bottom. For the **master plan**, locate instead of scanning: `Grep` for `^- \[[ ~]\]` with line numbers on, then `Read` a window around the first hit rather than loading the file. This costs a fixed ~200 tokens where a whole-file read costs ~55k at 250 subgoals, and past ~500 subgoals a plain read truncates — which would hide later goals and make "all work complete" a false report rather than a finding. When in doubt about completion on a large file, confirm by `Grep`, which sees all of it.
+
+Select the **first top-level goal whose marker is `[ ]` or `[~]`** — a line beginning with `- [ ] ` or `- [~] ` at indent 0 (no leading spaces). `[~]` takes priority: a goal already in progress is where we left off, and should be resumed before starting a new one. Ignore indented subgoals at this stage; they're acceptance criteria, not separate units.
 
 - Note the goal's line number and text, plus the line numbers of its subgoals (indented lines with any `- [ ]` / `- [~]` / `- [!]` marker that follow it, before the next top-level goal or section header).
 - If the user named a specific goal out of order in their invocation, pick that one instead.
@@ -170,7 +172,7 @@ Determine the parent goal's final state based on the states of its subgoals and 
       > **Done:** brief summary of what was accomplished.
     ```
 
-4. Save the plan file.
+4. Save the plan file. Use `Edit` — the marker change and the appended `> **Q:** / > **A:**` lines are localized, and rewriting the whole file with `Write` costs as much as reading it whole, which is the cost Step 2 exists to avoid on a large master plan.
 5. **Commit checkpoint (after the parent goal).** Once the parent goal's marker has been flipped — whether to `[x]`, `[!]`, `[-]`, or left at `[~]` with real progress made — pause and ask the user whether they want to commit before `/hitl-step` moves on:
 
    > Goal "<goal text>" is now `[<state>]`. Would you like to commit (`git commit` or `/smart-commit`) before I continue to the next goal?
@@ -181,7 +183,7 @@ Determine the parent goal's final state based on the states of its subgoals and 
 
 - Increment the counter only if the parent goal's final state in Step 4 was `[x]`, `[!]`, or `[-]`. If it was left as `[~]`, the iteration still counts (we did work), but the user will almost certainly want to stop here and debrief — in that case, still increment and proceed to Step 6.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 (re-read the plan file to pick up your latest edits) and execute the next top-level goal.
+- Otherwise, go back to Step 2 and execute the next top-level goal. Pick up your latest edits the same way Step 2 found the first goal — re-`Grep` for the next `[ ]` / `[~]` marker rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around.
 - If no top-level goals remain in `[ ]` or `[~]` state, proceed to Step 6.
 
 ## Step 6: Report
