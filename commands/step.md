@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count] [plan-path]"
 ---
@@ -31,7 +31,7 @@ Resolve in the order below and **stop at the first rung that yields a file**. Ca
    - **No match** — fall through to rung 3.
 
    If the resolved plan carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
-3. **Master plan.** If `docs/plan/DO.md` exists, use it — on `main`, this is normally the answer.
+3. **Master plan.** If `docs/plan/DO.md` exists, use it — on `main`, this is normally the answer. **Read it differently from a branch plan.** A branch plan covers one branch and stays small, so read it whole. The master plan accumulates every subgoal of every revision, each with its `> **Done:**` annotation, and grows without bound — at 250 subgoals it is around 197 KB, and past roughly 500 it exceeds the default 2000-line read limit and a plain read silently truncates. When the master plan is the resolved file, locate what you need with `Grep` and read a bounded window around it (see Step 2) rather than loading the file. Note that you did so, and say how large the file is.
 4. **Glob and ask.** Glob `docs/plan/**/DO.md` and partition the matches by status stamp:
    - Exactly one **active** match → use it.
    - Several active matches → list them and ask which to use. Wait for the answer; do not guess. If any merged plans were excluded, add a line `(N merged plans not shown — name one explicitly to use it)`.
@@ -61,10 +61,12 @@ The file uses standard Markdown checkbox syntax:
 
 ## Step 2: Find the Next Unchecked Item
 
-Scan top-to-bottom and select the **first** line matching `- [ ]`. This is the **current task**.
+Select the **first** line matching `- [ ]`. This is the **current task**.
+
+For a branch plan, which is small, reading it whole and scanning top-to-bottom is fine. For the **master plan**, locate instead of scanning: `Grep` for `^- \[ \]` with line numbers on and take the first hit, then `Read` a window around it (`offset`/`limit`) to get the item and any blockquotes beneath it. This costs a fixed ~200 tokens where a whole-file read costs ~55k at 250 subgoals — and, past ~500 subgoals, would truncate and make later items invisible, so "no unchecked items" could be a lie rather than a finding.
 
 - Note its exact line number and full text.
-- If every item is checked, inform the user that all tasks are complete and stop.
+- If every item is checked, inform the user that all tasks are complete and stop. If the plan is the master plan and large enough that truncation is plausible, confirm by `Grep` — which sees the whole file — before reporting completion.
 
 ## Step 3: Execute the Task
 
@@ -100,7 +102,7 @@ Use `>` blockquote lines, indented with 2 spaces to nest under the task item. If
 
 Once the task is fully done:
 
-1. Replace `- [ ]` with `- [x]` on the task's line in the plan file.
+1. Replace `- [ ]` with `- [x]` on the task's line in the plan file. Use `Edit` for this — it is a one-line change, and rewriting the whole file with `Write` costs as much as reading it whole, which is the cost Step 2 exists to avoid on a large master plan.
 2. If no Q&A was logged but you want to note what was done, you may optionally add a brief completion note:
 
 ```
@@ -108,7 +110,7 @@ Once the task is fully done:
   > Done: brief summary of what was accomplished.
 ```
 
-3. Save the plan file.
+3. Save the plan file — again as a targeted edit, not a full rewrite.
 4. **Commit checkpoint.** After saving, pause and ask the user whether they want to commit the completed task before `/step` continues:
 
    > Task "<task text>" is complete. Would you like to commit now (`git commit` or `/smart-commit`) before I move on, or keep going?
@@ -119,7 +121,7 @@ Once the task is fully done:
 
 - Increment your completed-task counter.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 (re-read the plan file to pick up your latest edits) and execute the next unchecked item.
+- Otherwise, go back to Step 2 and execute the next unchecked item. Pick up your latest edits the same way Step 2 found the first item — re-`Grep` for the next `- [ ]` rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around.
 - If you run out of unchecked items before reaching N, proceed to Step 6.
 
 ## Step 6: Report

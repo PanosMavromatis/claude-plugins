@@ -143,13 +143,25 @@ Skip this step entirely if no branch plan and no master plan exist.
 
 `/step` and `/hitl-step` read this line to filter merged plans out of their disambiguation prompt. The value must begin with `merged` for that filter to see it.
 
-**Update the master plan.** If `docs/plan/DO.md` or `docs/plan/TODO.md` has an item backlinked to this branch (a `> **Branch:** <branch-name>` blockquote beneath it, written by `/new-branch`), mark that item complete and log the outcome beneath it:
+**Update the master plan — locate first, do not read the whole file.** The master plan is the one file in this system that grows without bound: it accumulates every subgoal of every revision, each with its `> **Done:**` annotation. All this step needs from it is the one item backlinked to this branch. Find that item, then read only around it.
+
+1. **Locate.** Use `Grep` for the pattern `> \*\*Branch:\*\* <branch-name>` in `docs/plan/DO.md` (or `TODO.md`), with line numbers on. Use the `Grep` tool rather than a shell `grep` — it is allow-listed here and a bash `grep` would prompt.
+2. **Read a window.** `Read` the file with `offset` and `limit` set to a window around the hit — roughly 10 lines before and 15 after is ample, since a subgoal item plus its blockquotes runs a few lines. That window is what you edit.
+3. **Edit in place.** Mark the item complete and append the `> **Done:**` line beneath the existing backlink.
 
 ```markdown
 - [x] The master-plan subgoal this branch executed
   > **Branch:** feat/user-auth
   > **Done:** One-or-two-sentence summary of what landed — PR #123
 ```
+
+**Follow the sequence literally.** The instinct when told "update the master plan" is to read the file and edit it, and at today's sizes that works fine — which is exactly why it survives until it doesn't. Measured against synthetic master plans built from this repo's own subgoal blocks: at 250 subgoals the file is ~197 KB / ~55k tokens and **0.39%** of what a whole-file read loads is the block being edited; at ~500 subgoals it passes 2000 lines and a default read **truncates**. Locating first costs about 200 tokens and does not change with file size.
+
+**Handle a missing or duplicated backlink explicitly — never silently.**
+
+- **Exactly one hit** — the normal case. Proceed.
+- **No hits** — say so, and say which of the two things it means: either this branch legitimately has no master-plan item (a standalone branch, or one created without `/new-branch`), in which case stamping the branch plan is the whole of this step; or the backlink was lost or misspelled, which is a defect worth knowing about. Do not silently skip: an unreported miss is indistinguishable from having had nothing to do, and it leaves a subgoal open forever with no trace of why. If the file is large enough that truncation is plausible, say that too rather than concluding the item is absent.
+- **More than one hit** — a duplicated backlink. List the line numbers and ask which item to close. Do not update both.
 
 For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare `[x]`: `[!]` if the work is blocked, `[-]` if the subgoal was descoped, `[~]` if real progress was made but the subgoal isn't finished. The summary should say what changed, not restate the subgoal.
 
