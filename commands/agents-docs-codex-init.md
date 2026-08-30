@@ -1,3 +1,8 @@
+---
+allowed-tools: Bash(git status:*), Bash(ls:*), Bash(find:*), Read, Write, Edit, Glob, Grep
+description: Generate docs/agents/[<path>/]codex.md sidecars configuring Codex as a cross-provider reviewer (root + every component).
+---
+
 # Generate `docs/agents/[<path>/]codex.md` sidecars for cross-provider Codex review context
 
 Generate a `codex.md` file that configures OpenAI Codex as a cross-provider code

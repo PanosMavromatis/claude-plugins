@@ -1,4 +1,5 @@
 ---
+allowed-tools: Bash(git status:*), Bash(ls:*), Bash(find:*), Read, Write, Edit, Glob, Grep
 description: Migrate CLAUDE.md (root + monorepo components) into docs/agents/[<path>/]{core,claude}.md and replace each with an @import dispatcher
 ---
 
@@ -80,6 +81,8 @@ For each processed target, show the user the full contents of the new or updated
 Only after confirmation, for each approved target replace `<path>CLAUDE.md` with the dispatcher content below, substituting `<path>` consistently in the `@docs/agents/...` paths. For the root target `<path>` is empty so the imports become `@docs/agents/core.md` and `@docs/agents/claude.md`; for a component like `ui/`, the imports become `@docs/agents/ui/core.md` and `@docs/agents/ui/claude.md`.
 
 > **Use Bash heredoc, not Write/Edit, for this step.** By this point in the migration the sentinel `docs/agents/<path>core.md` exists (you wrote it in the previous step), so the `protect-agent-docs.py` hook will block any `Write` or `Edit` against `<path>CLAUDE.md`. The hook only matches `Write|Edit|MultiEdit`; Bash shell redirects pass through. Use a `cat <<'EOF' > <path>CLAUDE.md` heredoc (note the single-quoted `'EOF'` so `@import` lines are not interpreted by the shell). The same applies even for fresh dispatcher creation in `scaffold` targets, since the same hook is in force.
+>
+> **`Bash(cat:*)` is deliberately absent from this command's `allowed-tools`** — do not "fix" it by adding it. That heredoc replaces the user's existing `CLAUDE.md`, the one genuinely destructive operation here, so it should keep prompting. The `Write`/`Edit` entries that *are* allow-listed cover the `docs/agents/` sources only; the hook independently blocks them against the protected filenames regardless of the allow-list.
 
 ```markdown
 <!-- Claude Code context dispatcher. Hand-authored (not a generated artifact).
