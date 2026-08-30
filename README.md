@@ -45,11 +45,36 @@ The commands are designed to chain. There's a **branch workflow** (outer loop) t
 
 ```
 /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
+                                                                                             │
+                                                        (periodically) file merged plans ────┘
 ```
+
+`/new-branch` opens a branch with a doc and a plan; the step commands work the plan; `/smart-commit` commits as you go; `/smart-merge` drafts the PR, records the merge in both plans, gates on CI and merges; `/clean-gone` removes branches the remote has dropped. Then, every so often, you **file** the merged plans.
+
+#### The filing sweep
+
+Branch plans are never deleted — they land on `main` as the durable record — so `docs/plan/` gains one flat directory per merged branch. Filing moves each into a directory for the revision it belonged to:
+
+```
+docs/plan/
+  DO.md      ← master plan
+  rev-2/     ← 7 merged branch plans
+  rev-3/     ← 3 merged branch plans
+```
+
+Nothing is being classified here. `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading in the master plan, so **a plan's revision is already recorded at creation time** and the sweep just reads it back:
+
+```bash
+awk '/^## Subgoals/{h=$0} /^[[:space:]]*> \*\*Branch:\*\*/{print $NF, h}' docs/plan/DO.md
+```
+
+Move the directories with `git mv` on a branch and merge as normal. Nothing else needs updating — every command finds a plan by its directory *name*, not its path, so the layout beneath `docs/plan/` is yours to arrange. Grouping by revision is one option and nothing depends on it; a monorepo might group by component instead, reading the component list from the `docs/agents/` tree rather than inventing a second one.
+
+Two plans that resist the sweep, both reported rather than guessed at: a branch created without `/new-branch` has no backlink and no revision, and a heading with no revision number (an early plan predating the convention) gives nothing to derive from. Leave those flat.
 
 | Command         | Role |
 |-----------------|------|
-| `/new-branch`   | Creates `<type>/<slug>`, writes `docs/git/<branch>.md` (purpose, scope, context) and a status-stamped branch plan at `docs/plan/<type>-<slug>/`. The doc is consumed and deleted at merge; the plan survives on `main`. |
+| `/new-branch`   | Creates `<type>/<slug>`, writes `docs/git/<branch>.md` (purpose, scope, context) and a status-stamped branch plan at `docs/plan/<type>-<slug>/` — always flat; the filing sweep moves it into a revision directory later. The doc is consumed and deleted at merge; the plan survives on `main`. |
 | `/step N [path]` | Executes the next `N` unchecked items from a plan file. Plain checkbox model (`[ ]` / `[x]`), inline `> **Q:** / > **A:**` log under each item so reasoning survives `/clear` or compaction. Hard-stops at `N`. Resolves the branch plan on a branch, the master plan on `main`, or an explicit path. |
 | `/hitl-step N [path]` | Same loop against a `TODO.md` plan file, resolved identically, but with a richer marker model (`[ ] [~] [x] [!] [-]`), explicit confirmation gates on writes, and parent/subgoal state propagation. Use this when each goal needs back-and-forth with you. |
 | `/smart-commit` | Delegates to `/agents-docs-update` to sync docs with the staged diff, then commits and pushes. Conventional commit format. Confirmation-required. |
@@ -88,5 +113,6 @@ Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agent
 - **GitHub work prefers MCP, falls back to `gh` — out loud.** `/smart-merge` uses the GitHub MCP server when one is available and `gh` otherwise. The fallback triggers on **404 or 403**: a fine-grained PAT that doesn't cover a repository returns 404, not 403, because GitHub masks private-repo existence — so a rule keyed only on 403 would never fire in the case it exists for. Every fallback is announced with the repository and operation named, which turns a recurring fallback into a legible signal that the PAT's scope wants widening. A silent fallback would make a narrowly-scoped token pointless.
 - **The two merge paths clean up differently.** `gh pr merge --delete-branch` removes the branch locally and remotely in one call; the MCP `merge_pull_request` has no such parameter and removes neither. `/smart-merge` closes that gap explicitly — remote branch first, then sync `main`, then the local branch, in that order, because `git branch -d` evaluates against `HEAD` and would refuse on every merge if it ran before the sync.
 - **Plans are two-tier, and both tiers live on `main`.** The **master plan** (`docs/plan/DO.md` or `TODO.md`) defines subgoals; each spawns a branch. A **branch plan** covers one branch's work, in a directory named for the branch with `/` flattened to `-`. That name is its identity, not its path: `/new-branch` creates it flat under `docs/plan/`, but every command finds it by searching for that name anywhere beneath `docs/plan/`, so plans can be regrouped into milestone or component directories with `git mv` and nothing needs updating. `/step` and `/hitl-step` resolve in priority order — explicit path, then the current branch's plan, then the master plan, then glob-and-ask, then a legacy root-level file — so neither normal working position ever prompts. Branch plans are **not** deleted at merge: they accumulate on `main` as the durable record of how each subgoal was executed, navigable by directory and filtered out of the disambiguation prompt by their `**Status**: merged` stamp.
-- **The PR body is a pointer, not an archive.** `/smart-merge` puts a `Plan: docs/plan/…/DO.md` line in the body rather than pasting contents — GitHub caps PR bodies at 65,536 characters, and the plan file itself lands on `main` anyway.
+- **The PR body is a pointer, not an archive.** `/smart-merge` puts a `Plan:` line in the body rather than pasting contents — GitHub caps PR bodies at 65,536 characters, and the plan file itself lands on `main` anyway. **Known gap:** that pointer is currently a path, and PR bodies are effectively immutable, so filing a plan into a revision directory breaks every pointer written before the move — seven at once, the first time it happened. The fix is to write the plan's identity rather than its address; until it lands, treat a `Plan:` path in an older PR as a name to search for, not a path to follow.
+- **Master-plan access is locate-then-window.** The master plan accumulates every subgoal of every revision and grows without bound; `/smart-merge` and the step commands each need one line out of it. They `Grep` for that line and read a bounded window rather than loading the file. Measured: at 250 subgoals a whole-file read is ~55k tokens and 0.39% of it is the part being edited, and past ~500 subgoals the file exceeds the default 2000-line read limit and truncates — after which a lookup that misses looks exactly like having nothing to do. Hence the second half of the rule: a zero-match lookup is always reported, never passed over in silence.
 - **`docs/git/<branch>.md` is per-branch scratch.** Created by `/new-branch`, consumed and deleted by `/smart-merge`. It stays in the branch's history (recoverable via SHA) but never lands on `main`.
