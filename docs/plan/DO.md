@@ -79,6 +79,19 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
   > **Branch:** docs/mcp-convention
   > **Done:** README gained two conventions bullets (fallback rule, cleanup divergence) and a refreshed `/smart-merge` row; CLAUDE.md gained a "GitHub access" section documenting each rule beside the case that produced it, plus a refreshed compose bullet. The sweep caught one stale mechanism-specific claim in the plan-convention section — PR #5
 
+## Subgoals — revision 04-revision-lifecycle
+
+Revisions gain a full lifecycle: they are opened as well as closed, and identified by a **label** rather than a number. A label like `03-subgoal-plan-management` carries its own ordinal for sorting and says what the revision is about, so a directory listing and a master-plan heading both read without cross-referencing.
+
+Opened by hand, since `/open-revision` is what this revision builds.
+
+- [ ] Add `/open-revision <label>` plus `scripts/open-revision.sh`, following the `/close-revision` split: the script validates the label, refuses a duplicate, and shows where the section would be inserted; the command writes it and commits. The section goes above `## Closed revisions` / `## Deferred` so open revisions stay together at the top.
+  > **Branch:** feat/open-revision
+- [ ] Switch revision identity from number to label across `scripts/close-revision.sh` and `scripts/file-plans.sh`: headings become `## Subgoals — revision <label>`, and a revision's directory is `docs/plan/<label>/` rather than `docs/plan/rev-N/`. The label is the identity — the same identity-vs-location rule the plan resolution already follows, applied one level up.
+- [ ] Fix the latent `git mv` bug in `/file-plans`: it proposes moving a plan into a revision directory without ensuring the directory exists, and `git mv` fails hard when it does not. Verified — it has only ever worked because `rev-2/` and `rev-3/` were created by hand during the regrouping cycle. The command must `mkdir -p` the destination first. Independent of the labelling change; surfaced by thinking about how a freshly opened revision gets its directory.
+- [ ] Migrate the existing revisions: `rev-2/` → `02-mcp-github-access/`, `rev-3/` → `03-subgoal-plan-management/`, with the master-plan heading and the closed-revisions pointer updated to match. Revision 1's bare `## Subgoals` heading stays as it is — it predates the convention and cannot be closed either.
+- [ ] Update README and `CLAUDE.md` for the lifecycle: open, work, file, close; labels rather than numbers; and the directory-naming rule.
+
 ## Closed revisions
 
 Extracted by `/close-revision` once finished. The subgoals, their `> **Done:**` records, and the branch plans that executed them all live in the revision's directory.
