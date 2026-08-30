@@ -1,6 +1,6 @@
 # feat/file-plans-command
 
-**Status**: active
+**Status**: merged — PR #14 — 2026-08-30
 **Created**: 2026-08-30
 **Subgoal**: Automate the plan-filing sweep
 
