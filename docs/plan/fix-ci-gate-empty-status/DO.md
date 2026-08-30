@@ -1,6 +1,6 @@
 # fix/ci-gate-empty-status
 
-**Status**: active
+**Status**: merged — PR #6 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Fix the empty-status misclassification, and document the `Checks` constraint.
 
