@@ -92,6 +92,9 @@ The organising decision: **do not adopt a taxonomy of goals and subgoals.** Clas
   > **Branch:** chore/plan-regroup
   > **Done:** Nine top-level entries became four (`DO.md`, the in-flight plan, `rev-2/`, `rev-3/`), all by `git mv` recorded as renames, with no command touched. All four rung checks passed against the nested layout. Two findings: rung 2's multi-match branch had never executed before and needed a manufactured collision to reach; and rung 4 filtered 9 merged against 2 active after one evening, while nesting stayed invisible to its `**` glob — confirming directory grouping does nothing for master-plan growth, which stays filed under Deferred — PR #9
 
+- [ ] Make master-plan access cost independent of file size: `/smart-merge` step 7 and rung 3 of `/step` / `/hitl-step` both want a single line — a `> **Branch:**` backlink, or the next unchecked item — but load the whole file to find it. Locate by `grep -n`, read a bounded window, and state the sequence explicitly, since an LLM told only "update the master plan" defaults to a whole-file read. Add a zero-match guard so "no backlinked item" is distinguishable from "the lookup failed"; today both are silent.
+  > **Branch:** feat/plan-targeted-access
+
 ## Deferred
 
 Not part of this revision — recorded so it isn't lost.
@@ -102,8 +105,12 @@ Not part of this revision — recorded so it isn't lost.
 
   Scoping note for when this is picked up: `/smart-merge` needs `Bash(gh pr merge:*)` and `Bash(git push:*)`, which are the two genuinely destructive/outward-facing entries in this plugin — worth allow-listing narrowly, or deliberately leaving off so they keep prompting.
 
-- **Master-plan growth is a context problem, not a cosmetic one.** `docs/plan/DO.md` is one flat file, read in full by rung 3 whenever `/step` runs on `main`, and read *and rewritten* by `/smart-merge` on every merge. At a few hundred subgoals carrying `> **Done:**` annotations, closing a single checkbox means loading the entire project history into context. Directory clutter is a browsing annoyance that costs a person a second; this cost recurs on every invocation and grows without bound.
+- ~~**Master-plan growth is a context problem, not a cosmetic one.**~~ **Un-deferred and reshaped by measurement** — promoted to the revision-3 subgoal above.
 
-  Likely shape of the fix, not yet designed: apply the same decoupling one level up, so the master plan becomes an **index of milestone plans** rather than a flat list of every subgoal ever. Each revision's subgoals live in that revision's own file; `/smart-merge` then rewrites a small closed file instead of a growing one, and rung 3 loads an index. Depends on the revision-3 subgoal above having landed. Worth confirming the failure is real before building for it — measure a plausible worst-case file rather than assuming.
+  The concern was real and the proposed design was wrong. Measured 2026-08-29 against synthetic master plans built by sampling this file's own subgoal blocks (mean 792 bytes, 16 blocks in the current 20 KB file): at 250 subgoals the file is 197 KB / ~55k tokens and **0.39%** of what gets loaded is the one block needed to close a checkbox; at ~500 subgoals (2246 lines) it passes the default 2000-line read limit and **truncates**, at which point `/smart-merge` looks for a backlink it cannot see, finds nothing, and skips the master-plan update silently. At the observed branch rate those sizes are 7-25 and 14-50 weeks away in a busy monorepo, so the horizon is real.
+
+  But splitting the file into an index plus per-milestone plans — the design this item originally proposed — would have been the wrong fix. It moves the cliff instead of removing it: a milestone file is still read whole, and one busy milestone can carry 100+ subgoals, i.e. ~24k tokens to close one checkbox. It also costs a format change, a migration and a new resolution rung. Size was never the problem; the **access pattern** was. On a 798 KB synthetic, `grep -n` located a backlink in 9 ms and the 5-line window around it is 770 bytes — ~200 tokens instead of ~221,000, and flat in file size. The replacement subgoal is a few sentences of prose in two commands, with no format change and no migration.
+
+  Recorded because the sequence is the point: the note said *measure before building for it*, and measuring is what stopped the elaborate version from being built.
 
 - **Component axis for monorepos.** A monorepo wants `docs/plan/<component>/…`, which is a genuine taxonomy rather than a free one. Do not author a second list of components: the source of truth is already the directory tree under `docs/agents/`, per the monorepo extension in `CLAUDE.md`. A component grouping that reads from there stays consistent with the agent-docs layout by construction; one that maintains its own list will diverge.
