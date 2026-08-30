@@ -1,6 +1,6 @@
 # feat/plan-targeted-access
 
-**Status**: active
+**Status**: merged — PR #10 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Make master-plan access cost independent of file size
 
