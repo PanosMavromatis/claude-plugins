@@ -7,7 +7,7 @@ description: File merged branch plans into their revision directories under docs
 
 Branch plans are never deleted — they land on `main` as the durable record of how each subgoal was executed — so `docs/plan/` gains one flat directory per merged branch. This command sweeps them into revision directories, leaving the master plan and any in-flight plans at the top level.
 
-**Nothing is being classified.** `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading, so a plan's revision was recorded when the branch was created. The bundled `scripts/file-plans.sh` reads it back. This is a lookup, not a judgement — which is why it can be automated at all.
+**Nothing is being classified.** `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision <label>` heading, so a plan's revision was recorded when the branch was created. The bundled `scripts/file-plans.sh` reads it back. This is a lookup, not a judgement — which is why it can be automated at all.
 
 ## Workflow
 
@@ -26,7 +26,7 @@ Show the user its output verbatim. Do not paraphrase the proposals — the paths
 The script reports two kinds of plan it cannot place. Both leave the plan flat, which is the safe outcome: a plan filed into the *wrong* revision is worse than one never filed, because the mistake becomes invisible once it is filed.
 
 - **`no backlink`** — the master plan has no `> **Branch:**` line for this plan. Usually a branch created without `/new-branch`, or one whose subgoal was never recorded. If the user wants it filed, the fix is to add the backlink to the master plan under the right subgoal and re-run; do not offer to guess a revision.
-- **`no revision number`** — the backlink exists but its enclosing heading is a bare `## Subgoals`, with no revision to derive. Typically a plan predating the convention. Leave it, or the user can retitle the heading.
+- **`no revision label`** — the backlink exists but its enclosing heading is a bare `## Subgoals`, with no revision label to derive. Typically a plan predating the convention. Leave it, or the user can retitle the heading.
 
 Say which skips appeared and why. A skip reported and understood is the point; a skip passed over in silence is the failure this command exists to avoid.
 

@@ -6,7 +6,7 @@ A collection of Claude Code commands, skills, hooks, and scripts bundled togethe
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
 - **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to `CLAUDE.md`, `AGENTS.md`, and `AGENTS.override.md` (root and per-component) once the `docs/agents/` sources exist, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
-- **`scripts/`** — `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). Bundled so consumers don't need their own copies.
+- **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). Three serve the plan workflow and are all **read-only** — they propose, and the command that calls them performs every write: `open-revision.sh`, `file-plans.sh` and `close-revision.sh`. Because they never write, they are safe to run directly, in a hook, or in CI.
 
 ## Installing & the `commit-commands` overlap
 
@@ -67,13 +67,13 @@ docs/plan/
   03-subgoal-plan-management/
 ```
 
-Run **`/file-plans`**. Nothing is being classified: `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading, so **a plan's revision is already recorded at creation time**, and the sweep reads it back —
+Run **`/file-plans`**. Nothing is being classified: `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision <label>` heading, so **a plan's revision is already recorded at creation time**, and the sweep reads it back —
 
 ```bash
 awk '/^## Subgoals/{h=$0} /^[[:space:]]*> \*\*Branch:\*\*/{print $NF, h}' docs/plan/DO.md
 ```
 
-— which is what the bundled `scripts/file-plans.sh` does. The script is read-only and prints proposed `git mv` commands; `/file-plans` presents them, confirms, executes and commits on a branch. Two cases it cannot derive are reported and left flat, never guessed: a plan with no backlink, and a backlink under a heading carrying no revision number. Nothing else needs updating — every command finds a plan by its directory *name*, not its path, so the layout beneath `docs/plan/` is yours to arrange. Grouping by revision is one option and nothing depends on it; a monorepo might group by component instead, reading the component list from the `docs/agents/` tree rather than inventing a second one.
+— which is what the bundled `scripts/file-plans.sh` does. The script is read-only and prints proposed `git mv` commands; `/file-plans` presents them, confirms, executes and commits on a branch. Two cases it cannot derive are reported and left flat, never guessed: a plan with no backlink, and a backlink under a heading carrying no revision label. Nothing else needs updating — every command finds a plan by its directory *name*, not its path, so the layout beneath `docs/plan/` is yours to arrange. Grouping by revision is one option and nothing depends on it; a monorepo might group by component instead, reading the component list from the `docs/agents/` tree rather than inventing a second one.
 
 A plan filed into the *wrong* revision is worse than one never filed, because the mistake becomes invisible once it is filed — hence report-don't-guess.
 

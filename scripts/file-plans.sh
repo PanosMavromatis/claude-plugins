@@ -14,7 +14,7 @@
 # Two cases cannot be derived and are reported as skipped, never guessed:
 #   - no backlink in the master plan (a standalone branch, or one created
 #     without /new-branch)
-#   - a "## Subgoals" heading carrying no revision number (predates the
+#   - a "## Subgoals" heading carrying no revision label (predates the
 #     convention)
 # Both leave the plan flat. A plan filed into the wrong revision is worse
 # than one never filed, because the error becomes invisible once it is filed.
@@ -35,7 +35,7 @@ for f in "${PLAN_DIR}/DO.md" "${PLAN_DIR}/TODO.md"; do
 done
 [ -n "$MASTER" ] || { echo "nothing to do: no master plan at ${PLAN_DIR}/DO.md or TODO.md"; exit 0; }
 
-# branch name -> revision number, from each backlink's enclosing heading.
+# branch name -> revision label, from each backlink's enclosing heading.
 # The ^[[:space:]]* anchor is load-bearing: without it, prose that merely
 # mentions the backlink syntax matches too, and the master plan's own
 # explanation of this mechanism does exactly that.
