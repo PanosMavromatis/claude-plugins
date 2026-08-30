@@ -27,6 +27,7 @@ The commands are designed to chain, not just stand alone. The intended end-to-en
 /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
                                                                                              │
                                                               (periodically) /file-plans ────┘
+                                                     (when a revision ends) /close-revision N
 ```
 
 - **`/new-branch`** creates `<type>/<slug>`, writes `docs/git/<branch>.md` (purpose, scope, context) and a status-stamped branch plan at `docs/plan/<type>-<slug>/` — always flat, since the directory's *name* is what the other commands resolve by. The doc is a working artifact for the branch's lifetime; the plan outlives it.
@@ -64,6 +65,14 @@ The distinction that governs this: a path is fine in anything **re-derived each 
 **`/file-plans` and its script split responsibilities the same way `/agents-docs-build` does.** `scripts/file-plans.sh` is read-only and deterministic: it builds the branch→revision map from the master plan, finds plan directories sitting flat under `docs/plan/` with a `merged` stamp, and *prints* the proposed `git mv` commands. It never moves, stages or commits — so it is safe in a hook or CI, and the command owns every write. `/file-plans` runs it, shows the output verbatim, confirms, executes the printed commands unchanged, and commits on a branch. `Bash(git mv:*)` is deliberately absent from the command's `allowed-tools`, per additive-yes/destructive-no.
 
 The script's `awk` anchors the backlink match to `^[[:space:]]*`. That is load-bearing rather than tidy: without it, prose that merely *mentions* `> **Branch:**` matches too — and the master plan's own paragraph explaining this mechanism does exactly that, so an unanchored pattern misparses the file that documents it.
+
+**Closing a revision extracts it from the master plan.** `/close-revision N` (backed by `scripts/close-revision.sh`) cuts the `## Subgoals — revision N` section out of `docs/plan/DO.md` and writes it to `docs/plan/rev-N/_DO.md`, leaving a one-line pointer. Without this the master plan accumulates every subgoal the project has ever completed, each with its `> **Done:**` annotation, and never sheds any of it.
+
+The archive is `_DO.md`, **never** `DO.md`. Plan resolution globs `docs/plan/**/DO.md` and matches on filename, so an archive named `DO.md` would be indistinguishable from a branch plan and — carrying no `merged` stamp — would count as active and be offered in the disambiguation prompt as somewhere to do work. The underscore keeps a finished revision out of resolution entirely rather than merely filtered from it, which is the correct behaviour; rung 1's explicit path still reaches it. An earlier design instead stamped the archive `closed` and widened the four-command status contract to accept that value; the rename is strictly better and that contract still accepts only `merged`. Do not "normalize" the filename.
+
+The extraction is a **cut**, not a copy — a section surviving in both files defeats the purpose and lets the copies drift — and the archive is **verbatim**, since summarizing a closed revision destroys the record the two-tier convention exists to keep. Run `/file-plans` before `/close-revision`, or `rev-N/` holds an archive describing plans still sitting flat elsewhere.
+
+**Whether a revision is finished is the user's call and is never inferred.** Subgoals can be added to a revision whose earlier items have all merged — this repo's revision 3 took three more after its first three shipped — so any rule keyed on "all boxes ticked" would close revisions prematurely. The script refuses on unchecked items as a safety net, not as the decision.
 
 **The layout in this repo, as an example of the above.** Merged plans are grouped by revision — `docs/plan/rev-2/<flattened-branch>/`, `docs/plan/rev-3/…` — while the master plan and any in-flight plan sit flat at the top level. `/new-branch` always creates flat; a plan is filed into its revision directory later, typically when the revision closes. Nothing enforces this and no command knows about it: it is one possible use of the freedom described above, not a convention to preserve. A consuming project can group differently, or not at all.
 
