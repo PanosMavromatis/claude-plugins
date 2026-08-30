@@ -42,7 +42,10 @@ On approval:
 
 1. `mkdir -p docs/plan/rev-<N>/` if it does not exist — a revision with no branch plans filed into it will not have the directory yet.
 2. Write the section verbatim to `docs/plan/rev-<N>/_DO.md` (or `_TODO.md` for a `TODO.md` master), preserving it exactly as it appeared, including every `> **Branch:**` and `> **Done:**` blockquote. Add nothing and reword nothing — this is an archive, not a summary.
-3. Delete those same lines from the master plan and put the pointer line in their place.
+3. Delete those same lines from the master plan.
+4. Add the pointer line under a `## Closed revisions` heading, creating that section if it does not exist yet. Put it immediately before `## Deferred` if there is one, otherwise at the end. Pointers accumulate there in revision order, so the master plan ends with a short index of finished revisions rather than a scatter of orphan bullets where sections used to be.
+
+Watch the blank lines: a pointer left flush against the following `## ` heading breaks Markdown rendering, and collapsing consecutive newlines while removing the section is an easy way to cause exactly that. Check the result.
 
 **The extraction is a cut, not a copy.** If the section survives in both files, the master plan keeps growing — the one thing this command exists to prevent — and the two copies drift. Verify after writing that the section appears in exactly one file.
 
