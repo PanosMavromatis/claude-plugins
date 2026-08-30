@@ -87,6 +87,8 @@ Every fallback is announced naming the repository and the operation. This is loa
 
 `--prune` in step 11 is likewise required rather than tidy: `/clean-gone` finds branches by their upstream showing `[gone]`, and that marking only appears once the stale remote-tracking ref is pruned.
 
+**Two CI-gate facts, both learned by calling the API.** `get_check_runs` returns 403 on any fine-grained-PAT-backed install: GitHub does not offer a `Checks` permission for that token type, so the gate degrades to commit statuses there and the 403 is expected rather than a misconfiguration. And `get_status` returns `state: "pending"` with `total_count: 0` for a commit with no statuses at all — "pending" meaning "nothing reported", not "something running" — so step 8 counts results *before* reading `state`. Reading `state` first makes every CI-less repo look like work is in flight. Neither fact is visible in the tool schemas; the second stayed hidden for four cycles because the `Commit statuses` permission was missing and the call 403'd before it could return a misleading answer.
+
 **Never hardcode MCP tool names.** They are `mcp__plugin_github_github__*` in one install and something else in another, so an `allowed-tools` entry matches nothing on a consumer's machine and fails silently — where a missing entry merely prompts. See "Scoped `allowed-tools`" below.
 
 ## Coexistence with `commit-commands`
