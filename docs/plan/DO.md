@@ -116,6 +116,8 @@ Opened after revision 3 closed, prompted by the question of whether the plan-fil
 
   **The filename is load-bearing, and `DO.md` is the wrong choice.** Verified by construction: rung 4 resolves plans with `docs/plan/**/DO.md`, which matches on filename, so an extracted `rev-N/DO.md` would be indistinguishable from a branch plan and — unstamped — would count as *active*, polluting the very disambiguation list the merged filter exists to keep clean. An earlier draft of this subgoal proposed fixing that by stamping the file `closed` and widening the four-command status contract to accept it. `_DO.md` is strictly better: no contract change, no container guard in `scripts/file-plans.sh` (its loop looks for `${dir}/DO.md`, finds none, and moves on), and one fewer concept. It also makes an archived revision invisible to resolution rather than merely filtered — correct, since "which plan do you want to work on?" should never offer a finished revision. Reachable by explicit path (rung 1) when someone genuinely wants it.
 
+  > **Branch:** feat/close-revision
+
   **The trigger stays human.** A revision is closed when the user says so, not when its last box is ticked — this revision took three more subgoals after its first three had merged, and any rule keyed on "all boxes ticked" would have closed it prematurely. The command takes the revision number as an argument and does the extraction; it never decides that a revision is done.
 
 ## Deferred
