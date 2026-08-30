@@ -1,6 +1,6 @@
 # feat/plan-path-decoupling
 
-**Status**: active
+**Status**: merged — PR #8 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Decouple branch-plan identity from location so `docs/plan/` can be reorganised freely
 
