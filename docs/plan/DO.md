@@ -73,6 +73,7 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
   > **Branch:** fix/ci-gate-empty-status
   > **Done:** Stated in step 8's MCP paragraph and in `CLAUDE.md`'s GitHub access section: the 403 is a property of the token type, so announce the fallback but do not send the user after a permission that does not exist — PR #6
 - [ ] Close the `allowed-tools` gaps in the `/agents-docs-*` commands, found during the survey for the `/smart-merge` pass: `agents-docs-build` allow-lists only its script while performing `Write`, `Edit` and `git add`; `agents-docs-init` and `agents-docs-codex-init` carry **no `allowed-tools` at all** while writing files. Kept separate because both init commands write dispatchers via `cat <<'EOF'` heredoc redirects, which is exactly the path `protect-agent-docs.py` lets through on purpose — allow-listing there interacts with the hook and needs its own thought.
+  > **Branch:** fix/agents-docs-frontmatter
 - [x] Update `README.md` and `CLAUDE.md` for the MCP-preferred convention: the 404-or-403 rule, the announce-on-fallback rule and why it exists, the branch-cleanup divergence, and the tool-name portability constraint.
   > **Branch:** docs/mcp-convention
   > **Done:** README gained two conventions bullets (fallback rule, cleanup divergence) and a refreshed `/smart-merge` row; CLAUDE.md gained a "GitHub access" section documenting each rule beside the case that produced it, plus a refreshed compose bullet. The sweep caught one stale mechanism-specific claim in the plan-convention section — PR #5
