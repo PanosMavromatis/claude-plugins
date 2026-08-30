@@ -79,6 +79,15 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
   > **Branch:** docs/mcp-convention
   > **Done:** README gained two conventions bullets (fallback rule, cleanup divergence) and a refreshed `/smart-merge` row; CLAUDE.md gained a "GitHub access" section documenting each rule beside the case that produced it, plus a refreshed compose bullet. The sweep caught one stale mechanism-specific claim in the plan-convention section — PR #5
 
+## Subgoals — revision 3: plan layout at scale
+
+Prompted by seven branch directories accumulating under `docs/plan/` in one evening. The concern is not this repo, which is small, but monorepos where that branch rate is normal for months at a time.
+
+The organising decision: **do not adopt a taxonomy of goals and subgoals.** Classifying a branch by topic forces a judgement at creation time, when the shape of the work is least clear, and fails on the branches that touch two areas — which most do. Two cheaper axes exist. Grouping by **milestone** costs nothing, because exactly one is open at any moment; this file already does it informally via its `## Subgoals — revision N` headings. Grouping by **component** in a monorepo is a real taxonomy, but its authoritative source already exists as the directory tree under `docs/agents/`, so it should be read from there rather than invented a second time.
+
+- [ ] Decouple a branch plan's identity from its location: rewrite rung 2 in `/step` and `/hitl-step` to search for a directory *named* `<flattened-branch>` anywhere under `docs/plan/`, instead of hardcoding `docs/plan/<flattened-branch>/<file>`. Branch names are unique per repo, so the name alone is a sufficient key. Multiple matches mean a stale copy — list and ask, never guess. Rung 4 already globs `docs/plan/**/` and needs no change. This is a prerequisite for any regrouping: once it lands, plans can be moved by `git mv` with nothing else to update, so the grouping decision can be deferred to when the right shape is obvious rather than committed to now.
+  > **Branch:** feat/plan-path-decoupling
+
 ## Deferred
 
 Not part of this revision — recorded so it isn't lost.
@@ -88,3 +97,9 @@ Not part of this revision — recorded so it isn't lost.
   Original note: **`allowed-tools` drift in `/new-branch` *and* `/smart-merge`.** Both perform writes their frontmatter never allow-lists: `/new-branch` does `Write`, `git add`, `git commit`; `/smart-merge` does `git rm`, `git add`, `git commit`, `git push`, `gh pr create`, `gh pr merge`, and now plan edits. Both allow-list only read-only git — a pre-existing violation of the repo's "keep `allowed-tools` and the body in sync" rule, made more visible (not caused) by this revision. Deferred: new input pending that may significantly reshape it, and it is independent of the plan-file convention.
 
   Scoping note for when this is picked up: `/smart-merge` needs `Bash(gh pr merge:*)` and `Bash(git push:*)`, which are the two genuinely destructive/outward-facing entries in this plugin — worth allow-listing narrowly, or deliberately leaving off so they keep prompting.
+
+- **Master-plan growth is a context problem, not a cosmetic one.** `docs/plan/DO.md` is one flat file, read in full by rung 3 whenever `/step` runs on `main`, and read *and rewritten* by `/smart-merge` on every merge. At a few hundred subgoals carrying `> **Done:**` annotations, closing a single checkbox means loading the entire project history into context. Directory clutter is a browsing annoyance that costs a person a second; this cost recurs on every invocation and grows without bound.
+
+  Likely shape of the fix, not yet designed: apply the same decoupling one level up, so the master plan becomes an **index of milestone plans** rather than a flat list of every subgoal ever. Each revision's subgoals live in that revision's own file; `/smart-merge` then rewrites a small closed file instead of a growing one, and rung 3 loads an index. Depends on the revision-3 subgoal above having landed. Worth confirming the failure is real before building for it — measure a plausible worst-case file rather than assuming.
+
+- **Component axis for monorepos.** A monorepo wants `docs/plan/<component>/…`, which is a genuine taxonomy rather than a free one. Do not author a second list of components: the source of truth is already the directory tree under `docs/agents/`, per the monorepo extension in `CLAUDE.md`. A component grouping that reads from there stays consistent with the agent-docs layout by construction; one that maintains its own list will diverge.
