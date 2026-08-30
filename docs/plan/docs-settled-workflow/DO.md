@@ -1,6 +1,6 @@
 # docs/settled-workflow
 
-**Status**: active
+**Status**: merged — PR #12 — 2026-08-30
 **Created**: 2026-08-30
 **Subgoal**: Document the settled workflow, including the plan-filing sweep
 
