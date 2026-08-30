@@ -51,7 +51,9 @@ Report a brief summary: branch name, N commits ahead of main, clean/dirty state.
 
 **Branch doc.** Check for `docs/git/<current-branch>.md`. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
 
-**Branch plan.** Check for `docs/plan/<flattened-branch>/DO.md` or `TODO.md`, where the directory is the branch name with `/` flattened to `-` (branch `feat/user-auth` → `docs/plan/feat-user-auth/`). If it exists, read it — the completed items and their `> **Q:** / > **A:**` logs record how the work actually went, which is useful input for the PR body's Summary.
+**Branch plan.** Flatten the branch name's `/` to `-` to get the **plan name** (branch `feat/user-auth` → `feat-user-auth`), then find the directory of that name *wherever* it sits under `docs/plan/`: check `docs/plan/<plan-name>/` first — the flat location `/new-branch` creates, and the answer in nearly every case — and only if that misses, glob `docs/plan/**/<plan-name>/`. Read whichever of `DO.md` or `TODO.md` it contains — the completed items and their `> **Q:** / > **A:**` logs record how the work actually went, which is useful input for the PR body's Summary.
+
+Resolve by name rather than by a fixed path because the layout beneath `docs/plan/` is deliberately unconstrained: plans may be regrouped into milestone or component directories with `git mv`. A path-based check would report a moved plan as absent, and this command would then skip the stamp in step 7 — leaving a merged plan marked `active` forever. **Note the resolved path**; steps 3, 4 and 7 all refer back to it.
 
 Unlike the branch doc, **the plan is not deleted at merge.** It lands on `main` as the durable record; step 7 only stamps it.
 
@@ -77,7 +79,7 @@ Present both to the user. Let them edit, replace, or approve. Do not proceed unt
 
 Explain: the branch doc was a working artifact for this branch; deleting it now means it stays in the branch's history (recoverable via SHA) but won't pollute `main`.
 
-**Only the branch doc is deleted.** Leave `docs/plan/<flattened-branch>/` alone — it is meant to land on `main`.
+**Only the branch doc is deleted.** Leave the branch plan directory resolved in step 2 alone, wherever it sits — it is meant to land on `main`.
 
 If the doc exists, run:
 
@@ -133,7 +135,7 @@ The PR number now exists, and the branch is still open — this is the only wind
 
 Skip this step entirely if no branch plan and no master plan exist.
 
-**Stamp the branch plan.** Rewrite its status line to record the merge:
+**Stamp the branch plan.** Using the path resolved in step 2 — not a reconstructed one — rewrite its status line to record the merge:
 
 ```
 **Status**: merged — PR #123 — 2026-08-29
@@ -266,7 +268,7 @@ Summarize:
 - New `main` tip: `<short-sha> <subject>`
 - Branch `<name>` deleted locally and on remote — on the MCP path say that steps 10a and 11a did it; on the `gh` path, `--delete-branch`
 - Merged via **MCP** or **`gh`** — say which, and note any fallback that occurred and why
-- Plan preserved on `main` at `docs/plan/<flattened-branch>/<DO|TODO>.md`, stamped `merged`
+- Plan preserved on `main` at the path resolved in step 2, stamped `merged`
 - PR URL for future reference
 
 ## Guidelines

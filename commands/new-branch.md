@@ -82,7 +82,9 @@ Write `docs/git/<branch-name>.md` with this template, filled in from the gathere
 
 ### 6. Create the branch plan
 
-The branch gets its own plan file under `docs/plan/<flattened-branch>/` — the branch name with `/` flattened to `-`, so branch `feat/user-auth` → `docs/plan/feat-user-auth/`. This is what `/step` and `/hitl-step` will resolve to while the branch is checked out.
+The branch gets its own plan file in a directory named for the branch with `/` flattened to `-`, so branch `feat/user-auth` → `feat-user-auth/`. Always create it **directly under `docs/plan/`** — `docs/plan/feat-user-auth/`.
+
+That name, not that path, is what `/step`, `/hitl-step` and `/smart-merge` resolve by: they search for a directory of that name anywhere beneath `docs/plan/`. So the plan can later be moved into a milestone or component directory with `git mv` and still resolve. Creating it flat keeps this command free of any grouping policy — deciding where a plan belongs is a judgement best made once the shape of the work is clear, which is never at branch-creation time.
 
 Unlike the branch doc, **the plan is not deleted at merge** — it lands on `main` as the durable record of how this piece of work was actually executed. `/smart-merge` only stamps it as merged.
 
