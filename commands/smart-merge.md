@@ -71,7 +71,11 @@ Based on the branch doc (if present), the commits in `main..HEAD`, and the diff 
 
 - **Title**: one line, imperative mood, sentence case, ~50-72 chars, no trailing period. Describes the umbrella scope of the whole branch, not any single commit.
 - **Body**: Markdown-formatted. Group commits thematically (not chronologically) under section headers. Include Summary, and sections for the major themes present (e.g., Implementation, Infrastructure, Documentation, Testing). Keep it scannable.
-- **Plan pointer**: if a branch plan exists, end the body with a line pointing at it — `Plan: \`docs/plan/feat-user-auth/DO.md\`` (substituting the real path). The plan lands on `main` with this merge, so the pointer resolves permanently. Do **not** paste the plan's contents into the body: PR bodies cap at 65,536 characters, and the file itself is the record.
+- **Plan pointer**: if a branch plan exists, end the body with a line naming it — `Plan: \`feat-user-auth\` under \`docs/plan/\`` (substituting the real directory name). The plan lands on `main` with this merge, so the record it points at is permanent.
+
+  **Write the name, not the path.** A PR body cannot be meaningfully edited once the PR is merged, while plan *locations* are deliberately free — the filing sweep moves merged plans into revision directories. A path pointer is therefore correct only until the next sweep: the first one silently invalidated seven of them, including the pointer in the PR that performed the move. A name stays correct through every regrouping, and resolves the same way every command resolves a plan — search `docs/plan/` for a directory of that name. This is the identity-vs-location rule applied to records instead of lookups; do not "improve" it back into a path.
+
+  Do **not** paste the plan's contents into the body: PR bodies cap at 65,536 characters, and the file itself is the record.
 
 Present both to the user. Let them edit, replace, or approve. Do not proceed until approved.
 
@@ -165,13 +169,15 @@ Skip this step entirely if no branch plan and no master plan exist.
 
 For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare `[x]`: `[!]` if the work is blocked, `[-]` if the subgoal was descoped, `[~]` if real progress was made but the subgoal isn't finished. The summary should say what changed, not restate the subgoal.
 
-**Commit and push**, substituting real names throughout:
+**Commit and push**, substituting real names throughout. Stage the branch plan at **the path resolved in step 2**, not a reconstructed one — a plan that has been filed into a revision directory is not at `docs/plan/<name>/`:
 
 ```bash
-git add docs/plan/feat-user-auth/DO.md docs/plan/DO.md
+git add docs/plan/rev-3/feat-user-auth/DO.md docs/plan/DO.md
 git commit -m "Record merge of feat/user-auth in plans (PR #123)"
 git push
 ```
+
+The example shows a filed plan deliberately. A flat `docs/plan/feat-user-auth/DO.md` is the more common case, and writing that here invites reconstructing the path instead of reusing the resolved one — which fails silently, since `git add` on a non-existent path errors but a wrong-but-existing path would not.
 
 Pushing to the open PR's branch updates the PR, so this change is included in the merge and reviewable alongside the work it describes.
 
