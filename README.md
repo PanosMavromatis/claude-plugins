@@ -46,10 +46,10 @@ The commands are designed to chain. There's a **branch workflow** (outer loop) t
 ```
 /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
                                                                                              │
-                                                        (periodically) file merged plans ────┘
+                                                              (periodically) /file-plans ────┘
 ```
 
-`/new-branch` opens a branch with a doc and a plan; the step commands work the plan; `/smart-commit` commits as you go; `/smart-merge` drafts the PR, records the merge in both plans, gates on CI and merges; `/clean-gone` removes branches the remote has dropped. Then, every so often, you **file** the merged plans.
+`/new-branch` opens a branch with a doc and a plan; the step commands work the plan; `/smart-commit` commits as you go; `/smart-merge` drafts the PR, records the merge in both plans, gates on CI and merges; `/clean-gone` removes branches the remote has dropped. Then, every so often, `/file-plans` **files** the merged plans.
 
 #### The filing sweep
 
@@ -107,6 +107,18 @@ In a monorepo, the same pattern repeats per component (`<path>/CLAUDE.md` backed
 Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agents-docs-update` → docs stay in sync without you thinking about it.
 
 ## Conventions worth knowing
+
+#### Closing a revision
+
+The master plan grows as revisions close: every subgoal ever completed stays in it, with its `> **Done:**` annotation. Periodically — when a revision is finished and its branches are all merged and filed — **extract that revision's section into its revision directory**:
+
+1. Cut the whole `## Subgoals — revision N: …` section out of `docs/plan/DO.md` (or `TODO.md`).
+2. Write it to `docs/plan/rev-N/DO.md`, with a status line of `**Status**: closed — revision N — <date>` so it is filtered out of plan-disambiguation prompts.
+3. Leave a one-line pointer in the master plan where the section was, so the master reads as an index of closed revisions plus whatever is currently open.
+
+The master plan then stays roughly constant in size instead of accumulating indefinitely, and everything about a finished revision — its subgoals, its `> **Done:**` records, and the branch plans that executed them — lives together in one directory.
+
+This is currently manual. It is the one step in the workflow with a genuine judgement in it: **a revision is closed when you say it is**, not when its last checkbox is ticked, since you may still add subgoals to it (this project folded three new ones into revision 3 after its first three had merged). A `/close-revision` command is planned to do the extraction once that decision is made.
 
 - **Confirm before writes.** Every command treats git writes (commit, push, branch deletion) and file deletions as confirmation-required. Read-only diagnostics (`git status`, `git log`, `git diff`) run freely.
 - **Hard stops on counters.** `/step N` and `/hitl-step N` stop after `N` iterations even if work remains. They won't ask "continue?".

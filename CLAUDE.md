@@ -25,12 +25,15 @@ The commands are designed to chain, not just stand alone. The intended end-to-en
 
 ```
 /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
+                                                                                             │
+                                                              (periodically) /file-plans ────┘
 ```
 
 - **`/new-branch`** creates `<type>/<slug>`, writes `docs/git/<branch>.md` (purpose, scope, context) and a status-stamped branch plan at `docs/plan/<type>-<slug>/` — always flat, since the directory's *name* is what the other commands resolve by. The doc is a working artifact for the branch's lifetime; the plan outlives it.
 - **`/step`** executes the next unchecked item from a `DO.md`; **`/hitl-step`** does the same against a `TODO.md` but with a richer status-marker model (`[ ] [~] [x] [!] [-]`) and inline `> **Q:** / > **A:**` logging under each goal so reasoning survives `/clear` or compaction. Both resolve the plan file through the five-rung order described under "The plan convention" below. **Their Step 1 sections are byte-identical apart from the filename — keep them that way**; drift between them is a bug you only hit on whichever command you use less.
 - **`/smart-commit`** invokes `/agents-docs-update` via the SlashCommand tool, then handles any version bump (tag + component-manifest sync), commits, tags, and pushes. It deliberately delegates all doc-sync logic rather than duplicating it.
 - **`/smart-merge`** reads `docs/git/<branch>.md` and the branch plan to draft the PR title/body, deletes the doc as part of the merge (so it stays in branch history but doesn't pollute `main`), stamps the plan `merged` and closes the master-plan item, gates on CI, then merges — preferring the GitHub MCP server and falling back to `gh`. It deletes the doc but **never** the plan. See "GitHub access" below.
+- **`/file-plans`** files merged branch plans into revision directories under `docs/plan/`, deriving each plan's revision from the master-plan heading its backlink sits under. Runs out of band from the branch lifecycle — periodically, not per merge. The bundled `scripts/file-plans.sh` proposes; the command confirms, moves and commits. See "Filing merged plans" below.
 - **`/clean-gone`** deletes local branches whose upstream is `[gone]` (deleted on the remote, e.g. after a merge) and their worktrees. It is confirmation-required and warns prominently when more than one branch is in scope. It is the `workflow-claude` equivalent of `commit-commands`' `/clean_gone`, ported so the branch lifecycle is self-contained — but adapted to this plugin's confirm-before-delete and no-placeholder conventions (the original deletes without confirmation).
 
 `/agents-docs-update` is the shared module for keeping documentation in sync with staged changes — it's both standalone and imported by `/smart-commit`. When editing one, consider whether the change belongs in the shared module instead.
