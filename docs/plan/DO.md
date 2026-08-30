@@ -96,10 +96,9 @@ The organising decision: **do not adopt a taxonomy of goals and subgoals.** Clas
   > **Branch:** feat/plan-targeted-access
   > **Done:** All three call sites now locate by `Grep` and read a bounded window, with the sequence stated explicitly since the default instinct is to read the file. Zero-match and duplicate-match guards added, so "no backlinked item" and "the lookup failed" are no longer both silence. Two findings while doing it, either of which would have halved the effect: `/step` allow-listed `Bash(cat:*)`/`Bash(find:*)` while using neither, and had no `Edit` at all — so saving meant a whole-file `Write`, and both step commands re-read the plan every loop iteration. The general lesson recorded in `CLAUDE.md` is that an allow-list *dictates* an access pattern rather than merely permitting one — PR #10
 
-## Subgoals — revision 4: filing, pointers, and the settled workflow
+**Continued after the first three subgoals closed.** The work below concerns the same thing — how plan files are organised, referenced and maintained — so it belongs to this revision rather than a new one, and its plans file into `rev-3/` alongside the others.
 
 Opened after revision 3 closed, prompted by the question of whether the plan-filing sweep warrants its own command.
-
 **Correction that shapes this revision:** filing was described at the close of revision 3 as "the one judgement worth keeping manual". That was wrong, and the no-taxonomy argument does not apply to it. `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading, so a plan's revision is already recorded at creation time and recoverable mechanically — `awk '/^## Subgoals/{h=$0} /^[[:space:]]*> \*\*Branch:\*\*/{print $NF, h}'` prints the mapping (anchored deliberately — without `^[[:space:]]*` it also matches prose that merely mentions the backlink syntax, which this very paragraph does) for every plan in the file. Filing is a lookup, not a classification, which is what makes automating it appropriate rather than premature.
 
 - [ ] Document the settled workflow in `README.md` and `CLAUDE.md`, including the plan-filing sweep and the derivation rule above. Record the correction explicitly so the "judgement worth keeping manual" framing is not cited later, and note the decaying-pointer problem as pending rather than solved.
