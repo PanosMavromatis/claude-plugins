@@ -172,12 +172,12 @@ For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare
 **Commit and push**, substituting real names throughout. Stage the branch plan at **the path resolved in step 2**, not a reconstructed one — a plan that has been filed into a revision directory is not at `docs/plan/<name>/`:
 
 ```bash
-git add docs/plan/rev-3/feat-user-auth/DO.md docs/plan/DO.md
+git add docs/plan/03-example-revision/feat-user-auth/DO.md docs/plan/DO.md
 git commit -m "Record merge of feat/user-auth in plans (PR #123)"
 git push
 ```
 
-The example shows a filed plan deliberately. A flat `docs/plan/feat-user-auth/DO.md` is the more common case, and writing that here invites reconstructing the path instead of reusing the resolved one — which fails silently, since `git add` on a non-existent path errors but a wrong-but-existing path would not.
+The example shows a plan filed into a revision directory deliberately. A flat `docs/plan/feat-user-auth/DO.md` is the more common case, and writing that here invites reconstructing the path instead of reusing the resolved one — which fails silently, since `git add` on a non-existent path errors but a wrong-but-existing path would not.
 
 Pushing to the open PR's branch updates the PR, so this change is included in the merge and reviewable alongside the work it describes.
 

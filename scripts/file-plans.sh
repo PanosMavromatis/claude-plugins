@@ -4,7 +4,7 @@
 # Branch plans are never deleted, so docs/plan/ gains one flat directory per
 # merged branch. Which revision directory each belongs to is not a judgement:
 # /new-branch writes the plan's "> **Branch:** <name>" backlink beneath a
-# specific "## Subgoals — revision N" heading in the master plan, so the
+# specific "## Subgoals — revision <label>" heading in the master plan, so the
 # revision is already recorded at creation time. This script reads it back.
 #
 # READ-ONLY. It prints proposed `git mv` commands and a report; it never
@@ -14,7 +14,7 @@
 # Two cases cannot be derived and are reported as skipped, never guessed:
 #   - no backlink in the master plan (a standalone branch, or one created
 #     without /new-branch)
-#   - a "## Subgoals" heading carrying no revision number (predates the
+#   - a "## Subgoals" heading carrying no revision label (predates the
 #     convention)
 # Both leave the plan flat. A plan filed into the wrong revision is worse
 # than one never filed, because the error becomes invisible once it is filed.
@@ -35,7 +35,7 @@ for f in "${PLAN_DIR}/DO.md" "${PLAN_DIR}/TODO.md"; do
 done
 [ -n "$MASTER" ] || { echo "nothing to do: no master plan at ${PLAN_DIR}/DO.md or TODO.md"; exit 0; }
 
-# branch name -> revision number, from each backlink's enclosing heading.
+# branch name -> revision label, from each backlink's enclosing heading.
 # The ^[[:space:]]* anchor is load-bearing: without it, prose that merely
 # mentions the backlink syntax matches too, and the master plan's own
 # explanation of this mechanism does exactly that.
@@ -43,7 +43,7 @@ MAP="$(awk '
   /^## Subgoals/                       { heading = $0 }
   /^[[:space:]]*> \*\*Branch:\*\*/     {
     rev = "none"
-    if (match(heading, /revision[ ]+[0-9]+/))
+    if (match(heading, /revision[ ]+[^ :]+/))
       { rev = substr(heading, RSTART, RLENGTH); sub(/revision[ ]+/, "", rev) }
     print $NF "\t" rev
   }
@@ -57,7 +57,7 @@ for dir in "${PLAN_DIR}"/*/; do
   name="$(basename "$dir")"
 
   # A plan directory holds a plan file. Directories that only contain other
-  # directories are containers (rev-2/, rev-3/) and are already filed.
+  # directories are containers (a revision's own directory) and are already filed.
   plan=""
   for f in "${dir}/DO.md" "${dir}/TODO.md"; do
     [ -f "$f" ] && { plan="$f"; break; }
@@ -86,12 +86,12 @@ for dir in "${PLAN_DIR}"/*/; do
     continue
   fi
   if [ "$rev" = "none" ]; then
-    printf 'skip  %-38s backlink found, but its heading carries no revision number\n' "$name"
+    printf 'skip  %-38s backlink found, but its heading carries no revision label\n' "$name"
     skipped=$((skipped + 1))
     continue
   fi
 
-  printf 'git mv %s %s/rev-%s/%s\n' "$dir" "$PLAN_DIR" "$rev" "$name"
+  printf 'git mv %s %s/%s/%s\n' "$dir" "$PLAN_DIR" "$rev" "$name"
   proposals=$((proposals + 1))
 done
 
