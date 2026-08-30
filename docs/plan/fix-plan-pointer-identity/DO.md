@@ -1,6 +1,6 @@
 # fix/plan-pointer-identity
 
-**Status**: active
+**Status**: merged — PR #13 — 2026-08-30
 **Created**: 2026-08-30
 **Subgoal**: Stop writing decaying paths into immutable records
 
