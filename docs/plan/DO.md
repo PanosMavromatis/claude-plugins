@@ -88,6 +88,8 @@ The organising decision: **do not adopt a taxonomy of goals and subgoals.** Clas
 - [x] Decouple a branch plan's identity from its location: rewrite rung 2 in `/step` and `/hitl-step` to search for a directory *named* `<flattened-branch>` anywhere under `docs/plan/`, instead of hardcoding `docs/plan/<flattened-branch>/<file>`. Branch names are unique per repo, so the name alone is a sufficient key. Multiple matches mean a stale copy — list and ask, never guess. Rung 4 already globs `docs/plan/**/` and needs no change. This is a prerequisite for any regrouping: once it lands, plans can be moved by `git mv` with nothing else to update, so the grouping decision can be deferred to when the right shape is obvious rather than committed to now.
   > **Branch:** feat/plan-path-decoupling
   > **Done:** Rung 2 in `/step` and `/hitl-step` now resolves a plan by directory *name* anywhere under `docs/plan/` (flat path first, then recursive glob), so the layout below `docs/plan/` is free and plans can be regrouped by `git mv` with nothing to update. Exposed and fixed a latent `/smart-merge` bug: step 2 reconstructed the plan path, so a moved plan would have read as absent and the merge stamp would have been skipped silently. `CLAUDE.md` now states the general rule — reconstructing a plan path is a bug — plus the no-taxonomy rationale and the milestone/component guidance for a future grouping — PR #8
+- [ ] Exercise the decoupling by actually regrouping: `git mv` the accumulated branch plans into `docs/plan/rev-2/` and `docs/plan/rev-3/`, and verify by execution that rungs 2, 3 and 4 all still resolve against a nested layout — including rung 2's multi-match branch, which had never been reached.
+  > **Branch:** chore/plan-regroup
 
 ## Deferred
 
