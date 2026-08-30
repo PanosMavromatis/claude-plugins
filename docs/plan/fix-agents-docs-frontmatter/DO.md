@@ -1,6 +1,6 @@
 # fix/agents-docs-frontmatter
 
-**Status**: active
+**Status**: merged — PR #7 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Close the `/agents-docs-*` frontmatter gaps.
 
