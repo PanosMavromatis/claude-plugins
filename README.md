@@ -62,15 +62,15 @@ docs/plan/
   rev-3/     ← 3 merged branch plans
 ```
 
-Nothing is being classified here. `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading in the master plan, so **a plan's revision is already recorded at creation time** and the sweep just reads it back:
+Run **`/file-plans`**. Nothing is being classified: `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading, so **a plan's revision is already recorded at creation time**, and the sweep reads it back —
 
 ```bash
 awk '/^## Subgoals/{h=$0} /^[[:space:]]*> \*\*Branch:\*\*/{print $NF, h}' docs/plan/DO.md
 ```
 
-Move the directories with `git mv` on a branch and merge as normal. Nothing else needs updating — every command finds a plan by its directory *name*, not its path, so the layout beneath `docs/plan/` is yours to arrange. Grouping by revision is one option and nothing depends on it; a monorepo might group by component instead, reading the component list from the `docs/agents/` tree rather than inventing a second one.
+— which is what the bundled `scripts/file-plans.sh` does. The script is read-only and prints proposed `git mv` commands; `/file-plans` presents them, confirms, executes and commits on a branch. Two cases it cannot derive are reported and left flat, never guessed: a plan with no backlink, and a backlink under a heading carrying no revision number. Nothing else needs updating — every command finds a plan by its directory *name*, not its path, so the layout beneath `docs/plan/` is yours to arrange. Grouping by revision is one option and nothing depends on it; a monorepo might group by component instead, reading the component list from the `docs/agents/` tree rather than inventing a second one.
 
-Two plans that resist the sweep, both reported rather than guessed at: a branch created without `/new-branch` has no backlink and no revision, and a heading with no revision number (an early plan predating the convention) gives nothing to derive from. Leave those flat.
+A plan filed into the *wrong* revision is worse than one never filed, because the mistake becomes invisible once it is filed — hence report-don't-guess.
 
 | Command         | Role |
 |-----------------|------|
@@ -79,6 +79,7 @@ Two plans that resist the sweep, both reported rather than guessed at: a branch 
 | `/hitl-step N [path]` | Same loop against a `TODO.md` plan file, resolved identically, but with a richer marker model (`[ ] [~] [x] [!] [-]`), explicit confirmation gates on writes, and parent/subgoal state propagation. Use this when each goal needs back-and-forth with you. |
 | `/smart-commit` | Delegates to `/agents-docs-update` to sync docs with the staged diff, then commits and pushes. Conventional commit format. Confirmation-required. |
 | `/smart-merge`  | Reads the branch doc and plan to draft PR title and body, warns on unfinished plan items, deletes the doc, stamps the plan `merged` and closes the master-plan item in one pre-merge commit, gates on CI, then merges. Prefers the GitHub MCP server and falls back to `gh`. Walks merge-strategy choice with tradeoffs. |
+| `/file-plans`   | Files merged branch plans into revision directories under `docs/plan/`, deriving each plan's revision from the master-plan heading its backlink sits under. Read-only script proposes; the command confirms, moves and commits. Reports what it can't derive instead of guessing. |
 | `/clean-gone`   | Deletes local branches whose upstream is `[gone]` (merged/deleted on the remote) and their worktrees. Confirmation-required, with a prominent warning when more than one branch is in scope. Closes the lifecycle so `commit-commands` isn't needed for cleanup. |
 
 `/step` vs `/hitl-step`: pick based on how interactive each task needs to be. `/step` is fire-and-forget for routine work; `/hitl-step` is for goals where every decision should pass through you.
