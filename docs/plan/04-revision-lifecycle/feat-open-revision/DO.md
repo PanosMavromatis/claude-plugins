@@ -1,6 +1,6 @@
 # feat/open-revision
 
-**Status**: active
+**Status**: merged — PR #16 — 2026-08-30
 **Created**: 2026-08-30
 **Subgoal**: Give revisions a full lifecycle, identified by label
 
