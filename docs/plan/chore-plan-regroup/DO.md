@@ -1,6 +1,6 @@
 # chore/plan-regroup
 
-**Status**: active
+**Status**: merged — PR #9 — 2026-08-29
 **Created**: 2026-08-29
 **Subgoal**: Exercise the identity/location decoupling by actually regrouping the accumulated plans
 
