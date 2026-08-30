@@ -34,12 +34,17 @@ All five markers apply to both top-level goals and subgoals. Parent-state rules 
 Plan files live under `docs/plan/`. There are two kinds:
 
 - the **master plan**, `docs/plan/TODO.md`, whose items are subgoals that each spawn a branch;
-- a **branch plan**, `docs/plan/<flattened-branch>/TODO.md`, covering the work of one branch. The directory name is the branch name with `/` flattened to `-`: branch `feat/user-auth` → `docs/plan/feat-user-auth/`.
+- a **branch plan**, `TODO.md` inside a directory named for the branch with `/` flattened to `-`: branch `feat/user-auth` → a directory `feat-user-auth/`. That name is the plan's **identity**; its location is not. `/new-branch` creates the directory directly under `docs/plan/`, but it may be moved anywhere beneath `docs/plan/` afterwards — grouped into a milestone or component directory, say — and resolution still finds it. Reorganise with `git mv`; no command needs updating.
 
 Resolve in the order below and **stop at the first rung that yields a file**. Call the result **the plan file**, and state which one you resolved to before doing any work.
 
 1. **Path argument.** If `$ARGUMENTS` contained a path, interpret it as a repo-relative path, a path relative to `docs/plan/`, or a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `TODO.md` inside it. If it resolves to nothing, say so and **stop**; do not fall through to the later rungs, since a typo would silently run a different plan.
-2. **Branch plan.** Run `git branch --show-current`, flatten `/` to `-`, and check `docs/plan/<flattened>/TODO.md`. If it exists, use it — on a branch created by `/new-branch`, this is normally the answer. If it carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
+2. **Branch plan.** Run `git branch --show-current` and flatten `/` to `-`; call the result the **plan name**. Find the plan by that name *wherever* it sits under `docs/plan/`, rather than at a fixed path. Check `docs/plan/<plan-name>/TODO.md` first — the flat location `/new-branch` creates, and the answer in nearly every case — and only if that misses, glob `docs/plan/**/<plan-name>/TODO.md`. Trying the exact path first is about cost, not correctness: in a large repo it avoids a recursive walk to find something that is almost always sitting in the obvious place. Branch names are unique per repo, so the name alone is a sufficient key and at most one match is expected.
+   - **Exactly one match** — use it. On a branch created by `/new-branch`, this is normally the answer.
+   - **Several matches** — a plan directory was copied rather than moved, so one of them is stale. List the full paths and ask which to use. Never guess, and never read from more than one.
+   - **No match** — fall through to rung 3.
+
+   If the resolved plan carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
 3. **Master plan.** If `docs/plan/TODO.md` exists, use it — on `main`, this is normally the answer.
 4. **Glob and ask.** Glob `docs/plan/**/TODO.md` and partition the matches by status stamp:
    - Exactly one **active** match → use it.
