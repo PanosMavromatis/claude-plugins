@@ -3,7 +3,7 @@
 #
 # The master plan accumulates every subgoal of every revision along with its
 # "> **Done:**" annotation, and nothing ever removes any of it. Closing a
-# revision moves its section into docs/plan/rev-N/_DO.md, leaving a one-line
+# revision moves its section into docs/plan/<label>/_DO.md, leaving a one-line
 # pointer behind, so the master plan reads as an index of closed revisions
 # plus whatever is currently open.
 #
@@ -21,14 +21,18 @@
 # Whether a revision is finished is the user's call, never inferred. This
 # script refuses on unchecked items as a safety net, not as the decision.
 #
-# Usage: close-revision.sh <N>
+# Usage: close-revision.sh <label>
 # Exit:  0 = proposal printed. 1 = refused, with a reason. 2 = usage error.
 
 set -euo pipefail
 
-[ $# -eq 1 ] || { echo "usage: $(basename "$0") <revision-number>" >&2; exit 2; }
+[ $# -eq 1 ] || { echo "usage: $(basename "$0") <revision-label>   e.g. 03-subgoal-plan-management" >&2; exit 2; }
 REV="$1"
-case "$REV" in ''|*[!0-9]*) echo "error: revision must be a number, got '${REV}'" >&2; exit 2 ;; esac
+# A revision is identified by its label, not by a position in a sequence. The
+# numeric prefix convention (03-…) is for sorting and lives inside the label.
+case "$REV" in
+  ''|*/*|*' '*) echo "error: label must be non-empty and contain no spaces or slashes, got '${REV}'" >&2; exit 2 ;;
+esac
 
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
@@ -40,15 +44,21 @@ for f in DO TODO; do
 done
 [ -n "$MASTER" ] || { echo "refused: no master plan at ${PLAN_DIR}/DO.md or TODO.md" >&2; exit 1; }
 
-DEST_DIR="${PLAN_DIR}/rev-${REV}"
+DEST_DIR="${PLAN_DIR}/${REV}"
 DEST="${DEST_DIR}/${ARCHIVE_NAME}"
 
-START="$(grep -n "^## Subgoals — revision ${REV}\b" "$MASTER" | head -1 | cut -d: -f1 || true)"
+# Exact string comparison, not a regex: BSD grep does not support \| alternation
+# in a basic regex (it silently matches nothing rather than erroring), and a
+# label could contain regex metacharacters. awk compares literally.
+START="$(awk -v h="## Subgoals — revision ${REV}" '
+  $0 == h || index($0, h ":") == 1 { print NR; exit }
+' "$MASTER")"
 [ -n "$START" ] || { echo "refused: no '## Subgoals — revision ${REV}' section in ${MASTER}" >&2; exit 1; }
 
 # The section runs to the next top-level heading, or end of file.
 END="$(awk -v s="$START" 'NR > s && /^## /{print NR - 1; exit}' "$MASTER")"
-[ -n "$END" ] || END="$(wc -l < "$MASTER")"
+# BSD wc pads its output with spaces; strip them or arithmetic and the report both break.
+[ -n "$END" ] || END="$(wc -l < "$MASTER" | tr -d "[:space:]")"
 
 OPEN="$(sed -n "${START},${END}p" "$MASTER" | grep -c '^- \[[ ~!]\]' || true)"
 if [ "$OPEN" -gt 0 ]; then

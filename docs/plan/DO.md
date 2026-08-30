@@ -46,7 +46,7 @@ GitHub operations prefer the GitHub MCP server when it is available, falling bac
 - **Tool names are installation-dependent.** They are `mcp__plugin_github_github__*` here, but that prefix encodes how the consumer installed the server. Do not hardcode these names in `allowed-tools`; a consumer with a different install would get an allow-list that matches nothing.
 - **Diagnostic before concluding anything from a 404**: `get_me` (identity), the failing call (target access), `search_repositories` with `user:<owner>` (actual PAT scope). Distinguishes "not in PAT scope" from "wrong owner/repo" from "server down".
 
-## Subgoals — revision 2: MCP-preferred GitHub access
+## Subgoals — revision 02-mcp-github-access
 
 - [x] Rework `/smart-merge`'s GitHub operations to prefer MCP with a `gh` fallback: `pull_request_read` for status/checks, `create_pull_request` (body as a string, dropping the temp file), `merge_pull_request` for the merge. Every fallback announced per the rule above. Phrase availability as "if a GitHub MCP tool is present in your tool list" — there is no shell probe for this.
   > **Branch:** feat/smart-merge-mcp
@@ -96,7 +96,7 @@ Opened by hand, since `/open-revision` is what this revision builds.
 
 Extracted by `/close-revision` once finished. The subgoals, their `> **Done:**` records, and the branch plans that executed them all live in the revision's directory.
 
-- **Revision 3** — plan layout at scale — closed. See `docs/plan/rev-3/_DO.md`.
+- **Revision 03-subgoal-plan-management** — plan layout at scale — closed. See `docs/plan/03-subgoal-plan-management/_DO.md`.
 
 ## Deferred
 

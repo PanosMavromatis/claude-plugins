@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/file-plans.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/file-plans.sh:*), Bash(mkdir:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Glob, Grep
 description: File merged branch plans into their revision directories under docs/plan/.
 ---
 
@@ -41,6 +41,14 @@ Wait for approval. If the user is already on a working branch and wants the move
 ### 4. Execute — CONFIRM FIRST
 
 Present the exact `git mv` commands from step 1 and ask for approval. On approval, run them **verbatim as printed** — do not reconstruct paths, and do not "tidy" a destination.
+
+**Create the destination directory first.** `git mv src dest/name` fails outright when `dest/` does not exist (`fatal: renaming failed: No such file or directory`), and a revision opened by `/open-revision` has no directory until its first plan is filed. So for each distinct destination in the proposal:
+
+```bash
+mkdir -p docs/plan/<label>/
+```
+
+This is the normal case, not an edge case: every revision's *first* filing hits it.
 
 `git mv` is deliberately **not** in this command's `allowed-tools`. That is not drift: the harness prompt is a second gate behind this confirmation, matching how `/clean-gone` and `/smart-merge` treat operations that move or remove things. Do not "fix" it by adding `Bash(git mv:*)`.
 

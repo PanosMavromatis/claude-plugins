@@ -41,13 +41,17 @@ This is expected, not a conflict — nothing breaks, and the two plugins' hooks 
 
 The commands are designed to chain. There's a **branch workflow** (outer loop) that brackets every change, and an **agent-docs workflow** (inner concern) that keeps documentation honest as code moves.
 
-### Branch lifecycle
+### Revision and branch lifecycle
+
+A **revision** is a milestone: `/open-revision <label>` starts one, its subgoals each spawn a branch, and `/close-revision <label>` archives it when you say it is finished. Revisions are identified by a **label** such as `04-revision-lifecycle`, not by a number — the label names the master-plan heading and the directory alike, so `docs/plan/` and the master plan each read without cross-referencing the other. The leading ordinal is a sorting convention inside the label; nothing counts revisions or requires them to be consecutive.
 
 ```
-/new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
+/open-revision <label>
+     │
+     └─▶ /new-branch  →  /step or /hitl-step (loop)  →  /smart-commit (loop)  →  /smart-merge  →  /clean-gone
                                                                                              │
                                                               (periodically) /file-plans ────┘
-                                                     (when a revision ends) /close-revision N
+                                                (when a revision ends) /close-revision <label>
 ```
 
 `/new-branch` opens a branch with a doc and a plan; the step commands work the plan; `/smart-commit` commits as you go; `/smart-merge` drafts the PR, records the merge in both plans, gates on CI and merges; `/clean-gone` removes branches the remote has dropped. Then, every so often, `/file-plans` **files** the merged plans.
@@ -58,9 +62,9 @@ Branch plans are never deleted — they land on `main` as the durable record —
 
 ```
 docs/plan/
-  DO.md      ← master plan
-  rev-2/     ← 7 merged branch plans
-  rev-3/     ← 3 merged branch plans
+  DO.md                          ← master plan
+  02-mcp-github-access/          ← that revision's branch plans, and its archive once closed
+  03-subgoal-plan-management/
 ```
 
 Run **`/file-plans`**. Nothing is being classified: `/new-branch` writes each plan's `> **Branch:**` backlink beneath a specific `## Subgoals — revision N` heading, so **a plan's revision is already recorded at creation time**, and the sweep reads it back —
@@ -81,7 +85,8 @@ A plan filed into the *wrong* revision is worse than one never filed, because th
 | `/smart-commit` | Delegates to `/agents-docs-update` to sync docs with the staged diff, then commits and pushes. Conventional commit format. Confirmation-required. |
 | `/smart-merge`  | Reads the branch doc and plan to draft PR title and body, warns on unfinished plan items, deletes the doc, stamps the plan `merged` and closes the master-plan item in one pre-merge commit, gates on CI, then merges. Prefers the GitHub MCP server and falls back to `gh`. Walks merge-strategy choice with tradeoffs. |
 | `/file-plans`   | Files merged branch plans into revision directories under `docs/plan/`, deriving each plan's revision from the master-plan heading its backlink sits under. Read-only script proposes; the command confirms, moves and commits. Reports what it can't derive instead of guessing. |
-| `/close-revision N` | Cuts a finished revision's section out of the master plan into `docs/plan/rev-N/_DO.md`, leaving a pointer. Keeps the master plan an index rather than an ever-growing log. You decide the revision is finished; the command refuses if items are still open. |
+| `/open-revision <label>` | Opens a revision — a milestone whose subgoals each spawn a branch. The label (`04-revision-lifecycle`) names both the master-plan heading and the directory. You supply the label and the preamble; the command does not invent either. |
+| `/close-revision <label>` | Cuts a finished revision's section out of the master plan into `docs/plan/<label>/_DO.md`, leaving a pointer. Keeps the master plan an index rather than an ever-growing log. You decide the revision is finished; the command refuses if items are still open. |
 | `/clean-gone`   | Deletes local branches whose upstream is `[gone]` (merged/deleted on the remote) and their worktrees. Confirmation-required, with a prominent warning when more than one branch is in scope. Closes the lifecycle so `commit-commands` isn't needed for cleanup. |
 
 `/step` vs `/hitl-step`: pick based on how interactive each task needs to be. `/step` is fire-and-forget for routine work; `/hitl-step` is for goals where every decision should pass through you.
@@ -112,13 +117,13 @@ Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agent
 
 #### Closing a revision
 
-The master plan would otherwise grow forever: every subgoal ever completed stays in it, with its `> **Done:**` annotation. When a revision is finished and its branches are merged and filed, **`/close-revision N`** cuts that revision's section out of `docs/plan/DO.md` and into `docs/plan/rev-N/_DO.md`, leaving a one-line pointer behind. The master plan then reads as an index of closed revisions plus whatever is open, and everything about a finished revision — its subgoals, its `> **Done:**` records, and the branch plans that executed them — lives in one directory.
+The master plan would otherwise grow forever: every subgoal ever completed stays in it, with its `> **Done:**` annotation. When a revision is finished and its branches are merged and filed, **`/close-revision <label>`** cuts that revision's section out of `docs/plan/DO.md` and into `docs/plan/<label>/_DO.md`, leaving a one-line pointer behind. The master plan then reads as an index of closed revisions plus whatever is open, and everything about a finished revision — its subgoals, its `> **Done:**` records, and the branch plans that executed them — lives in one directory.
 
 Run `/file-plans` first, or the revision directory ends up holding an archive that describes branch plans still sitting flat elsewhere.
 
 The archive is `_DO.md`, not `DO.md`, and the underscore is load-bearing: plan resolution globs `docs/plan/**/DO.md` and matches on filename, so an archive named `DO.md` would be offered in the disambiguation prompt as a place to do work. The underscore keeps a finished revision out of resolution entirely. It stays reachable by explicit path.
 
-**This is the one step in the workflow with a real judgement in it, and the command does not make it.** A revision is closed when you say it is, not when its last checkbox ticks — you may still add subgoals to a revision whose earlier items have all shipped, as this project did, folding three new ones into revision 3 after its first three had merged. You supply the number; the command does the extraction, and refuses if the revision still has open items.
+**This is the one step in the workflow with a real judgement in it, and the command does not make it.** A revision is closed when you say it is, not when its last checkbox ticks — you may still add subgoals to a revision whose earlier items have all shipped, as this project did, folding three new ones into revision 3 after its first three had merged. You supply the label; the command does the extraction, and refuses if the revision still has open items.
 
 - **Confirm before writes.** Every command treats git writes (commit, push, branch deletion) and file deletions as confirmation-required. Read-only diagnostics (`git status`, `git log`, `git diff`) run freely.
 - **Hard stops on counters.** `/step N` and `/hitl-step N` stop after `N` iterations even if work remains. They won't ask "continue?".

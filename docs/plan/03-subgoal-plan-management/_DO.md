@@ -1,4 +1,4 @@
-## Subgoals — revision 3: plan layout at scale
+## Subgoals — revision 03-subgoal-plan-management: plan layout at scale
 
 Prompted by seven branch directories accumulating under `docs/plan/` in one evening. The concern is not this repo, which is small, but monorepos where that branch rate is normal for months at a time.
 
