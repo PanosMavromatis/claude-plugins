@@ -208,20 +208,19 @@ If any test fails, fix the Cython — do not modify the tests.
 
 ### 2. A property test for boundary errors (write it into the suite)
 
-Unit tests drawn from the formalization's TC-XX cases are chosen examples, and chosen
-examples do not find off-by-one errors at a boundary or floating-point disagreements near
-a tie. Add a property test that generates many random inputs, runs both backends and
-asserts they agree.
+Phase 2's new failure class is the boundary: an off-by-one that the formalization's chosen
+examples step over, or a float disagreement near a tie. Add a property test that generates
+many inputs, runs this backend and the phase-1 oracle, and asserts they agree.
 
-**Write it into the repository's own suite**, using that repository's types and encoder —
-not as a script beside the plugin. A check that lives outside the suite is a check nobody
-runs, and one inside it runs in CI on every change. Where the suite is not yet
-parameterised over backends, put it in the labelled non-shared section described in
-`references/test-patterns.md`.
+**Write it into the repository's own suite**, not as a script beside the plugin — that is
+what replaces the standalone validation script this plugin used to ship, and the reason is
+that a check outside the suite is a check nobody runs.
 
-Generate inputs by sampling from the encoder's own symbols rather than by generating
-arbitrary values: arbitrary values fail at the encoding boundary and tell you nothing
-about the kernel. Seed the generator so a failure is reproducible.
+The full discipline, including where the test goes when the suite is not parameterised over
+backends, is in
+`../algorithm-prototype/references/test-patterns.md` under **Equivalence discipline, phase
+by phase**. It is stated once there because each phase inherits the previous phase's checks
+and adds one, and three copies of a cumulative rule do not stay in step.
 
 ## Annotation — find the slow lines
 

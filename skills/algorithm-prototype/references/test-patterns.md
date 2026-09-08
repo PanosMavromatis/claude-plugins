@@ -89,19 +89,85 @@ path, two correct backends will otherwise legitimately disagree, and the suite t
 supposed to enforce equivalence will fail on a difference neither backend got wrong.
 State the rule in the formalization and implement it in every phase.
 
+## Equivalence discipline, phase by phase
+
+Every phase after the first implements the same signature and must produce the same
+answers. What changes between phases is **which class of failure is newly possible**, and
+the discipline is cumulative: each phase inherits every earlier phase's checks and adds
+exactly one.
+
+| Phase | Newly possible failure | The check that finds it |
+|---|---|---|
+| 1 `python` | — it *is* the oracle | The formalization's TC-XX cases; any `[algorithms].oracles` the manifest names |
+| 2 `cython` | Boundary and type errors introduced by translation | A property test over generated inputs |
+| 3 `cpu_parallel` | Races; a tie-break lost to concurrency | Thread-count invariance; a deliberately constructed tie |
+| 4 `cuda` | Barrier placement; device-only behaviour | The simulator, then a device — and a skip that is loud |
+
+**Where these live depends on which model the repository has** (above). Under Model A or
+Model B the shared cases need no change at all when a backend is added — that is the whole
+value of the parameterisation — so what a phase contributes is only its own new check.
+Under the third state, everything goes in the labelled non-shared section, and the report
+must not describe a passing run as backend equivalence, because nothing ran twice.
+
+### Phase 2 — the property test
+
+Unit tests drawn from the formalization are *chosen* examples, and chosen examples do not
+find off-by-one errors at a boundary or floating-point disagreements near a tie. Generate
+many inputs, run the new backend and the phase-1 oracle, and assert they agree.
+
+**Write it into the repository's own suite**, using that repository's types and encoder. A
+check that lives outside the suite is a check nobody runs; one inside it runs in CI on every
+change. This is what replaces the standalone validation script this plugin used to ship —
+that script was run once, by whoever remembered it.
+
+Generate inputs by sampling the encoder's own symbols rather than arbitrary values, which
+fail at the encoding boundary and measure the error path. Seed the generator so a failure
+is reproducible rather than a story.
+
+### Phase 3 — invariance and a constructed tie
+
+A correct parallel kernel gives the same answer on one thread as on many. Run the suite at
+both, and treat any disagreement as a race: it is never a tolerance problem, and never
+something to fix by widening an assertion.
+
+Then construct a tie deliberately — uniform parameters, or equal scoring entries. Learned
+float parameters essentially never tie, so a differential test against real data is evidence
+about the data and not about the tie-break, and a last-wins port would pass it.
+
+One expected difference is worth stating before it is mistaken for a bug: **a float sum
+reduced in parallel is reassociated**, and float addition is not associative, so a summing
+recurrence will differ in the last bits. A min or max reduction is exact and will not.
+Decide which the kernel is before choosing between equality and a tolerance.
+
+### Phase 4 — what a green run is evidence of
+
+The simulator (`NUMBA_ENABLE_CUDASIM=1`) runs device code on the CPU and finds indexing,
+bounds and barrier-placement errors. It models neither coalescing nor divergence nor races
+between blocks, so a green simulator run is evidence about logic and about nothing else, and
+must be reported as such.
+
+On a machine with no device the backend **skips**, and the skip must be visible — a session
+header naming it, and a documented way to escalate skips to failures in CI. A skip that
+reads like a pass is the one outcome that makes a suite report more than it tested.
+
 ## Translating TC-XX specs to pytest
 
-FORMALIZATION.md test cases use integer arrays (e.g., `a = [4, 5, 6]`) matching
-the internal representation where indices 0-3 are reserved and user symbols start
-at index 4. The `align()` function takes string sequences, so tests must map
-integer specs back to string symbols:
+A formalization states its test cases in the internal integer representation, while the
+public entry point usually takes symbols. Tests translate between the two **through the
+repository's own encoder**, read from the manifest's `[project].encoder` documents.
 
-- Build the repository's encoder with enough symbols to cover the highest index used, and ask it which integer any sentinel is rather than writing the number
-- Integer index `4` maps to `alphabet.symbols[0]`, index `5` to `symbols[1]`, etc.
-- The `GAP` sentinel in expected output maps to `alphabet.gap_symbol` (default `"."`)
+**Never hardcode a reserved code or a user-symbol base into a test.** Repositories disagree
+about them, and one repository has renumbered its own — so a hardcoded index is wrong in the
+way no test detects: it addresses a real position and returns a confident answer computed
+from some other symbol.
 
-For example, if the formalization says `a = [4, 5, 6]` and the alphabet has
-`symbols=("A", "B", "C", ...)`, the test input is `["A", "B", "C"]`.
+- Build the encoder with enough symbols to cover the highest index the case uses.
+- Ask the encoder which integer any sentinel is, rather than writing the number. The
+  first user symbol's code is the encoder's to state, not the test's to assume.
+- Translate a sentinel in expected output through the same encoder, in the same direction.
+
+So a case written over the first three user symbols becomes whatever three symbols the
+encoder assigns those codes — resolved at test time, not written into the file.
 
 ## Test file template
 
@@ -250,7 +316,8 @@ def test_tc15_all_zeros_matrix(align_fn):
 
 ## Key conventions
 
-- `ids=lambda b: b[0]` makes test output show "python", "cython", "numba" labels
+- `ids=lambda b: b[0]` makes test output show the backend names — `python`, `cython`,
+  `cpu_parallel`, `cuda` — so a failure names the phase that failed
 - Each TC-XX from `FORMALIZATION.md` maps to one `test_tcXX_<name>` function
 - Fixtures are shared only when test cases have identical scoring parameters;
   cases with unique parameters use inline setup

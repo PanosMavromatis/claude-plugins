@@ -118,7 +118,7 @@ Numba will happily privatise a recognised reduction pattern for you (`+=`, `*=`,
 An argmax — "which predecessor won" — is **not** a recognised pattern, and it is precisely
 the one a DP backtrace needs. Keep it in a `range` loop.
 
-## Verify — three checks, none of which is optional
+## Verify — three checks this phase adds, none of them optional
 
 ### 1. The suite, against every backend
 
@@ -148,9 +148,12 @@ uniform parameters, or a scoring matrix whose entries are equal — and assert t
 parallel backend picks the same predecessor as phase 1. This is the check most likely to
 be skipped and the one that catches the failure hardest to diagnose later.
 
-Where the suite is not yet parameterised over backends, put these in the labelled
-non-shared section described in
-`../algorithm-prototype/references/test-patterns.md`.
+These three are **additions**, not a replacement: phase 3 inherits phase 2's property test
+over generated inputs, which the parameterised suite already runs against this backend the
+moment it is registered. The cumulative rule, and where each check goes when the suite is
+not parameterised over backends, are in
+`../algorithm-prototype/references/test-patterns.md` under **Equivalence discipline, phase
+by phase**.
 
 ## Declare the dependency
 

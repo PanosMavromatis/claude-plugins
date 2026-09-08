@@ -187,11 +187,16 @@ Run the suite for real, and confirm the session header stops reporting this back
 skipped. A backend that still reports as skipped on a machine with a working GPU is a
 registration problem, not a hardware one.
 
-### 4. The constructed tie, again
+### 4. Everything phase 3 checked, again
 
-The same deliberate tie phase 3 used. Ties are where two correct backends legitimately
-disagree, and a fourth backend is a fourth chance to disagree. Reuse the phase-3 test
-rather than writing a new one — if the suite is parameterised, it already runs.
+The deliberate tie, and the property test over generated inputs before it. Ties are where
+two correct backends legitimately disagree, and a fourth backend is a fourth chance to
+disagree. **Reuse those tests rather than writing new ones** — under a parameterised suite
+they already run against this backend the moment it is registered, and writing a second copy
+is how two checks of one property drift apart.
+
+The cumulative rule is in `../algorithm-prototype/references/test-patterns.md` under
+**Equivalence discipline, phase by phase**.
 
 ## What this skill does NOT do
 
