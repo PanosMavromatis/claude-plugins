@@ -1,13 +1,13 @@
 # Pseudocode Conventions — Dynamic Programming Algorithms
 
-This document defines the notation standard for algorithm formalizations in the
-`tokalign` project. It governs the content of `FORMALIZATION.md` files produced
-by the `algorithm-formalize` skill.
+This document defines the notation standard for the formalizations the
+`algorithm-formalize` skill produces. It is about notation only: what the pseudocode
+must *say* about a given algorithm is the repository's business, stated in the manifest's
+`[project].invariants`.
 
-These conventions are specific to **dynamic programming algorithms** — the primary
-algorithm family in tokalign's initial scope. If an algorithm does not fit the DP
-mold (e.g., divide-and-conquer, heuristic search, probabilistic methods), notify
-the user immediately. The appropriate response is either:
+These conventions are specific to **dynamic programming algorithms**, which is the family
+this plugin exists for. If an algorithm does not fit the DP mould (divide-and-conquer,
+heuristic search, sampling methods), notify the user immediately. The appropriate response is either:
 
 - Custom instructions provided in the Claude Code session for that specific
   algorithm, or
@@ -35,13 +35,16 @@ Do not force a non-DP algorithm into this template.
    source material straightforward.
 
 4. **Procedural scaffolding surrounds the math.** Initialization, iteration order,
-   traceback, and output construction are expressed in procedural pseudocode. The
+   backtrace, and output construction are expressed in procedural pseudocode. The
    recurrence itself is a formula embedded within this scaffolding.
 
-5. **tokalign patterns are baked in.** The pseudocode assumes integer-indexed
-   sequences, a 2D score matrix accessed by integer indices, and affine gap
-   penalties. These are not implementation details — they are the computational
-   model.
+5. **Integer indexing is baked in; nothing else is.** The pseudocode operates on
+   pre-encoded integer inputs, and the recurrence indexes arrays by integer throughout.
+   That is a property of the computational model rather than an implementation detail,
+   and it is what makes the compiled and parallel phases transliterations. **What those
+   arrays contain and which parameters exist are the algorithm family's**, not this
+   document's — a score matrix and gap penalties belong to one family, transition and
+   emission parameters to another.
 
 ---
 
@@ -117,7 +120,7 @@ function ALIGN(a, b, S, g_o, g_e)
             g_o — real (gap opening penalty, negative)
             g_e — real (gap extension penalty, negative)
     Output: AlignmentResult containing score, aligned index sequences,
-            and traceback matrix
+            and backtrace matrix
 
     <body>
 
@@ -165,13 +168,13 @@ record AlignmentResult
     score : real
     aligned_a : integer array
     aligned_b : integer array
-    traceback : matrix
+    backtrace : matrix
 end record
 ```
 
 Use `record` for structured types. Field access uses dot notation: `result.score`.
 
-### Enumerations (traceback directions)
+### Enumerations (backtrace directions)
 
 ```
 enum Direction
@@ -256,7 +259,7 @@ Iteration order:
     for i ← 1 to m do
         for j ← 1 to n do
             compute M[i, j], X[i, j], Y[i, j] per recurrence above
-            record traceback[i, j] ← direction of the maximizing term
+            record backtrace[i, j] ← direction of the maximizing term
         end for
     end for
 ```
@@ -264,20 +267,20 @@ Iteration order:
 This is where the pseudocode transitions from mathematical to procedural. The
 recurrence block defines *what* is computed; the iteration order defines *when*.
 
-### Traceback
+### Backtrace
 
-Traceback is expressed as a separate procedure, not inlined into the main
+Backtrace is expressed as a separate procedure, not inlined into the main
 function. This matches the conceptual separation (forward pass computes scores,
 backward pass recovers the alignment) and will map cleanly to separate functions
 in implementation.
 
 ```
 function TRACEBACK(T, a, b, i_start, j_start)
-    Input:  T — traceback matrix of Direction values
+    Input:  T — backtrace matrix of Direction values
             a — integer array (encoded sequence A)
             b — integer array (encoded sequence B)
-            i_start — starting row index for traceback
-            j_start — starting column index for traceback
+            i_start — starting row index for backtrace
+            j_start — starting column index for backtrace
     Output: (aligned_a, aligned_b) — pair of integer arrays with
             GAP inserted at gap positions
 
@@ -311,70 +314,85 @@ end function
 formalization does not prescribe how it is represented in memory — Phase 1
 maps it to `alphabet.gap_index` (an integer) at implementation time.
 
-### Traceback with affine gaps
+### Backtrace with affine gaps
 
-For affine gap models with multiple DP matrices, the traceback must track which
+For affine gap models with multiple DP matrices, the backtrace must track which
 matrix the current cell belongs to. Use a state variable:
 
 ```
 state ← M    — current matrix (one of M, X, Y)
 ```
 
-The traceback procedure switches on `(state, T[state, i, j])` pairs to determine
+The backtrace procedure switches on `(state, T[state, i, j])` pairs to determine
 both the move direction and the matrix transition.
 
 ---
 
-## tokalign-Specific Conventions
+## A note on "backtrace" versus "traceback"
 
-### The encode/decode boundary
+These conventions say **backtrace** for the array of predecessor choices and the procedure
+that walks it. The sequence-alignment literature usually says *traceback*, and a worked
+example drawn from that literature is left in its own vocabulary rather than corrected.
 
-Every `FORMALIZATION.md` must include a brief note at the top of the pseudocode
-stating:
+The generic term is deliberately the other one: in a plugin whose subject is Python code,
+"traceback" already means an exception's stack trace, so an instruction to "check the
+traceback" is ambiguous in exactly the situation where precision matters most.
 
-> **Boundary note.** This pseudocode operates on pre-encoded integer sequences.
-> The caller is responsible for encoding string symbols to integers via
-> `Alphabet.encode_pair()` before invocation and decoding the aligned integer
-> sequences back to strings via `Alphabet.decode()` after return. No string
-> operations occur within this pseudocode.
+## The encode/decode boundary — required of every formalization
 
-This is not part of the algorithm — it is a framing statement that anchors the
-pseudocode in tokalign's architecture.
+Every formalization states, at the top of its Recurrence section, that the pseudocode
+operates on pre-encoded integer inputs and that encoding and decoding happen at the
+caller's boundary:
 
-### Score matrix access
+> **Boundary note.** This pseudocode operates on pre-encoded integer inputs. The caller
+> encodes symbols to integers before invocation and decodes them back afterwards. No
+> symbol operations occur within this pseudocode.
 
-Always write `S[a[i], b[j]]` — the score for the symbols at positions i and j,
-looked up by their integer indices in the score matrix. Never write
-`S["alpha", "beta"]` or `score(sym_a, sym_b)`.
+This is not part of the algorithm — it is the framing that anchors the pseudocode to a
+computational model the later phases can transliterate rather than redesign. It applies in
+every repository and to every family, which is why it lives here and not among the
+family-specific notation below.
 
-### Gap penalty parameters
+## Family-specific notation — worked examples
 
-Use `g_o` (gap open, negative value) and `g_e` (gap extend, negative value).
-The affine gap cost for a gap of length k is: `g_o + k × g_e`.
+The conventions above are universal. What an array *holds* and which parameters exist are
+the family's, and a formalization should follow whatever the repository's existing
+formalizations already do. Two examples, deliberately dissimilar:
 
-If the source algorithm uses linear gap penalties, the formalization should
-present the affine generalization and note in the Adaptations section:
-"Source uses linear gap penalty d. Generalized to affine: g_o + k × g_e.
-Linear is recoverable by setting g_o = 0, g_e = d."
+### Sequence alignment
 
-### Output specification
+Score-matrix access is written `S[a[i], b[j]]` — the score for the symbols at positions
+`i` and `j`, looked up by their integer indices. Never `S["alpha", "beta"]` and never
+`score(sym_a, sym_b)`: symbol-level access has no place inside the recurrence.
 
-The function's Output declaration must list:
+Gap penalties are named `g_o` (opening) and `g_e` (extension), both negative, and the
+affine model is the general case with the linear model as its `g_o = 0` specialisation.
 
-- `score` — the optimal alignment score (real)
-- `aligned_a`, `aligned_b` — integer arrays with GAP_INDEX at gap positions
-- `traceback` — the traceback matrix (or matrices, for affine models)
+### Hidden Markov models
 
-The traceback is included in the output even if the caller doesn't always need it,
-because downstream visualization depends on it.
+There is no score matrix and there are no gap penalties. The parameters are an
+initial-state vector, a transition array and an emission array, and the notation must
+make the emission's *arity* visible, because that is the assumption most often lost in
+translation: an arc-emitting model's emission is indexed by source state, destination
+state and symbol, `E[i, j, k]`, and cannot be hoisted out of the inner loop because it
+depends on both endpoints. A state-emitting model's `B[i, k]` can be, and writing one
+where the other is meant changes the recurrence rather than the notation.
 
----
+Note also the geometry: a path over *N* observations visits *N+1* states, so state arrays
+and observation arrays differ in length by one. Say so in Definitions rather than leaving
+a reader to infer it from an index bound.
+
+## Output specification
+
+State explicitly what the algorithm returns: the DP array, the backtrace array where one
+exists, the optimal value, and the recovered path or sequence in its pre-decode form.
 
 ## FORMALIZATION.md Template
 
 Every formalization follows the structure defined in
 [`formalization-template.md`](formalization-template.md). Copy the template
-to `src/tokalign/algorithms/<n>/FORMALIZATION.md` and fill in each section.
+to the path the manifest's `[phases].formalization` template gives for the algorithm,
+and fill in each section.
 
 The template includes guidance on each section's content and which sections
 are optional. The notation used within the template follows the conventions

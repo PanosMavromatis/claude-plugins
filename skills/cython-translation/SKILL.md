@@ -258,7 +258,7 @@ is yellow, add missing type declarations.
   enc_a = enc_a.astype(np.int32)
   ```
 
-- **Traceback matrix**: If the traceback uses an `IntEnum`, use its integer
+- **Backtrace matrix**: If the backtrace uses an `IntEnum`, use its integer
   values (not the enum objects) in the Cython matrix. Define the direction
   constants as C integers at the top of the `.pyx` file.
 

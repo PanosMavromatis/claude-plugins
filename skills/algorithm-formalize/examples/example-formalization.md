@@ -1,3 +1,15 @@
+> **This is one family's worked instance, not the shape of every formalization.**
+> Needleman-Wunsch is sequence alignment, so this example has a score matrix, gap
+> penalties and a two-dimensional matrix with anti-diagonals. A formalization for a
+> different family will have none of those and is no less complete for it. Read the
+> *structure* — which sections exist, how a recurrence is laid out, how a TC-XX case
+> states its precision level — and take the vocabulary from your own repository.
+>
+> The section list here predates the current template: `formalization-template.md` is
+> canonical, and adds `Derived from`, `Objective` and a `Parallel decomposition` section
+> that this example does not yet carry. It also says *backtrace* where the alignment
+> literature, and this example, say *traceback*.
+
 # Simplified Linear-Gap Needleman-Wunsch
 
 ## Metadata
@@ -22,15 +34,18 @@
    and `g_e = g`.
 
 2. **Integer-indexed sequences.** The 1970 paper operates on single amino acid
-   characters. This formalization uses pre-encoded integer arrays per tokalign's
-   encode-at-the-boundary pattern.
+   characters. This formalization uses pre-encoded integer arrays, per the
+   encode-at-the-boundary rule every formalization follows.
 
 3. **Generic score matrix.** The paper classifies amino acid pairs by codon
    correspondence. This formalization uses an abstract 2D score matrix `S`
    indexed by integer symbol indices.
 
-4. **Similarity maximization preserved.** Both the paper and tokalign maximize
-   alignment score. No min/max normalization is needed.
+4. **Objective preserved as the paper states it.** The paper maximises alignment
+   score, and so does this rendering. **Nothing is normalised** — had the source
+   minimised a distance, this would record a minimisation, because converting between
+   the two changes the recurrence structure, the base cases and the identity element,
+   not just an operator.
 
 5. **Explicit traceback matrix.** The paper describes traceback implicitly
    ("recording the origin of the number"). This formalization defines an explicit
@@ -275,9 +290,8 @@ end function
 1. **Teaching example only.** This formalization is a simplified linear-gap
    variant intended as a pedagogical example for the `algorithm-formalize` skill.
    Production formalizations should follow the affine gap convention (three
-   coupled matrices M, X, Y with parameters `g_o` and `g_e`). See the full
-   Needleman-Wunsch formalization at
-   `src/tokalign/algorithms/needleman_wunsch/FORMALIZATION.md` for the
+   coupled matrices M, X, Y with parameters `g_o` and `g_e`). A repository's own
+   formalization of the full algorithm, at whatever path its manifest gives, is the
    production version.
 
 2. **Prepend vs. append-reverse.** The traceback uses `prepend` for notational

@@ -1,7 +1,13 @@
 # example-cython-impl.pyx
 #
-# Cython translation of example-python-impl.py (linear-gap NW).
-# This is the Phase 2 counterpart — every line traces back to the Python.
+# ONE FAMILY'S WORKED INSTANCE, not a template. This is sequence alignment, so it
+# has a score matrix and gap penalties; a kernel from another family will have
+# neither. What generalises is the *shape*: a thin Python wrapper that encodes and
+# decodes, a compiled inner function that is purely numeric and never raises, typed
+# memoryviews over the arrays, and every line traceable to a line of the phase-1
+# reference. Take the shape; take the types from your own repository.
+#
+# Cython translation of example-python-impl.py (linear-gap Needleman-Wunsch).
 #
 # Patterns demonstrated:
 #   1. Wrapper (def align) + inner function (cpdef _align_impl) split
@@ -22,7 +28,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-from tokalign._types import AlignmentResult
+from <pkg>._types import AlignmentResult   # that repository's own result type
 
 # Direction constants — same values as the Python version's NIL/DIAG/UP/LEFT
 cdef signed char NIL  = 0

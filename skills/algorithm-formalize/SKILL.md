@@ -40,7 +40,7 @@ from it faithfully.
 that Phase 1 (`algorithm-prototype`) translates from. The translation from
 formalization to Python is tight and nearly mechanical: every function in the
 pseudocode becomes a Python function, the recurrence block maps to the inner
-loop body, the traceback procedure becomes a separate function. Structural
+loop body, the backtrace procedure becomes a separate function. Structural
 deviations in Phase 1 require explicit justification.
 
 This means the formalization must be precise, complete, and correct. Gaps or
@@ -190,26 +190,10 @@ parameters, emission parameters.
 
 ### Step 5: Write the header block
 
-Every `FORMALIZATION.md` begins with a metadata header:
-
-```markdown
-# <Algorithm Name>
-
-## Metadata
-
-| Field | Value |
-|-------|-------|
-| Source | <paper title, authors, year, DOI or URL; or the implementation this was recovered from> |
-| Derived from | <path> `sha256:`<hash> |
-| Family | <sequence alignment / hidden Markov model / ...> |
-| Variant | <the family's variant, e.g. global / local / semi-global; decode / forward> |
-| Objective | <what is optimised and in which direction, with the semiring — e.g. "minimise description length in bits (min-plus)"> |
-| Parallel decomposition | <the decomposition the parallel phases will use, or "undetermined"> |
-| Time complexity | <O(...)> |
-| Space complexity | <O(...)> |
-| Optimality | <optimal / heuristic / approximate> |
-| Algorithm-specific params | <any parameters beyond the repository's usual signature> |
-```
+**The structure is defined in `references/formalization-template.md`, which is canonical.
+Do not restate it here or reinvent it.** Open the template, copy its body, and fill in the
+metadata table it defines. What follows is the reasoning behind the rows that are easiest
+to fill in badly.
 
 Four of these rows carry more weight than their length suggests.
 
@@ -252,23 +236,15 @@ documentation; the non-trivial ones are where bugs hide during implementation.
 The trivial adaptations are documentation. The non-trivial ones are where bugs
 hide during implementation.
 
-### Step 7: Assemble and write `FORMALIZATION.md`
+### Step 7: Assemble and write the formalization
 
 Write the complete file to the path the manifest's `[phases].formalization` template
-gives for this algorithm, creating any directories it names. The file structure is:
-
-1. **Metadata** (Step 5) — header block with algorithm properties
-2. **Adaptations from Source** (Step 6) — every change from the paper's model
-3. **Source Pseudocode** (Step 3) — verbatim reproduction from the paper, with
-   citation. *Omit this section if the source contains no pseudocode.*
-4. **Definitions** — all matrix names, variables, and symbolic constants
-5. **Recurrence** — boxed recurrence block per conventions
-6. **Base Cases** — initialization
-7. **Iteration Order** — procedural loop structure
-8. **Traceback** — traceback procedure as a separate function
-9. **Test Cases** — language-agnostic test specifications as input/expected-output
-   pairs (see "Test cases" below)
-10. **Notes** — observations, implementation considerations, and open questions
+gives for this algorithm, creating any directories it names. **The section order and the
+mandatory set are `references/formalization-template.md`'s**, and one rule there is worth
+repeating because it is the one most often broken: a section whose answer is short is
+still a section. "This recurrence has no backtrace" and "the parallel decomposition is
+undetermined" are answers; omitting the heading is not, because a reader then cannot tell
+a considered answer from an oversight.
 
 ### Step 8: Hard stop
 
@@ -382,8 +358,8 @@ from the same test specifications.
 
 ## Gotchas
 
-- **Papers often present traceback as implicit.** "Follow the arrows back" is not
-  a traceback algorithm. The formalization must define a traceback matrix with
+- **Papers often present backtrace as implicit.** "Follow the arrows back" is not
+  a backtrace algorithm. The formalization must define a backtrace matrix with
   explicit values at each cell (e.g., DIAG, UP, LEFT) and a procedure that reads
   it to produce the aligned sequences.
 
