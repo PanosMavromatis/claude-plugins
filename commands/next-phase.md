@@ -63,7 +63,8 @@ proceed against an assumed layout.
 
    | Target phase | Skill |
    |---|---|
-   | 0 `formalization` | `dp-compile:algorithm-formalize` |
+   | 0 `formalization`, phase-1 file absent | `dp-compile:algorithm-formalize` |
+   | 0 `formalization`, phase-1 file present | `dp-compile:algorithm-recover` |
    | 1 `python` | `dp-compile:algorithm-prototype` |
    | 2 `cython` | `dp-compile:cython-translation` |
    | 3 `cpu_parallel` | `dp-compile:cpu-parallelization` |
@@ -73,6 +74,15 @@ proceed against an assumed layout.
    derives from the kernel, so editing the kernel makes the document stale and regenerating
    it is ordinary work rather than a special case. A formalization written from a paper has
    no source in the repository and never becomes a target this way.
+
+   **Phase 0 is the one row that splits, and the discriminator is a file rather than a
+   preference.** The two skills produce the same artifact at the same path from opposite
+   evidence — one from source material, one from the code that already exists — so the
+   presence of the phase-1 file settles which is possible. A target of phase 0 with a
+   phase-1 file present is a recovery whether it is the first write or a regeneration after
+   the kernel moved; `dp-compile:algorithm-formalize` has no source material to work from
+   in that case and would end up describing the kernel without the discipline that keeps
+   the description honest. Report which entrance was chosen and why, in step 4's line.
 
 6. When phase detection reports no target — nothing stale, and every phase the manifest
    declares already exists — report "This algorithm is complete across every backend this

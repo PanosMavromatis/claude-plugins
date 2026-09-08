@@ -22,7 +22,7 @@ silence is not.**
 
 | Field | Value |
 |-------|-------|
-| Source | <paper title, authors, year, DOI or URL; or the implementation this was recovered from> |
+| Source | <forward: paper title, authors, year, DOI or URL. Reverse: the phase-1 file this was recovered from, by path and commit, plus the legacy implementation it was ported from and any written account of it> |
 | Derived from | <path> `sha256:`<hash> |
 | Family | <sequence alignment / hidden Markov model / edit distance / ...> |
 | Variant | <the family's variant, where it has them — global / local / semi-global; decode / forward / posterior> |
@@ -47,21 +47,42 @@ the other inverts every comparison in the recurrence.
 
 ## Adaptations from Source
 
-Every assumption the source left unnamed, and what was done about it. Mandatory even when
-the adaptations look trivial — the trivial ones are documentation, and the non-trivial
-ones are where bugs hide during implementation.
+*Reverse entrance: retitle this section **Deviations from the legacy source**.*
+
+**Forward** — every assumption the source left unnamed, and what was done about it.
+Mandatory even when the adaptations look trivial: the trivial ones are documentation, and
+the non-trivial ones are where bugs hide during implementation.
 
 1. <what the source assumed, what this repository requires, and how the gap was closed>
 2. ...
 
+**Reverse** — every place the phase-1 implementation behaves differently from what it was
+ported from, **and every place it deliberately does not**. A convention matched on purpose
+leaves no trace in a diff, in the code, or in the tests, so its absence here is what a
+later cleanup undoes. `skills/algorithm-recover/references/deviation-taxonomy.md` (from the plugin root)
+sets out the
+kinds and what each does to the document.
+
+The recurrence above states **this repository's** behaviour, not the legacy source's.
+Where a port deliberately fixed a defect, the fix is the specification and the original's
+behaviour is recorded here — writing the original's into the recurrence would specify the
+bug and make every later phase reproduce it.
+
 ## Source Pseudocode
 
-*Optional — include only if the source material contains pseudocode.*
+*Optional — include only if the source material contains pseudocode. Reverse entrance:
+retitle this section **Source Implementation** and quote the legacy source instead.*
 
-Reproduce it verbatim, with a citation (title, figure or algorithm number, page). This is
-a **reference snapshot for the human reviewer**, so they can compare the source against
-this rendering without opening the source. It is not a starting point for transformation:
-the rendering below is written fresh from the source's full description.
+Reproduce it verbatim, with a citation — title, figure or algorithm number, page for a
+paper; file and line range for an implementation. This is a **reference snapshot for the
+human reviewer**, so they can compare the source against this rendering without opening
+the source. It is not a starting point for transformation: the rendering below is written
+fresh from the source's full description.
+
+Omit the section when there is nothing to snapshot — a purely conversational source
+forward, or a recovery whose legacy implementation is not present in the repository. In
+the reverse case say so in `Notes`, since the rendering then had no second text to be
+checked against.
 
 ## Definitions
 
@@ -117,6 +138,12 @@ their equivalence will fail on a difference neither of them got wrong.
 
 Language-agnostic input/expected-output pairs that any implementation must satisfy. Not
 test code — a behavioural specification expressed as data, independent of any framework.
+
+*Reverse entrance: every case also records its **provenance** — `oracle` (an output the
+legacy implementation produced), `extracted` (from an existing test), or `constructed`
+(written now, from the recurrence). A case extracted from a passing test is one the
+implementation already satisfies, so a reader must be able to tell a specified behaviour
+from a ratified one.*
 
 ### TC-01: <descriptive name>
 

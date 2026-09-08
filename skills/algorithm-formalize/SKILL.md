@@ -67,7 +67,10 @@ Before proceeding, verify ALL of the following:
    the manifest's `[phases]` templates give for this algorithm. If the phase-1
    file already exists, this skill's forward window has closed — do not proceed.
    *(An existing implementation with no formalization is not this skill's job
-   either; it is the reverse entrance, which recovers a formalization from code.)*
+   either; that is the reverse entrance, `dp-compile:algorithm-recover`. Hand off with
+   the `Skill` tool rather than attempting it here — the two produce the same artifact at
+   the same path, but from opposite evidence and with the provenance edge pointing the
+   other way.)*
 
 3. **You have read the repository's own vocabulary.** Before writing any
    pseudocode, read the manifest's `[project].encoder` documents, which define how

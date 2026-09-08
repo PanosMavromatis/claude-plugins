@@ -20,6 +20,15 @@ through five stages — a formalization, then four executable backends:
 the manifest. Phases 3 and 4 are both Numba, and neither is called `numba`: that names the
 library, and a name shared by two phases cannot distinguish them.
 
+**Phase 0 has two entrances.** The chain above assumes prose → pseudocode → Python, and
+real code does not always arrive that way: a kernel translated from a legacy
+implementation in another language has a reference, but it is source in a language nobody
+here runs. `algorithm-recover` produces the same document at the same path from the code
+instead, and the provenance edge then points from the kernel to the document — so editing
+the kernel marks the formalization stale, and not the reverse. Which entrance applies is
+decided by a file rather than a preference: if the phase-1 file already exists, only the
+reverse one has anything to work from.
+
 The plugin ensures the agent follows this sequence without skipping phases, losing test
 coverage, or introducing behavioral differences between backends. **Staleness is decided by
 recorded provenance, not by modification time**: each derived artifact carries a
@@ -33,7 +42,8 @@ rule is `commands/references/phase-detection.md`.
 
 | Skill                    | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
-| `algorithm-formalize`    | Phase 0: pseudocode formalization from source material   |
+| `algorithm-formalize`    | Phase 0 forward: pseudocode formalization from source material |
+| `algorithm-recover`      | Phase 0 reverse: formalization recovered from an existing implementation |
 | `algorithm-prototype`    | Phase 1: pure Python implementation + tests              |
 | `cython-translation`     | Phase 2: Cython translation with equivalence check       |
 | `cpu-parallelization`    | Phase 3: `@njit(parallel=True)` with `prange`            |
@@ -133,7 +143,8 @@ dp-compile/
 ├── dev/
 │   └── smoke-test.sh             # Verify all plugin components load
 ├── skills/
-│   ├── algorithm-formalize/       # Phase 0 skill
+│   ├── algorithm-formalize/       # Phase 0 skill, forward entrance
+│   ├── algorithm-recover/         # Phase 0 skill, reverse entrance (from code)
 │   ├── algorithm-prototype/       # Phase 1 skill
 │   ├── cython-translation/        # Phase 2 skill
 │   ├── cpu-parallelization/       # Phase 3 skill

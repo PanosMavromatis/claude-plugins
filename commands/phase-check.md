@@ -66,6 +66,10 @@ without having to choose.
   they were derived from, so a pass and a failure are equally uninformative.
 - Any provenance header that was missing, with the file named — the mtime fallback is in
   use for that file and the report is where that becomes visible.
-- For phase 0: whether the formalization has been reviewed and approved.
+- For phase 0: whether the formalization has been reviewed and approved, and **which
+  entrance produced it** — forward from source material (`Derived from` empty) or recovered
+  from the phase-1 kernel (`Derived from` naming it). The two carry different weight: a
+  recovered document was read off the code it now governs, so a reader deciding how far to
+  trust it needs to know which one is in front of them.
 
 After the report, **stop**. Do not suggest running `/next-phase`, do not offer to continue implementation, and do not speculate about what should happen next.

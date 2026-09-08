@@ -30,7 +30,11 @@ echo
 
 expected=(
   "skills/algorithm-formalize/SKILL.md"
+  "skills/algorithm-formalize/references/formalization-template.md"
+  "skills/algorithm-recover/SKILL.md"
+  "skills/algorithm-recover/references/deviation-taxonomy.md"
   "skills/algorithm-prototype/SKILL.md"
+  "skills/algorithm-prototype/references/test-patterns.md"
   "skills/cython-translation/SKILL.md"
   "skills/cpu-parallelization/SKILL.md"
   "skills/cpu-parallelization/references/decomposition-patterns.md"
@@ -50,6 +54,10 @@ expected=(
 # The check is `-s` (exists and non-empty), so a zero-byte placeholder fails rather
 # than warns. That is deliberate: an empty reference file is worse than a missing one,
 # because a skill that @-references it appears to have documentation and does not.
+#
+# `formalization-template.md` and `test-patterns.md` are listed even though they live
+# under another skill's directory: each is referenced by several skills across the
+# lifecycle, so losing one breaks skills whose own directory still looks complete.
 
 missing=0
 echo "Checking component placement:"
