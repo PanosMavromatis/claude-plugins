@@ -5,7 +5,7 @@ runs both backends, and asserts identical scores and aligned sequences.
 
 Usage
 -----
-uv run python tokalign-dev/skills/cython-translation/scripts/validate-equivalence.py \
+uv run python dp-compile/skills/cython-translation/scripts/validate-equivalence.py \
     --algorithm needleman_wunsch \
     --n-pairs 1000 \
     --min-len 3 \

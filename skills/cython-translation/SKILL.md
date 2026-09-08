@@ -17,7 +17,7 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
 1. **`_python.py` exists** in the algorithm directory (e.g.,
    `src/tokalign/algorithms/needleman_wunsch/_python.py`). If it does not exist,
    stop and hand off to the `algorithm-prototype` skill instead, using the
-   `Skill` tool with `skill: "tokalign-dev:algorithm-prototype"`. Do NOT use
+   `Skill` tool with `skill: "dp-compile:algorithm-prototype"`. Do NOT use
    `Read` on the sibling `SKILL.md` — only the `Skill` tool activates the skill
    through the harness so it runs with its own references and examples.
 
@@ -25,7 +25,7 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
    `FORMALIZATION.md` is newer than `_python.py`, the Python backend is stale and
    must be regenerated before Cython translation can proceed. Stop and hand off
    to the `algorithm-prototype` skill first via the `Skill` tool with
-   `skill: "tokalign-dev:algorithm-prototype"` (not `Read`) — do not translate
+   `skill: "dp-compile:algorithm-prototype"` (not `Read`) — do not translate
    from a stale source.
 
 3. **Check for stale artifact (regeneration case).** If `_cython.pyx` already
@@ -197,7 +197,7 @@ Run the validate-equivalence script to catch off-by-one and floating-point
 boundary errors that unit tests miss:
 
 ```bash
-uv run python tokalign-dev/skills/cython-translation/scripts/validate-equivalence.py \
+uv run python dp-compile/skills/cython-translation/scripts/validate-equivalence.py \
     --algorithm <algorithm> --n-pairs 1000
 ```
 

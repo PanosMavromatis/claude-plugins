@@ -1,4 +1,4 @@
-# CLAUDE.md — tokalign-dev
+# CLAUDE.md — dp-compile
 
 <!-- 
   Guidelines:
@@ -12,14 +12,14 @@
 
 ## Project overview
 
-**tokalign-dev** is a Claude Code plugin that implements a development toolkit for the `tokalign` package: guides algorithm implementation through prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.
+**dp-compile** is a Claude Code plugin that guides dynamic-programming algorithms through a staged translation from pseudocode to pure Python to compiled and parallel backends, enforcing equivalence against the reference implementation at every stage.
 
 This is a **plugin repository**, not a traditional application. The codebase is primarily natural language (Markdown + JSON) with optional shell scripts. Components are auto-discovered by Claude Code from their conventional directory locations.
 
 ## Directory structure
 
 ```
-tokalign-dev/
+dp-compile/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest (name, version, description)
 ├── agents/                   # Subagent definitions with YAML frontmatter
@@ -48,7 +48,7 @@ IMPORTANT: All component directories (skills/, commands/, agents/, hooks/) MUST 
 ## Conventions
 
 - Use **kebab-case** for all directory and file names.
-- Plugin components are namespaced as `tokalign-dev:component-name` — never conflicts with project-level components.
+- Plugin components are namespaced as `dp-compile:component-name` — never conflicts with project-level components.
 - Use `${CLAUDE_PLUGIN_ROOT}` for all intra-plugin path references in scripts, hooks, and MCP configs. NEVER use absolute or relative paths — plugins install in different locations depending on the method.
 - Skill `description` fields are **triggers, not summaries** — write them for the model ("when should I fire?") with specific keywords and file patterns.
 - Keep SKILL.md files under 5,000 words. Move detailed reference material to references/.
@@ -67,7 +67,7 @@ claude --debug  # look for "loading plugin" messages
 ./dev/smoke-test.sh
 
 # Test a specific command
-/tokalign-dev:{{command-name}} <test-args>
+/dp-compile:{{command-name}} <test-args>
 ```
 
 When adding a new skill, command, or other component, update the `expected` array in `dev/smoke-test.sh` so the smoke test covers it.
@@ -78,7 +78,7 @@ When adding a new skill, command, or other component, update the `expected` arra
 # Register as a local marketplace (one-time)
 /plugin marketplace add .
 # Install from that marketplace
-/plugin install tokalign-dev@<marketplace-name>
+/plugin install dp-compile@<marketplace-name>
 # After making changes, reload without reinstalling
 /reload-plugins
 
@@ -93,9 +93,9 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 
 ```json
 {
-  "name": "tokalign-dev",
-  "description": "Development toolkit for the tokalign package: guides algorithm implementation through prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.",
-  "version": "0.1.0"
+  "name": "dp-compile",
+  "description": "Guides dynamic-programming algorithms through a staged translation from pseudocode to pure Python to compiled and parallel backends, enforcing equivalence against the reference implementation at every stage.",
+  "version": "0.2.0"
 }
 ```
 

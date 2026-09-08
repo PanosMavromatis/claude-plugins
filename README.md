@@ -1,4 +1,4 @@
-# tokalign-dev
+# dp-compile
 
 Development toolkit for the tokalign package: guides algorithm implementation through formalization → prototype → Cython → GPU phases with test equivalence enforcement, benchmarking, and packaging.
 
@@ -42,19 +42,19 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 ## Typical Workflow
 
 ```
-/tokalign-dev:new-algorithm
+/dp-compile:new-algorithm
   → produce FORMALIZATION.md → human reviews and approves
 
-/tokalign-dev:next-phase needleman_wunsch
+/dp-compile:next-phase needleman_wunsch
   → implement in pure Python from formalization → all tests pass
 
-/tokalign-dev:next-phase needleman_wunsch
+/dp-compile:next-phase needleman_wunsch
   → Cython translation → same tests pass automatically
 
-/tokalign-dev:next-phase needleman_wunsch
+/dp-compile:next-phase needleman_wunsch
   → Numba GPU → same tests pass (or skip if no GPU)
 
-/tokalign-dev:benchmark needleman_wunsch
+/dp-compile:benchmark needleman_wunsch
   → see performance comparison across backends
 ```
 
@@ -67,13 +67,13 @@ not patch it — and cascade from there:
 
 ```
 # Edit FORMALIZATION.md after Cython backend already exists
-/tokalign-dev:phase-check needleman_wunsch
+/dp-compile:phase-check needleman_wunsch
   → Phase 0 (effective) — _python.py and _cython.pyx are stale
 
-/tokalign-dev:next-phase needleman_wunsch
+/dp-compile:next-phase needleman_wunsch
   → regenerates _python.py from updated formalization → tests pass
 
-/tokalign-dev:next-phase needleman_wunsch
+/dp-compile:next-phase needleman_wunsch
   → regenerates _cython.pyx from updated _python.py → tests pass
 ```
 
@@ -106,7 +106,7 @@ When adding a new skill, command, or other component, update the `expected` arra
 ## Directory Structure
 
 ```
-tokalign-dev/
+dp-compile/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── dev/

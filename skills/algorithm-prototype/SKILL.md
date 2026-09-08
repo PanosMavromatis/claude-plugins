@@ -24,7 +24,7 @@ Do **not** trigger on "new algorithm" or "add an algorithm" requests — those b
 Before writing any code:
 
 1. Confirm `src/tokalign/algorithms/<name>/FORMALIZATION.md` exists. If it does not, stop:
-   "Phase 0 is required before Phase 1. Run `/tokalign-dev:new-algorithm` to produce the
+   "Phase 0 is required before Phase 1. Run `/dp-compile:new-algorithm` to produce the
    formalization first."
 2. **Check for stale artifact (regeneration case).** If `_python.py` already exists,
    compare modification times: if `FORMALIZATION.md` is newer than `_python.py`, the
