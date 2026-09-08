@@ -35,6 +35,7 @@ has to state; the other is a library name.
 | 4. Primitive substituted | Only in failure | No — but the failure mode is part of the contract |
 | 5. Repository invariant imposed | No, under the mapping | **Sometimes** — array shapes and index ranges |
 | 6. Convention deliberately preserved | No | No — but its absence from the section is the risk |
+| 7. A boundary relocated | Only at the edges | No — but it is the contract every later phase implements |
 
 ### 1. A defect in the source, fixed
 
@@ -140,6 +141,28 @@ trace and this one leaves none.
 *Instance.* A division helper returns zero for both `0/0` and `x/0`, matching the original
 rather than raising. It has no caller yet in the current release, which makes it even
 easier to "tidy" into something stricter.
+
+### 7. A boundary relocated
+
+Responsibility moved between the kernel and its caller. What is computed does not change;
+*where* validation, error signalling, allocation or ownership sit does. It is easy to miss
+as a deviation at all, because the numbers agree everywhere.
+
+It belongs in the section because **it is the contract every later phase implements**. A
+kernel that neither validates nor raises, paired with a wrapper that does, is the split
+that lets phases 2 to 4 be transliterations — a compiled or device function often *cannot*
+raise, so a kernel written the other way would have to be redesigned at each phase rather
+than translated. The entry states which side does what, and why the line falls there.
+
+The same kind covers ownership: a method on a mutable object becoming a free function over
+a frozen value, or a routine that wrote its result back into its input returning one
+instead. Both change no arithmetic and both change what a caller may assume.
+
+*Instance.* The original's decode is a method that fills slots on a trainer and never
+signals impossibility; the port is a purely numeric kernel returning a sentinel plus a
+checked wrapper that turns the sentinel into a distinct error type — and a free function
+over parameters rather than a method, since the original read no forward variable and its
+placement on the trainer was an artefact of where the corpus lived.
 
 ## Three questions for each entry
 

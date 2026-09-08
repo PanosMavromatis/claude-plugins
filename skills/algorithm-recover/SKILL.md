@@ -213,8 +213,10 @@ it is not, and which TC carries it. The manifest lists where the files are; that
 where what they *mean* is recorded, which is what a reviewer needs and what the manifest
 cannot hold.
 
-Constructed cases are not optional, because an extracted suite inherits every blind spot
-of the suite it came from. Two recur:
+**Two things must be *covered*; construct them only where extraction did not already reach
+them.** An extracted suite inherits every blind spot of the suite it came from, but a good
+suite may have none — and a case written afresh alongside an existing test that already
+makes the same assertion is duplication, not coverage. Check first, then construct:
 
 - **Ties.** Learned or measured parameters essentially never tie, so a suite drawn from
   real data can pass while the tie-breaking rule is inverted. Construct the tie — uniform
@@ -225,6 +227,13 @@ of the suite it came from. Two recur:
 
 State each case's precision level (exact, property-based, relational) exactly as the
 forward entrance does.
+
+**Do not assume the suite lacks these.** Deciding a case must be `constructed` without
+looking is the mirror of the error the provenance rule exists to prevent: it labels as new
+something the repository already had, and it reads to a later reviewer as though the
+recovery found a gap. Where extraction covered everything and nothing was constructed, say
+so — "this suite already covered the cases extraction usually misses" is a finding about the
+repository worth recording in `Notes`.
 
 ### Step 7: Stamp the provenance header — it points backwards
 

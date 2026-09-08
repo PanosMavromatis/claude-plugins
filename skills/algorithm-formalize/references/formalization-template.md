@@ -40,8 +40,11 @@ hash no longer matches. Leave it empty for a formalization written from an exter
 — it then derives from nothing in the repository, and nothing in the repository can make
 it stale.
 
-**`Objective`** states what is optimised and in which direction — and is **never**
-converted to a house convention. "Maximise total similarity (max-plus)" and "minimise
+**`Objective`** states what is optimised, in which direction, and **in which semiring —
+naming its identity and its absorbing element.** Those two are not decoration: a
+representation the port chose for "impossible" is chosen precisely because it absorbs under
+the accumulating operation and sorts where it means, so a deviation about a replaced
+sentinel cannot be judged without them. It is **never** converted to a house convention. "Maximise total similarity (max-plus)" and "minimise
 description length in bits (min-plus)" are both correct answers; normalising either into
 the other inverts every comparison in the recurrence.
 
