@@ -199,6 +199,18 @@ Where results are written, and in what format, belongs to the repository. Read w
 command prints and follow it to whatever it names. Do not assume a file exists because a
 previous repository wrote one.
 
+## Handing back
+
+Benchmarking writes no phase artifact, but it usually writes *something* — a table, a file,
+a plot — and where that lands belongs to the repository.
+
+- **Do not run `git add` or `git commit`** on whatever was produced. If the results are
+  worth keeping, say so and name `/smart-commit`.
+- **Do not edit a plan file**, and do not touch documentation. A crossover number is exactly
+  the kind of measurement that gets promoted into a README as a general claim about the
+  algorithm; if it belongs there, `/agents-docs-update` puts it there, with the machine it
+  was measured on beside it.
+
 ## What NOT to do
 
 - Don't benchmark stale or blocked backends — the comparison is meaningless.

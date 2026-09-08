@@ -212,6 +212,30 @@ This ensures FORMALIZATION.md remains the single source of truth. If the test is
 adjusted without fixing the spec, later phases (Cython, GPU) will inherit the
 discrepancy.
 
+## Handing back
+
+The phase ends when the file is written and the suite is green. **What happens to it next
+is not this plugin's to do.**
+
+- **Do not run `git add` or `git commit`.** Say the work is ready and name `/smart-commit`,
+  which the `workflow-claude` plugin owns. A plain `git commit` skips the documentation sync
+  that command performs, so the repository ends up carrying a new backend and docs
+  describing the old set — which is why "just commit it" is the wrong suggestion here rather
+  than merely a shortcut.
+- **Do not open a branch.** `/new-branch` owns that.
+- **Do not edit a plan file.** `/hitl-step` and `/step` own the markers and the notes.
+  Report the facts they cannot know — the artifact's path, the source and hash its
+  provenance header records, and what the suite did — in a form that pastes under a
+  subgoal, and stop:
+
+      > **Done:** phase <n> `<key>` — `<path>`, derived-from `<source>` `sha256:<hash>`,
+      > suite green at <N>.
+
+- **Do not touch documentation.** A `README.md`, anything under `docs/agents/`, and every
+  generated `AGENTS.md` belong to `/agents-docs-update`, even when this phase changed
+  something they describe. The phase artifact is the exception, because it *is* the thing
+  being produced rather than a description of the repository.
+
 ## When edge cases are discovered
 
 If an edge case surfaces during implementation that the formalization does not cover:

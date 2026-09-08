@@ -262,8 +262,13 @@ they are the only check on this algorithm that will not have come from this repo
 user for review. Explicitly say:
 
 > "Review the formalization and the adaptations from the source material.
-> When satisfied, commit it and run `/dp-compile:next-phase <name>` to begin the
-> Python prototype."
+> When satisfied, commit it with `/smart-commit` and run
+> `/dp-compile:next-phase <name>` to begin the Python prototype."
+
+**Name `/smart-commit`, not `git commit`**, and do not run either. Commits belong to the
+`workflow-claude` plugin, and a plain `git commit` skips the documentation sync that command
+performs. Do not edit a plan file either — report the document's path and that it awaits
+review, and let `/hitl-step` record the subgoal in its own words.
 
 Create no implementation artifacts of any kind — no phase-1 file, no test file, no
 backend-registry entry, no build-manifest line. Those belong to `algorithm-prototype`,

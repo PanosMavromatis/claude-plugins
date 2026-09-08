@@ -169,9 +169,22 @@ phase 0's gate.
    > particularly `<any section flagged above>` — then run `/dp-compile:next-phase <name>`
    > to begin the Python prototype."
 
-### 6. Report
+### 6. Report and hand back
 
 Say which mode was used and why, where the formalization is or will be, what was added to
 `dp-compile.toml`, and what the next command is. **Name the mode explicitly even when it
 was inferred rather than chosen** — a user who did not realise the reverse entrance had
 been selected will not understand why the resulting document cites their own code.
+
+Then hand the surrounding work back, per `@references/workflow-claude.md`:
+
+- **A branch, if this is substantial work**, belongs to `/new-branch`. Say that bringing an
+  algorithm under the lifecycle usually is, and let the user decide — do not run
+  `git checkout -b`, and do not decide on their behalf.
+- **The commit** belongs to `/smart-commit`. Both files this command touches — the manifest
+  entry and the formalization — are ready to commit together, and saying so is the whole of
+  this step.
+- **The plan** belongs to `/hitl-step` or `/step`. Offer the paste-ready line; write no plan
+  file.
+
+**Do not run `git commit`, `git add`, or `git checkout -b` here**, and do not offer to.

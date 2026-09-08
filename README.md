@@ -112,6 +112,10 @@ is a better outcome than a command that refused to start.
   → see performance comparison across backends
 ```
 
+**Every one of those steps ends the same way**: the artifact is written, the suite runs,
+and the commit is named as `/smart-commit`'s to make rather than run here. `dp-compile`
+runs no `git` command at all.
+
 ### Starting from code that already exists
 
 An algorithm whose kernel was translated from a legacy implementation has no source

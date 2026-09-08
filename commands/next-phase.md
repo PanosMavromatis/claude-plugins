@@ -108,3 +108,22 @@ created here, and no quiet finish as though the step had not existed.
    repository declares." and stop. Say which phases those were: a repository that omits
    `cuda` from `[phases]` is complete at 3, and reporting a bare "fully implemented" would
    read as though a GPU backend had been written.
+
+7. **Hand back.** When the skill returns, the phase is done and this command's work is
+   over. Report three things and stop:
+
+   - **What was written**, by path, and what its provenance header records.
+   - **What the suite did** — which backends ran, which were skipped and why.
+   - **The paste-ready plan line**, per `@references/workflow-claude.md`. Offer it; do not
+     write it into any plan file, and do not ask whether to.
+
+   Then name the commit as `/smart-commit`'s to make:
+
+   > Phase `<n>` is written and the suite is green. Commit it with `/smart-commit` when
+   > you are ready.
+
+   **Do not run `git commit`, `git add`, or `git checkout -b` here**, and do not offer to.
+   That is not caution about destructive commands — it is the boundary this plugin is built
+   on: a commit that skips `/smart-commit` also skips the documentation sync that command
+   performs, so the repository ends up with a new backend and stale docs describing the old
+   set. Suggesting the plain command is how that starts.

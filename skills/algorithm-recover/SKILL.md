@@ -270,8 +270,13 @@ Present the formalization to the user and say:
 
 > "Review the recovered formalization — especially the deviations and any place the
 > recurrence disagrees with the implementation. From here on this document is the
-> specification, and the kernel is one implementation of it. When satisfied, commit it and
-> run `/dp-compile:next-phase <name>`."
+> specification, and the kernel is one implementation of it. When satisfied, commit it with
+> `/smart-commit` and run `/dp-compile:next-phase <name>`."
+
+**Name `/smart-commit`, not `git commit`**, and do not run either — commits belong to the
+`workflow-claude` plugin. Do not edit a plan file; report the document's path, the specified
+cases nothing implements, and that the document awaits review, and let `/hitl-step` record
+the subgoal in its own words.
 
 **The review matters more here than in the forward entrance**, and the user should be told
 why: a forward formalization can be checked against its source paper, whereas this one was
