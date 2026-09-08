@@ -105,6 +105,14 @@ How a consumer registers a newly written phase so its test suite can see it.
 |---|---|
 | `registry` | The file holding the backend list, if the consumer uses an explicit registry rather than import auto-discovery. |
 | `build_manifest` | The build file that must also list the new source, where one exists. **Not optional where it applies**: a build system that does not glob will silently omit a file nobody added to it. |
+| `require_env` | Optional. The environment variable that escalates a hardware skip to a failure, for CI. Named so a skill can *tell the user how to stop skipping* without guessing a variable name; nothing in this plugin ever sets it. |
+
+`require_env` exists because a skip is the one test outcome that is easy to misread as a
+pass. A GPU backend on a machine with no device must skip — that is the design — but a
+report that says only "skipped" leaves unsaid whether CI is also skipping it. Where the key
+is absent, say the escalation mechanism is not recorded here and the repository's own suite
+has to be consulted. Do not invent a variable name: an instruction to set a variable that
+does nothing is worse than no instruction, because it looks like it was followed.
 
 ### `[dependencies]` — optional
 
@@ -214,6 +222,7 @@ cuda          = "packages/pfsmgraph-{package}/src/pfsmgraph/{package}/_{algorith
 [backends]
 registry       = "_backends.py"
 build_manifest = "packages/pfsmgraph-{package}/meson.build"
+require_env    = "PFSMGRAPH_REQUIRE_BACKENDS"
 
 # Note this is pyproject.toml, not the meson.build above: build sources and runtime
 # dependencies are different questions about the same package. `gpu` is the extra this

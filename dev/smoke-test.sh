@@ -35,6 +35,8 @@ expected=(
   "skills/cpu-parallelization/SKILL.md"
   "skills/cpu-parallelization/references/decomposition-patterns.md"
   "skills/gpu-parallelization/SKILL.md"
+  "skills/gpu-parallelization/references/numba-cuda-patterns.md"
+  "skills/gpu-parallelization/examples/example-cuda-impl.py"
   "skills/benchmarking/SKILL.md"
   "commands/new-algorithm.md"
   "commands/phase-check.md"
@@ -45,11 +47,9 @@ expected=(
   "hooks/hooks.json"
   "hooks/scripts/pre-commit-check.py"
 )
-# Deliberately not listed yet. The check is `-s` (exists and non-empty), so listing a
-# placeholder would fail rather than warn:
-#   skills/gpu-parallelization/SKILL.md is a stub, and its references/ and examples/
-#   hold zero-byte placeholders. Add the references and the example here when the
-#   CUDA phase is written for real.
+# The check is `-s` (exists and non-empty), so a zero-byte placeholder fails rather
+# than warns. That is deliberate: an empty reference file is worse than a missing one,
+# because a skill that @-references it appears to have documentation and does not.
 
 missing=0
 echo "Checking component placement:"
