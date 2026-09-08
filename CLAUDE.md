@@ -168,6 +168,14 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 - `/next-phase` requires an **explicit algorithm name**; if none is provided, ask — do not infer. Both commands accept natural language names (e.g. "Needleman-Wunsch") and normalise to snake_case. On a near-miss typo (edit distance ≤ 3), prompt "Did you mean X?"; if no close match, list available algorithms and ask again.
 - Before writing a test or diagnostic script, verify that the underlying CLI tool actually supports what you need. `claude plugin validate` checks syntax only — there is no CLI command to verify runtime component loading. Don't waste time scripting around a capability that doesn't exist.
 - Hooks are **deterministic** (always run), unlike CLAUDE.md instructions which are advisory. Use hooks for actions that must happen every time (formatting, linting, security checks). Use skills for guidance Claude should consider.
+- **The gate fires inside `/smart-commit`, and that is the point.** Hooks stack, so the
+  `git commit` that command runs triggers `pre-commit-check.py` exactly as a hand-typed one
+  would — delegating the commit does not bypass the check. It also cannot collide with
+  `workflow-claude`'s `PreToolUse` hook, which matches `Write|Edit|MultiEdit` where this one
+  matches `Bash`: no tool call matches both. One latent coupling to keep in mind when either
+  plugin changes: `/smart-commit` runs `/agents-docs-update` *before* committing, so the gate
+  reads a staged set that command has already modified. It stages only documentation today,
+  so it cannot change the gate's scoping decision — but nothing enforces that.
 - **The pre-commit hook decides for itself whether a command is a `git commit`**, rather than relying on the hook entry's `if` matcher. The two official plugins using that field spell their patterns incompatibly — `Bash(git commit:*)` against `Bash(python3 *scripts/*.py *)` — so at least one syntax matches nothing, and a matcher that matches nothing yields a hook that never fires and never says so. The plugin using the colon form re-checks with its own regex anyway. Do not "simplify" this back into an `if`.
 - Agent definitions do NOT support `hooks`, `mcpServers`, or `permissionMode` in frontmatter — these are stripped for security.
 - If a skill's `description` doesn't trigger when expected, the keywords likely don't match. Test by asking Claude to explain when it would invoke the skill.

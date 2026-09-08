@@ -88,7 +88,42 @@ is a better outcome than a command that refused to start.
 
 ## Hooks
 
-- **pre-commit**: Runs the full test suite before each commit, ensuring no existing backend is broken. Cython extensions are recompiled only when a `.pyx` file is staged.
+One `PreToolUse` hook on `Bash`, `hooks/scripts/pre-commit-check.py`. It runs the
+manifest's `[commands].build` and `[commands].test` before a commit, and **blocks the commit
+if either fails** — a wrong compiled kernel is what it exists to catch, and a hook is used
+rather than an instruction precisely because it always runs where an instruction is
+advisory.
+
+It is **scoped**, which is what makes blocking tolerable: it runs only when the staged set
+touches a path that a `[phases]` template resolves to, for an algorithm the manifest lists.
+A docs-only commit runs nothing. The `formalization` phase is excluded — a prose edit
+compiles to nothing and is imported by nothing, so staging it cannot break a backend, and
+staleness reports that edit's consequence separately.
+
+Two deliberate no-ops, each with a message rather than silent:
+
+- **No `dp-compile.toml`** → the gate is skipped and says so. In a repository that loads
+  this plugin without a manifest, that is one line on every commit; a silent skip would
+  leave the repository ungated with nothing saying so.
+- **No `[commands].test`** → same.
+
+### Coexistence with other plugins' hooks
+
+Hooks from every loaded plugin **stack**, so this one composes rather than competes:
+
+- **It fires inside `/smart-commit`.** That command runs `git commit`, so the gate applies
+  exactly as it would to a hand-typed one. **Delegating the commit does not bypass the
+  check** — this plugin enforces deterministically through a hook while `workflow-claude`
+  orchestrates advisorily through commands, so the two sit on different layers.
+- **It cannot collide with `workflow-claude`'s `PreToolUse` hook**, which matches
+  `Write|Edit|MultiEdit` where this one matches `Bash`. No tool call matches both.
+- **A `PostToolUse` security review, where one is installed, is downstream of it.** If this
+  gate blocks, no commit happens and no review fires — correct ordering by construction.
+
+The hook matches `Bash` with no `if` filter and decides for itself whether the command
+creates a commit, so it spawns one short-lived process per `Bash` call. That is deliberate;
+`CLAUDE.md` records why an `if` matcher was rejected. The full analysis lives in
+`workflow-claude`'s `_meta/plugin-conflict-report.md` §4.4.
 
 ## Typical Workflow
 
