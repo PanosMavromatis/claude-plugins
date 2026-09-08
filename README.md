@@ -31,6 +31,35 @@ The recommended policy is to keep `commit-commands` enabled globally (it's a fin
 
 A ready-to-copy template lives at [`_meta/consumer-settings.template.json`](_meta/consumer-settings.template.json) — `cp` it to your project's `.claude/settings.json`. As a safety net, the bundled `SessionStart` hook prints this recommendation at launch whenever `workflow-claude` is loaded and `commit-commands` is still enabled, and goes silent once you've disabled it. A fuller analysis of the overlap is in [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md).
 
+### Loading it by symlink, and what that costs
+
+A third way to load this plugin, alongside a marketplace install and `--plugin-dir`, is to
+place it in a consuming project's `.claude/skills/`. Doing that by **copying** the clone
+works and then rots: the copy is byte-identical on the day it is made and goes stale at the
+first edit, and the failure is silent — a stale copy still loads and still works, just from
+the old text. A symlink makes that drift unrepresentable:
+
+```bash
+ln -s ../../path/to/workflow-claude <consumer>/.claude/skills/workflow-claude
+```
+
+Three costs come with it, and the third is the one that surprises people:
+
+- **The clone becomes load-bearing.** Moving or deleting it breaks the consumer's plugin
+  with a dangling symlink rather than an error that names the cause.
+- **A directory-shaped ignore rule stops matching.** A pattern with a trailing slash —
+  `/.claude/skills/workflow-claude/` in a `.gitignore` or `.git/info/exclude` — matches
+  directories only, so replacing the directory with a symlink silently un-ignores it and the
+  path starts appearing as untracked. Drop the trailing slash.
+- **The consumer now loads whatever branch the clone has checked out.** A separate copy was
+  pinned to `main` independently; a symlink is not. So `git checkout` in the clone puts that
+  branch into every consuming session's load path immediately, including work that has not
+  been reviewed. Either keep the clone on `main` except while a branch is actively being
+  edited, or accept that editing this plugin edits the tooling running the edit.
+
+That last one is not hypothetical, and it cuts both ways: it is also what makes a fix take
+effect with no sync step at all, which is the reason to prefer the symlink over a copy.
+
 ### Interaction with `security-guidance`
 
 If you also run the official `security-guidance` plugin, expect extra activity around `/smart-commit` and `/smart-merge`. That plugin registers `PostToolUse` hooks with `asyncRewake` on `git commit` and `git push` (plus a `Stop` hook), and Claude Code **stacks** hooks from all plugins rather than overriding them. So each commit and push these commands run will kick off a background security review that re-wakes the session mid-workflow with its findings.
