@@ -23,42 +23,71 @@ Do **not** trigger on "new algorithm" or "add an algorithm" requests — those b
 
 Before writing any code:
 
-1. Confirm `src/tokalign/algorithms/<name>/FORMALIZATION.md` exists. If it does not, stop:
-   "Phase 0 is required before Phase 1. Run `/dp-compile:new-algorithm` to produce the
-   formalization first."
-2. **Check for stale artifact (regeneration case).** If `_python.py` already exists,
-   compare modification times: if `FORMALIZATION.md` is newer than `_python.py`, the
-   Python backend is stale and must be regenerated from the updated formalization. Tell
-   the user: "FORMALIZATION.md has been updated since `_python.py` was last generated.
-   Regenerating the Python backend." Then proceed with the translation as normal — read
-   the formalization, rewrite `_python.py`, and re-run all tests. Do **not** attempt to
-   patch the existing `_python.py` — regenerate it from scratch to maintain the
-   mechanical-translation guarantee.
-3. Read `FORMALIZATION.md` in full — pseudocode, test cases (TC-XX), and notes sections.
-   The implementation is a translation of this document, not an independent design.
+1. Confirm the formalization exists, at the path the manifest's
+   `[phases].formalization` template gives for this algorithm. If it does not, stop:
+   "The formalization stage comes first. Run `/dp-compile:new-algorithm` to produce it."
+2. **Check for a stale artifact (the regeneration case).** If the phase-1 file already
+   exists, compare its recorded provenance against the formalization: it is stale when
+   the hash in its `derived-from` header no longer matches the formalization's current
+   hash. Say so — "the formalization has changed since this was generated; regenerating"
+   — then translate as normal and re-run the suite. Do **not** patch the existing file;
+   regenerate it, or the mechanical-translation guarantee is gone and nothing will
+   notice.
+3. Read the formalization in full — pseudocode, test cases (TC-XX), and notes. The
+   implementation is a translation of that document, not an independent design.
+4. **Read the repository's own shape before writing to it.** The manifest's
+   `[project].invariants` state what a kernel here must satisfy; `[project].encoder`
+   states how symbols become integers. Neither is guessable and both bind. Then read an
+   existing algorithm to see the signature, parameter object and result type this
+   repository actually uses — **the plugin knows none of these**. Where the repository
+   has no algorithm yet, ask rather than invent one.
 
-### 1. Create the algorithm directory
+### 1. Create the phase-1 file
 
-Create `src/tokalign/algorithms/<name>/` with:
-- `__init__.py` (empty)
-- `_python.py` (the Phase 1 implementation)
+Write it at the path the manifest's `[phases].python` template gives for this
+algorithm, creating any directories that path names. A layout that puts each algorithm
+in its own package may also need an `__init__.py`; a flat layout does not. Follow what
+the algorithms already there do rather than adding files the repository has no use for.
 
-### 2. Implement `_python.py`
+### 2. Implement the kernel
 
-The `align()` function **must** use this exact signature:
+**The signature is the repository's, not this plugin's.** Match the entry point of an
+existing algorithm exactly — same parameter order, same result type, same conventions
+for optional arguments. Backend equivalence depends on it: every later phase implements
+the same signature, and a suite that runs one set of tests against all of them cannot
+do so if the phases disagree about their interface.
+
+Two illustrations, from different repositories. **Neither is a template to copy** — they
+are here to show how far apart two correct answers sit, so that reading the code rather
+than assuming a shape is understood as necessary rather than pedantic.
+
+A sequence-alignment entry point, taking two sequences plus the objects that score them:
 
 ```python
-from typing import Sequence
-from ..._types import Alphabet, ScoringMatrix, AlignmentResult
-
 def align(
     seq_a: Sequence[str],
     seq_b: Sequence[str],
     alphabet: Alphabet,
     scoring_matrix: ScoringMatrix,
-    # algorithm-specific params follow (e.g., local=False for Smith-Waterman)
+    # algorithm-specific params follow (e.g., local=False for a local variant)
 ) -> AlignmentResult:
 ```
+
+An HMM decode, taking a frozen parameter object and one record, over a private kernel
+that sees only arrays:
+
+```python
+def viterbi(params: HMMParams, record: Record) -> ViterbiPath:
+    ...
+
+def _viterbi(init_p, transition_p, output_p, codes):
+    """Purely numeric. Neither validates nor raises: an impossible input
+    comes back as an infinite cost, and the wrapper turns that into the
+    repository's own exception type."""
+```
+
+Same lifecycle, same discipline, nothing else in common — not the arity, not the
+parameter style, not the return type, not even whether there is a separate kernel.
 
 #### Mechanical translation from the formalization (mandatory)
 
@@ -68,56 +97,54 @@ reimplementation. Follow these rules strictly:
 - Every function in the pseudocode becomes one Python function (same name, adapted to
   `snake_case`)
 - The recurrence block maps to the inner loop body
-- The traceback procedure becomes a separate Python function
+- The backtrace procedure becomes a separate Python function
 - Variable names carry over from the formalization (minor Python convention adaptations
   are fine)
 - The iteration order in the pseudocode is the iteration order in Python
 - Any deviation from the formalization requires an explicit comment in the code explaining
   why
 
-#### The encode-at-the-boundary pattern (mandatory)
+#### Encode at the boundary (mandatory)
 
-The first lines of `align()` must encode sequences to integer arrays:
+Symbols become integers at the entry point, all computation between is integer-only,
+and integers become symbols again on the way out. **Never index a sequence with a string
+symbol inside the recurrence.**
 
-```python
-enc_a, enc_b = alphabet.encode_pair(seq_a, seq_b)
-```
+This is not a style rule. It is what makes the compiled and GPU phases mechanical
+transliterations rather than rewrites: they never touch a string type, so translating
+them is a matter of typing the arrays, not of redesigning the interface. Getting it wrong
+here is not discovered until the phase that cannot be written.
 
-The last step before returning must decode integers back to strings:
+Use the encoder the manifest's `[project].encoder` documents describe. **Do not hardcode
+any reserved code or user-symbol base** — those are the encoder's, they differ between
+repositories, and they have changed within one.
 
-```python
-aligned_a = alphabet.decode(traced_a)
-aligned_b = alphabet.decode(traced_b)
-return AlignmentResult(
-    score=best_score,
-    aligned_a=aligned_a,
-    aligned_b=aligned_b,
-    alphabet=alphabet,
-    traceback=traceback_matrix,  # include if the algorithm produces one
-)
-```
+#### Splitting the wrapper from the kernel
 
-**ALL computation between encode and decode must use integer arrays.** Never index
-into sequences with string symbols inside the DP loop. Always use integer indices
-and `scoring_matrix.score(i, j)` (the integer version, not `score_symbols()`).
+Where the repository separates a public entry point from a numeric kernel, follow it, and
+**keep the kernel purely numeric — it neither validates nor raises.** An impossible or
+degenerate input comes back as a sentinel value the wrapper interprets and turns into
+whatever exception the repository raises.
 
-#### Gap penalties
-
-Use affine gap penalties from the start — retrofitting is painful. Access them via
-`scoring_matrix.gap_open` and `scoring_matrix.gap_extend`. Linear gap penalties are
-the special case where `gap_open = 0`.
+That division is load-bearing rather than tidy: every later phase implements the same
+kernel, and a GPU device function cannot raise a Python exception at all. A kernel that
+validates is a kernel that cannot be transliterated.
 
 #### Style
 
-- Use only Python builtins and standard library (no numpy in Phase 1 — the point is
-  clarity and correctness)
-- Prioritize readability over performance
-- Include type hints and a NumPy-style docstring on `align()`
+- Prefer the standard library and whatever numeric array type the repository's existing
+  algorithms use. This phase is the readable reference; performance belongs to the phases
+  after it.
+- Prioritise readability over speed. This file is the oracle every later phase is checked
+  against, and it has to be readable to serve as one.
+- Include type hints, and a docstring in whatever style the surrounding code uses.
 
-### 3. Register the algorithm
+### 3. Register the backend
 
-Add an entry in `src/tokalign/algorithms/_registry.py` mapping the algorithm name
-to its module path.
+Follow the manifest's `[backends]`. Where `registry` names a file, add the row it
+expects. Where `build_manifest` names a build file, add the source there too —
+**a build system that does not glob will silently omit a file nobody listed**, and the
+result is a module that imports in development and is absent from a built artifact.
 
 ### 4. Create the test file
 
@@ -136,17 +163,17 @@ assert (exact values, property-based, or relational, as specified per case).
    `test_tcXX_<snake_case_name>(align_fn, ...)`. Do not invent test cases beyond what
    the formalization specifies.
 
-2. **Integer-to-string mapping**: FORMALIZATION.md specifies integer arrays (e.g.,
-   `a = [4, 5, 6]`) where indices 0-3 are reserved and user symbols start at 4.
-   Tests must translate these to string sequences for the `align()` API:
-   - Create an `Alphabet` with enough symbols to cover the highest index used
-   - Map integer index `N` to `alphabet.symbols[N - 4]`
-   - Map `GAP` in expected output to `alphabet.gap_symbol`
+2. **Integer-to-symbol mapping**: the formalization specifies integer arrays, and the
+   public entry point may take symbols. Translate through the repository's own encoder,
+   read from the `[project].encoder` documents. **Never hardcode a reserved code or a
+   user-symbol base into a test.** Build the encoder so it covers the highest index the
+   case uses, and let it tell you which integer any sentinel is — that mapping is the
+   encoder's to state and it does change.
 
-3. **Fixture grouping**: Group test cases that share identical scoring parameters
-   (match, mismatch, gap_open, gap_extend) under shared fixtures. Cases with unique
-   parameters build their `Alphabet` and `ScoringMatrix` inline. Always pass
-   `gap_open` and `gap_extend` explicitly — do not rely on defaults.
+3. **Fixture grouping**: group test cases sharing identical parameters under a shared
+   fixture, and build parameters inline for cases that are one-offs. **Pass every
+   parameter explicitly rather than relying on a default** — a default that changes
+   later silently changes what the test was asserting.
 
 4. **Assertion precision**: Match the formalization's precision level for each TC:
    - **Exact**: `assert result.score == pytest.approx(X)` and
@@ -208,11 +235,16 @@ the same treatments.
 
 ## Gotchas
 
-- The `align()` return type must include the traceback matrix if downstream
-  visualization will need it
-- Scoring matrix lookups must use the `ScoringMatrix.score(i, j)` method, not raw
-  dicts — this matters for mechanical Cython translation later
-- Gap penalties should be parameterized as affine (gap_open + gap_extend) from the
-  start — retrofitting is painful
-- Reserved matrix rows/columns (indices 0–2) and the gap row/column (index 3) should
-  be zeros — actual gap penalties use `gap_open`/`gap_extend`, not matrix lookups
+- **Return whatever a later phase or a consumer will need, and decide it now.** A
+  backtrace array that downstream code wants is painful to add once four phases
+  implement the signature without it.
+- **Read parameters through the accessor the repository provides**, not from a raw dict
+  or a nested attribute reached by hand. The compiled phases pass flat typed arrays, so
+  a lookup that is already a single indexed read transliterates and one that is not has
+  to be redesigned.
+- **Parameterise from the start whatever the family varies over.** Retrofitting a
+  parameter that every phase and every test assumed constant is the expensive kind of
+  change.
+- **Never hardcode a reserved code.** They belong to the encoder, they differ between
+  repositories, and a hardcoded one is wrong in a way no test detects — it indexes a
+  real position and returns a confident answer computed from the wrong symbol.

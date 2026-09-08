@@ -1,6 +1,6 @@
 # Cython Patterns for Dynamic Programming
 
-Reference for writing efficient Cython DP implementations in tokalign.
+Reference for writing efficient Cython implementations of dynamic-programming kernels.
 
 ---
 
@@ -149,10 +149,10 @@ result_b = aligned_b_np[:k][::-1]
 
 ```bash
 # Compile with annotation
-uv run cython -a src/tokalign/algorithms/<algorithm>/_cython.pyx
+uv run cython -a <the path [phases].cython gives for this algorithm>
 
 # Open the HTML
-open src/tokalign/algorithms/<algorithm>/_cython.html
+open <the same path, with a .html suffix>
 ```
 
 Color guide:
@@ -176,7 +176,7 @@ Common causes of yellow lines in the hot path:
 After editing the `.pyx`, recompile before running tests:
 
 ```bash
-uv run python setup.py build_ext --inplace
+<the manifest's [commands].build>
 ```
 
 Or trigger a full editable reinstall:
@@ -185,4 +185,6 @@ Or trigger a full editable reinstall:
 uv pip install -e .
 ```
 
-The compiled `.so` (or `.pyd` on Windows) lands in `src/tokalign/_ext/`.
+The compiled `.so` (or `.pyd` on Windows) lands wherever the repository's build
+system puts it — beside the source for an in-place build, inside the installed package
+otherwise.

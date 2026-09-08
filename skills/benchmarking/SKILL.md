@@ -35,7 +35,7 @@ Accept natural language names and normalise to `snake_case`:
 - Strip whitespace, lowercase, replace hyphens/spaces with underscores
 - Examples: `"Needleman-Wunsch"` -> `needleman_wunsch`, `"smith waterman"` -> `smith_waterman`
 
-If the name doesn't match a directory under `src/tokalign/algorithms/`:
+If the name doesn't match a key in the manifest's `[algorithms]` table:
 - Edit distance <= 3: ask "Did you mean `<candidate>`?"
 - No close match: list available algorithms and ask again
 
@@ -66,30 +66,19 @@ compare. Report:
 
 ### 1. Invoke the benchmark script
 
-The canonical benchmark script lives in the main `tokalign` repo at
-`benchmarks/run_benchmark.py`, co-located with the codebase it tests. The plugin
-provides a thin shell wrapper that locates the project root and delegates:
+Take the command from the manifest's `[commands].benchmark`, substituting `{algorithm}`.
 
-```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/benchmarking/scripts/run-benchmark.sh" \
-    <algorithm_name> [--memory]
-```
+**That key is optional, and its absence is a real outcome rather than an edge case.** A
+repository may have no benchmark infrastructure at all — one of this plugin's own
+consumers does not. Where the key is missing, report that no benchmark command is
+configured and stop. Do not invent a script path, and do not offer to build the harness:
+that is a piece of work with its own decisions about timing methodology and output
+format, not a side effect of asking for a measurement.
 
-Or invoke the script directly from the project root:
-
-```bash
-uv run python benchmarks/run_benchmark.py <algorithm_name> [--memory]
-```
-
-- `<algorithm_name>` is the snake_case algorithm name (required positional arg)
-- `--memory` enables memory profiling (optional, off by default — adds significant
-  overhead and requires `memory-profiler`)
-
-The script will:
-1. Auto-discover available backends via `get_available_backends()`
-2. Benchmark each backend across sequence lengths: 10, 50, 100, 500, 1000, 5000
-3. Run each configuration multiple times for statistical rigor (mean +/- std)
-4. Save results to `benchmarks/results/<algorithm>/`
+What the command measures, where it writes and what format it emits are the repository's
+business. Read what it prints and follow it to whatever files it names. The methodology
+notes further down describe what a *good* harness does, and are worth applying when
+writing one — but they describe the repository's harness, not this skill's.
 
 ### 2. Review and present the output
 
@@ -151,7 +140,8 @@ produce meaningful alignments. Both sequences use the same alphabet and length.
 
 ## Output files
 
-All output is saved under `benchmarks/results/<algorithm>/`:
+Output layout belongs to the repository. A harness typically emits some combination of a
+table, machine-readable data, and a plot — for example:
 
 ```
 benchmarks/results/needleman_wunsch/
@@ -177,7 +167,7 @@ table, second y-axis or separate subplot in the plot).
 ## Gotchas
 
 - Cython backends must be compiled before benchmarking — if the `.so` is missing,
-  run `uv run python setup.py build_ext --inplace` first
+  run the manifest's `[commands].build` first
 - The first call to a Numba backend triggers JIT compilation — always discard the
   warmup run
 - Large sequence lengths (>5000) can take minutes with the pure Python backend —

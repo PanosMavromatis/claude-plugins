@@ -1,35 +1,93 @@
 # Parametrized testing pattern
 
-Tests are parametrized across all available backends using `get_available_backends()`
-from `tests/conftest.py`. A single test file automatically runs against Python, Cython,
-and Numba backends as they become available.
+One suite per algorithm, run against every backend that exists, so that agreement
+between backends is **enforced rather than assumed**. Adding a phase adds a parameter,
+and the existing tests run against it unchanged; if one fails, the new backend is wrong,
+not the tests.
 
-## conftest.py fixture
+How a repository *discovers* its backends is its own decision, and the two models in use
+differ enough that a skill must read which one applies rather than assume. Both appear
+below, followed by a third state that is neither.
+
+## Model A — import auto-discovery
+
+The suite tries to import each phase's module and takes the ones that succeed. Suits a
+layout where every algorithm has the same file names, so the module path is derivable
+from the algorithm's name.
 
 ```python
 import importlib
-import pytest
 
-def get_available_backends(algorithm_name: str) -> list[tuple[str, callable]]:
-    """Discover which backends are installed for a given algorithm."""
+PHASES = ("python", "cython", "cpu_parallel", "cuda")
+
+def get_available_backends(algorithm_name):
+    """Discover which phases are importable for a given algorithm."""
     backends = []
-    mod = importlib.import_module(f"tokalign.algorithms.{algorithm_name}._python")
-    backends.append(("python", mod.align))
-
-    try:
-        mod = importlib.import_module(f"tokalign.algorithms.{algorithm_name}._cython")
-        backends.append(("cython", mod.align))
-    except ImportError:
-        pass
-
-    try:
-        mod = importlib.import_module(f"tokalign.algorithms.{algorithm_name}._numba")
-        backends.append(("numba", mod.align))
-    except ImportError:
-        pass
-
+    for phase in PHASES:
+        try:
+            mod = importlib.import_module(f"<pkg>.algorithms.{algorithm_name}._{phase}")
+        except ImportError:
+            continue
+        backends.append((phase, mod.entry_point))
     return backends
 ```
+
+**The weakness is that it cannot tell "not written yet" from "written but broken".** A
+compiled phase whose extension failed to build raises `ImportError` exactly like one that
+was never written, so a stale build reads as an absent phase and the suite goes green
+having silently tested less than it did yesterday.
+
+## Model B — an explicit registry
+
+The repository lists its backends, and each row says what an absence may legitimately be
+blamed on. This is what the manifest's `[backends].registry` points at.
+
+```python
+@dataclass(frozen=True)
+class Backend:
+    name: str            # "python", "cython", "cpu_parallel", "cuda"
+    module: str          # the import that proves it is usable here
+    hardware: str | None # what an absence may be blamed on, e.g. "CUDA device"
+
+BACKENDS = (
+    Backend("python", "<pkg>.<component>._<algorithm>"),
+)
+```
+
+Three properties are the reason to prefer it, and each is a rule rather than a nicety:
+
+- **A phase not yet reached contributes no row at all.** Absence is the honest
+  representation of unwritten; a skip would mean "written, but not runnable here".
+- **`hardware=None` makes a failed import a hard failure, not a skip.** Nothing external
+  is needed to run pure Python, so the only way it fails to import is a broken working
+  copy — precisely what a skip would conceal. This is the gap Model A cannot close.
+- **A backend excluded for absent hardware is skipped *loudly*** — named in the session's
+  own output, with the reason. A silent skip turns a lost GPU into a green run nobody
+  reads.
+
+Membership is a claim about which phases *exist*, so it is deliberately not derived by
+probing for build products: a compiled backend whose artifact was never built would then
+read as unwritten rather than broken.
+
+## The third state — a suite not yet parameterised
+
+A repository may have a backend matrix and still not run its suites across it. That is
+not an oversight in either direction, and it happens for a concrete reason: parameterising
+requires the tests to select a backend through the public API, and an entry point with
+nowhere to put a backend argument cannot offer one. Adding that argument is a
+backend-selection API — a real design decision that may be deliberately deferred.
+
+While that holds, **do not fake it**. Write the ordinary tests against the public API, and
+put any test that reaches a specific backend's internals in an explicitly labelled,
+non-shared section, so nobody later mistakes it for a parameterised test that lost its
+parameters. Read a green run accordingly: a backend listed as present means its module
+imports, not that any suite ran twice.
+
+**A corollary that is easy to miss: a tie-breaking rule is contract, not an
+implementation detail.** Where a recurrence can reach the same optimum by more than one
+path, two correct backends will otherwise legitimately disagree, and the suite that was
+supposed to enforce equivalence will fail on a difference neither backend got wrong.
+State the rule in the formalization and implement it in every phase.
 
 ## Translating TC-XX specs to pytest
 
@@ -38,7 +96,7 @@ the internal representation where indices 0-3 are reserved and user symbols star
 at index 4. The `align()` function takes string sequences, so tests must map
 integer specs back to string symbols:
 
-- Create an `Alphabet` with enough symbols to cover the highest index used
+- Build the repository's encoder with enough symbols to cover the highest index used, and ask it which integer any sentinel is rather than writing the number
 - Integer index `4` maps to `alphabet.symbols[0]`, index `5` to `symbols[1]`, etc.
 - The `GAP` sentinel in expected output maps to `alphabet.gap_symbol` (default `"."`)
 
@@ -47,13 +105,18 @@ For example, if the formalization says `a = [4, 5, 6]` and the alphabet has
 
 ## Test file template
 
+**The worked example below is from a sequence-alignment repository**, kept concrete
+because an abstract test template teaches nothing. Read the *shapes* — how a TC-XX case
+becomes a named test, how fixtures group shared parameters, how each precision level is
+asserted — and not the types, which are that repository's.
+
 Each `TC-XX` in `FORMALIZATION.md` becomes a test function named
 `test_tcXX_<snake_case_name>`. Test cases that share identical scoring parameters
 can share fixtures; cases with unique parameters build their setup inline.
 
 ```python
 import pytest
-from tokalign._types import Alphabet, ScoringMatrix
+from <pkg>._types import Alphabet, ScoringMatrix   # that repository's own types
 from tests.conftest import get_available_backends
 
 ALGORITHM = "<name>"  # e.g., "needleman_wunsch"

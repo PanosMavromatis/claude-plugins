@@ -2,9 +2,9 @@
 name: cython-translation
 description: >
   TRIGGER: when the user says "cythonize", "translate to Cython", "make it fast",
-  "compile", or "Phase 2" for an algorithm that has a working _python.py. Also
-  trigger when the user asks to create a _cython.pyx file, mentions typed
-  memoryviews, or asks about Cython performance for a tokalign algorithm.
+  "compile", or "the Cython phase" for an algorithm whose phase-1 file exists. Also
+  trigger when the user asks to create a `.pyx`, mentions typed memoryviews, or asks
+  about Cython performance for a dynamic-programming kernel.
   Do NOT trigger for GPU/Numba work (use gpu-parallelization instead).
 ---
 
@@ -14,24 +14,26 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
 
 ## Prerequisites — verify before writing any code
 
-1. **`_python.py` exists** in the algorithm directory (e.g.,
-   `src/tokalign/algorithms/needleman_wunsch/_python.py`). If it does not exist,
+1. **The phase-1 file exists**, at the path the manifest's `[phases].python` template
+   gives for this algorithm. If it does not,
    stop and hand off to the `algorithm-prototype` skill instead, using the
    `Skill` tool with `skill: "dp-compile:algorithm-prototype"`. Do NOT use
    `Read` on the sibling `SKILL.md` — only the `Skill` tool activates the skill
    through the harness so it runs with its own references and examples.
 
-2. **`_python.py` is not stale.** Compare modification times: if
-   `FORMALIZATION.md` is newer than `_python.py`, the Python backend is stale and
+2. **The phase-1 file is not stale.** Compare provenance, not timestamps: it is stale
+   when the hash recorded in its `derived-from` header no longer matches the
+   formalization's current hash. If it is stale, the Python backend must be regenerated
+   and
    must be regenerated before Cython translation can proceed. Stop and hand off
    to the `algorithm-prototype` skill first via the `Skill` tool with
    `skill: "dp-compile:algorithm-prototype"` (not `Read`) — do not translate
    from a stale source.
 
-3. **Check for stale artifact (regeneration case).** If `_cython.pyx` already
-   exists, compare modification times: if `_python.py` is newer than
-   `_cython.pyx`, the Cython backend is stale and must be regenerated. Tell the
-   user: "`_python.py` has been updated since `_cython.pyx` was last generated.
+3. **Check for a stale artifact (the regeneration case).** If the `.pyx` already
+   exists, compare its recorded provenance against the phase-1 file: it is stale when
+   the hash in its `derived-from` header no longer matches. Tell the
+   user: "the phase-1 file has changed since this was generated.
    Regenerating the Cython backend." Then proceed with the translation as
    normal — read `_python.py`, rewrite `_cython.pyx` from scratch, and re-run
    all tests. Do **not** attempt to patch the existing `.pyx` — regenerate it to
@@ -49,18 +51,20 @@ Guide the translation of a Phase 1 pure Python algorithm to Phase 2 Cython.
    translation must be mechanical, not creative. Every line of Cython should
    trace back to a line in the Python.
 
-6. **Read `src/tokalign/_types.py`** to understand `Alphabet`, `ScoringMatrix`,
-   and `AlignmentResult` — specifically the integer index conventions and how
-   `scoring_matrix._matrix` is laid out as a numpy array.
+6. **Read the repository's own types**, via the manifest's `[project].encoder`
+   documents and the parameter or result objects the phase-1 file uses. What matters is
+   how each is laid out as an array once flattened, since that is what the kernel
+   receives: a typed memoryview cannot see an accessor method.
 
 ## Translation instructions
 
 ### File to create
 
-Create `_cython.pyx` in the same algorithm directory alongside `_python.py`:
+Create the `.pyx` at the path the manifest's `[phases].cython` template gives for this
+algorithm. In a directory-per-algorithm layout that is a sibling of the phase-1 file:
 
 ```
-src/tokalign/algorithms/<algorithm>/
+<algorithms root>/<algorithm>/
 ├── FORMALIZATION.md
 ├── _python.py        # already exists — read this first
 └── _cython.pyx       # create this
@@ -70,7 +74,13 @@ src/tokalign/algorithms/<algorithm>/
 
 The Cython backend splits into two parts: a thin Python wrapper (handles
 encode/decode) and a compiled inner function (pure integer/float computation).
-The inner function must never import or touch the `Alphabet` class.
+**The inner function must never import or touch the encoder**, nor validate, nor
+raise. It receives arrays and returns numbers; an impossible input comes back as a
+sentinel the wrapper interprets. That is not tidiness — the GPU phase implements this
+same kernel, and a device function cannot raise a Python exception at all.
+
+The pair below is from a sequence-alignment repository, shown to make the split
+concrete — **the shape is the point, not the names**:
 
 ```python
 # Python wrapper — stays in Python, handles encode/decode
@@ -170,10 +180,14 @@ Only add these after confirming the Python tests pass on the Cython build.
 
 ### Build configuration
 
-Update `pyproject.toml` to include the new `.pyx` file in the Cython extension
-list. Look for the existing `[tool.cython]` section or `setup.py` extension
-declarations and add an entry following the same pattern as any existing
-algorithms.
+Add the new `.pyx` to the build file the manifest's `[backends].build_manifest` names,
+following the pattern any existing extension there uses, and add the backend row that
+`[backends].registry` expects.
+
+**Neither half is optional, and the build half fails silently.** A build system that
+does not glob will simply omit a source nobody listed — producing a module that imports
+during development, because the source is right there, and is absent from any built
+artifact.
 
 ## Equivalence validation
 
@@ -182,35 +196,39 @@ After compilation, the translation must be verified in two ways:
 ### 1. Full test suite (automated)
 
 The parametrized `conftest.py` fixture auto-discovers backends. Compiling
-`_cython.pyx` makes it visible. Run:
+the extension makes it visible. Run the manifest's `[commands].build`, then its
+`[commands].test`:
 
 ```bash
-uv run python setup.py build_ext --inplace
-uv run pytest tests/algorithms/test_<algorithm>.py
+<[commands].build>
+<[commands].test_one, or [commands].test>
 ```
 
 If any test fails, fix the Cython — do not modify the tests.
 
-### 2. Fuzzy equivalence script (critical for boundary errors)
+### 2. A property test for boundary errors (write it into the suite)
 
-Run the validate-equivalence script to catch off-by-one and floating-point
-boundary errors that unit tests miss:
+Unit tests drawn from the formalization's TC-XX cases are chosen examples, and chosen
+examples do not find off-by-one errors at a boundary or floating-point disagreements near
+a tie. Add a property test that generates many random inputs, runs both backends and
+asserts they agree.
 
-```bash
-uv run python dp-compile/skills/cython-translation/scripts/validate-equivalence.py \
-    --algorithm <algorithm> --n-pairs 1000
-```
+**Write it into the repository's own suite**, using that repository's types and encoder —
+not as a script beside the plugin. A check that lives outside the suite is a check nobody
+runs, and one inside it runs in CI on every change. Where the suite is not yet
+parameterised over backends, put it in the labelled non-shared section described in
+`references/test-patterns.md`.
 
-The script generates random sequence pairs (sampled from `alphabet.symbols`,
-not random strings), runs both backends, and asserts identical scores and aligned
-sequences.
+Generate inputs by sampling from the encoder's own symbols rather than by generating
+arbitrary values: arbitrary values fail at the encoding boundary and tell you nothing
+about the kernel. Seed the generator so a failure is reproducible.
 
 ## Annotation — find the slow lines
 
 Compile with `-a` to generate annotation HTML:
 
 ```bash
-uv run cython -a src/tokalign/algorithms/<algorithm>/_cython.pyx
+uv run cython -a <the path [phases].cython gives for this algorithm>
 ```
 
 Open the generated `.html` file. Yellow lines still touch the Python/C API — they
@@ -233,7 +251,7 @@ is yellow, add missing type declarations.
   (lists, dicts, strings). Pre-allocate all output arrays as numpy arrays before
   entering the block.
 
-- **Integer type alignment**: `Alphabet.encode_pair()` returns numpy `int64` by
+- **Integer type alignment**: an encoder commonly returns numpy `int64` by
   default. The memoryview `int[:] ` expects `int32`. Cast at the boundary:
 
   ```python
