@@ -37,6 +37,48 @@ If you also run the official `security-guidance` plugin, expect extra activity a
 
 This is expected, not a conflict — nothing breaks, and the two plugins' hooks compose cleanly (this plugin's `protect-agent-docs` runs at `PreToolUse`, `security-guidance` reviews at `PostToolUse`/`Stop`). If the rewakes get noisy during a long commit loop, scope or disable `security-guidance` for that session. See [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md) §4.1 for detail.
 
+## Companion plugins
+
+`commit-commands` overlaps with this plugin and should be disabled beside it.
+[`dp-compile`](https://github.com/PanosMavromatis/dp-compile) is the opposite case: it
+**assumes** this plugin is loaded and hands work to it.
+
+`dp-compile` guides a dynamic-programming algorithm through a staged translation — a
+formalization, then pure Python, Cython, and two Numba backends — enforcing that every
+backend agrees with the reference. It owns that lifecycle and nothing else. Branches go to
+`/new-branch`, plans to `/step` or `/hitl-step`, commits to `/smart-commit`, merges to
+`/smart-merge`, and documentation to `/agents-docs-update`; it runs no `git` command itself
+and never edits a plan file.
+
+**The dependency is one-directional, and nothing here maintains it.** `dp-compile` detects
+this plugin by reading its own tool list for anything namespaced `workflow-claude:` — the
+same judgement `/smart-merge` makes about MCP availability, and for the same reason: there
+is no shell command that reports which plugins are loaded. There is **no detection contract,
+no marker file and no hook handshake** between the two, which was a deliberate choice on
+`dp-compile`'s side: a contract would have coupled both plugins forever for a check one of
+them can make alone, and would have assumed hooks fire, which depends on the load path.
+
+The practical consequence is the one to remember when editing this repository: unlike the
+`commit-commands` hook — where changing `hooks.json` means updating the conflict report in
+the same commit — **there is nothing on this side to keep in sync**. `dp-compile` names this
+plugin's commands in its own prose; renaming one of them would break it, and no test here
+would notice.
+
+Two notes on how the two behave together:
+
+- **Absence is not fatal.** A `dp-compile` command that delegates nothing prints one line
+  and produces its full output; one that does delegate performs every step that needs
+  nothing from this plugin and stops at the step that does. Its absence message names all
+  three load paths, including a plugin tree placed in a project's `.claude/skills/` — which
+  is neither a marketplace install nor `--plugin-dir`, and is how at least one repository
+  loads *this* plugin today.
+- **The hooks cannot collide.** `dp-compile` ships a `PreToolUse` hook on `Bash` that gates
+  a commit on the consumer's test suite when a kernel file is staged; this plugin's
+  `protect-agent-docs.py` matches `Write|Edit|MultiEdit`. No tool call matches both. Because
+  hooks stack, that gate fires inside the `git commit` `/smart-commit` runs — so delegating
+  the commit does not bypass it. See
+  [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md) §4.4.
+
 ## Two workflows, one branch lifecycle
 
 The commands are designed to chain. There's a **branch workflow** (outer loop) that brackets every change, and an **agent-docs workflow** (inner concern) that keeps documentation honest as code moves.

@@ -32,8 +32,13 @@ across two sections of a live plan before anyone noticed.
   Step 4's parent-state check mechanical rather than remembered; verify Step 6's
   section-completion claim at every indent.
 - `/step`: the same note vocabulary, in its simpler single-tier form.
-- Remaining, and not yet done: the `dp-compile` interoperation edits — a README
-  "Companion plugins" pointer, a conflict-report section, and a `CLAUDE.md` line.
+- `dp-compile` interoperation: a README "Companion plugins" section, conflict-report §4.4,
+  and a `CLAUDE.md` section. **All documentation — no functional change was needed**, which
+  is the finding rather than an omission. `dp-compile` detects this plugin by reading its
+  own tool list, so the dependency runs one way and nothing here implements or maintains
+  it. A detection contract was considered on that side and rejected: it would couple both
+  plugins forever for a check one can make alone, and would assume hooks fire, which
+  depends on the load path.
 
 ## Context
 
@@ -48,6 +53,12 @@ across two sections of a live plan before anyone noticed.
 - Step 4 already forbade flipping a parent to `[x]` while a subgoal is `[ ]`, so the
   protocol was correct and the failure was that the protocol was not run. What the protocol
   lacked was the *category* whose absence produced the malformed lines in the first place.
+- The one real coupling to `dp-compile` is **command names**. It names `/smart-commit`,
+  `/new-branch`, `/hitl-step`, `/step`, `/smart-merge` and `/agents-docs-update` in its
+  prose; renaming any of them breaks it silently, and no test here would notice. That is
+  now in `CLAUDE.md` as a cross-repository rename hazard, and it is the opposite of the
+  `commit-commands` case, where editing `hooks.json` obliges a conflict-report update in
+  the same commit.
 - The `awk` check now documented in Step 6 was run against a real plan before being
   written down: zero hits for two sections believed complete, 28 for sections genuinely
   open, and it catches a synthetic `[x]` parent hiding a `[ ]` subgoal that a top-level
