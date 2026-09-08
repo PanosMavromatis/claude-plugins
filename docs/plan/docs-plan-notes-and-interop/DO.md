@@ -14,3 +14,7 @@
       the one report a reader will not re-check.
 - [ ] `dp-compile` interoperation: README "Companion plugins" pointer, conflict-report
       section, and a `CLAUDE.md` line.
+  - [x] Conflict report §4.4 — how the two plugins' hooks compose, and why `dp-compile`'s
+        gate firing inside `/smart-commit` is the design rather than a leak.
+  - [ ] README "Companion plugins" pointer.
+  - [ ] `CLAUDE.md` line.
