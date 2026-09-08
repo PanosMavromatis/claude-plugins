@@ -33,17 +33,18 @@ expected=(
   "skills/algorithm-prototype/SKILL.md"
   "skills/cython-translation/SKILL.md"
   "skills/gpu-parallelization/SKILL.md"
-  "skills/scoring-matrix/SKILL.md"
   "skills/benchmarking/SKILL.md"
-  "skills/alignment-viz/SKILL.md"
-  "skills/package-release/SKILL.md"
   "commands/new-algorithm.md"
   "commands/phase-check.md"
   "commands/next-phase.md"
   "commands/benchmark.md"
+  "commands/references/manifest.md"
+  "commands/references/phase-detection.md"
   "hooks/hooks.json"
-  "hooks/scripts/pre-commit-check.sh"
+  "hooks/scripts/pre-commit-check.py"
 )
+# Not yet present, added when written:
+#   skills/cpu-parallelization/SKILL.md   (the ADR-0016 phase between Cython and CUDA)
 
 missing=0
 echo "Checking component placement:"

@@ -8,3 +8,6 @@
 *.swp
 *.swo
 *~
+# Python bytecode (the hook is a Python script)
+__pycache__/
+*.py[cod]

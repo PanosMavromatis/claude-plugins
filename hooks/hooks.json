@@ -6,10 +6,9 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git commit *)",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-commit-check.sh",
-            "timeout": 300,
-            "statusMessage": "Running tests for all compiled backends before committing..."
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/scripts/pre-commit-check.py",
+            "timeout": 600,
+            "statusMessage": "Checking whether this commit touches a kernel..."
           }
         ]
       }

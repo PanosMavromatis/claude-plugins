@@ -22,23 +22,25 @@ This is a **plugin repository**, not a traditional application. The codebase is 
 dp-compile/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest (name, version, description)
-├── agents/                   # Subagent definitions with YAML frontmatter
-│   └── {{agent-name}}.md
-├── commands/                 # Slash commands (each .md file → /plugin-name:command-name)
-│   └── {{command-name}}.md
-├── dev/                      # Developer-only tooling (not part of the plugin runtime)
+├── commands/                # Slash commands (each .md → /dp-compile:<name>)
+│   ├── new-algorithm.md
+│   ├── phase-check.md
+│   ├── next-phase.md
+│   ├── benchmark.md
+│   └── references/          # @-included, shared by several commands. NOT commands:
+│       ├── manifest.md      #   the dp-compile.toml contract every command reads first
+│       └── phase-detection.md
+├── dev/                     # Developer-only tooling (not part of the plugin runtime)
 │   └── smoke-test.sh
-├── hooks/                    # Deterministic event handlers
+├── hooks/                   # Deterministic event handlers
 │   ├── hooks.json
-│   └── scripts/             # Hook helper scripts
-├── scripts/                  # Shared utilities (optional)
-├── skills/                   # Agent skills (auto-triggered or /plugin-name:skill-name)
-│   └── {{skill-name}}/
-│       ├── SKILL.md          # Skill entrypoint — goals and constraints, not step-by-step
-│       ├── references/       # Domain knowledge, API docs, specs (optional)
-│       ├── scripts/          # Composable utilities (optional)
-│       └── examples/         # Annotated examples the agent composes from (optional)
-├── .mcp.json                 # MCP server definitions (optional)
+│   └── scripts/
+│       └── pre-commit-check.py
+├── skills/                  # Agent skills (auto-triggered or /dp-compile:<name>)
+│   └── <skill-name>/
+│       ├── SKILL.md         # Skill entrypoint — goals and constraints, not step-by-step
+│       ├── references/      # Domain knowledge, specs (optional)
+│       └── examples/        # Annotated examples the agent composes from (optional)
 ├── CLAUDE.md
 └── README.md
 ```
@@ -67,7 +69,7 @@ claude --debug  # look for "loading plugin" messages
 ./dev/smoke-test.sh
 
 # Test a specific command
-/dp-compile:{{command-name}} <test-args>
+/dp-compile:phase-check <algorithm-name>
 ```
 
 When adding a new skill, command, or other component, update the `expected` array in `dev/smoke-test.sh` so the smoke test covers it.
@@ -111,14 +113,29 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 -->
 
 - NEVER put commands/, agents/, or skills/ inside .claude-plugin/. They will silently fail to load.
-- `/phase-check` and `/next-phase` use `make`-like timestamp logic: a backend file is **stale** if its prerequisite has a newer mtime, even if both exist. Staleness is transitive. The **effective phase** is the phase just before the first stale file — route skill invocations from there, not from file existence alone. The shared detection logic lives in `commands/references/phase-detection.md` and is `@`-included by both commands.
+- **`commands/references/*.md` are `@`-included fragments, not commands.** `claude plugin validate` scans every `.md` under `commands/` and warns that they have no frontmatter. That warning is expected and must not be "fixed" by adding frontmatter, which would register the fragments as invocable commands. Two files currently trip it.
+- **Staleness is decided by recorded provenance, not by mtime.** Each derived artifact carries a `derived-from` header naming its source and that source's SHA-256, and is stale when the recorded hash no longer matches. This survives `git checkout`, which resets every mtime, and it encodes *direction* — a formalization recovered from an implementation records that it derives from the code, so editing the kernel marks the document stale rather than the reverse, which a timestamp cannot express. Compute the hash with the file's own header line excluded, or re-stamping any file spuriously invalidates everything downstream of it. The shared logic lives in `commands/references/phase-detection.md`.
+- **Nothing in this plugin knows a repository's layout.** Paths, build and test commands, backend registration and the encoder all come from the consumer's root `dp-compile.toml`, whose contract is `commands/references/manifest.md`. There are deliberately **no defaults**: with none, a repository without a manifest would resolve paths under a layout it does not have, find nothing, and be told "algorithm not found" — a missing file misdiagnosed as a missing algorithm.
+- **Algorithms are listed in the manifest, never discovered by globbing.** A flat package makes globbing unsafe: `_*.py` returns helper modules alongside kernels. This is not theoretical — the pre-commit hook's first implementation wildcarded a phase template and matched two helper modules in the only repository with a manifest.
 - `/phase-check` is **report-only**: it checks, reports, and exits. Never suggest running `/next-phase` or offer to continue implementation.
 - `/next-phase` requires an **explicit algorithm name**; if none is provided, ask — do not infer. Both commands accept natural language names (e.g. "Needleman-Wunsch") and normalise to snake_case. On a near-miss typo (edit distance ≤ 3), prompt "Did you mean X?"; if no close match, list available algorithms and ask again.
 - Before writing a test or diagnostic script, verify that the underlying CLI tool actually supports what you need. `claude plugin validate` checks syntax only — there is no CLI command to verify runtime component loading. Don't waste time scripting around a capability that doesn't exist.
 - Hooks are **deterministic** (always run), unlike CLAUDE.md instructions which are advisory. Use hooks for actions that must happen every time (formatting, linting, security checks). Use skills for guidance Claude should consider.
+- **The pre-commit hook decides for itself whether a command is a `git commit`**, rather than relying on the hook entry's `if` matcher. The two official plugins using that field spell their patterns incompatibly — `Bash(git commit:*)` against `Bash(python3 *scripts/*.py *)` — so at least one syntax matches nothing, and a matcher that matches nothing yields a hook that never fires and never says so. The plugin using the colon form re-checks with its own regex anyway. Do not "simplify" this back into an `if`.
 - Agent definitions do NOT support `hooks`, `mcpServers`, or `permissionMode` in frontmatter — these are stripped for security.
 - If a skill's `description` doesn't trigger when expected, the keywords likely don't match. Test by asking Claude to explain when it would invoke the skill.
 - Installed plugins cannot reference files outside their directory. Paths like `../shared-utils` break after installation. Use symlinks if external files are needed.
+
+## Commit convention
+
+**Imperative subject, no prefix, and a body that explains why.** This repository does
+*not* use conventional commits, and `/smart-commit`'s Step 3 template specifies that it
+does — so the override has to be written down, which is what this section is for. The
+history is the authority: "Implement benchmarking skill and benchmark command", not
+`feat(benchmarking): ...`.
+
+The sibling `workflow-claude` plugin uses conventional commits. That divergence is
+deliberate and known; each repository follows its own history.
 
 ## Compaction instructions
 
