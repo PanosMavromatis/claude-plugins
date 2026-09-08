@@ -98,6 +98,23 @@ Use `>` blockquote lines, indented with 2 spaces to nest under the task item. If
 
 4. Then continue executing the task using the information gathered.
 
+### Findings → `> **Note:**`, never a checkbox
+
+Work turns up things worth keeping that are **not tasks**: a measurement, a surprise, a
+claim in the codebase that turned out to be false, a reason something was left alone. Log
+those as a `> **Note:**` blockquote under the task, in the same 2-space-indented form:
+
+```
+- [x] The original task description
+  > **Note:** what was observed, and why it will matter to whoever reads this next.
+```
+
+**Never write a finding as a `- [ ]` line.** A checkbox is a promise that something will be
+done, so a note wearing one reads as outstanding work — and since a plan is usually
+surveyed by grepping for unchecked items, a note that is really a note will keep being
+re-reported as unfinished by everyone who looks. If it genuinely implies future work, it is
+a task: write it as one, where it belongs in the list.
+
 ## Step 4: Mark Complete
 
 Once the task is fully done:
