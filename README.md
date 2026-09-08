@@ -4,27 +4,41 @@ Development toolkit for the tokalign package: guides algorithm implementation th
 
 ## Overview
 
-This Claude Code plugin supports the full lifecycle of sequence-alignment algorithm development in the `tokalign` package. Every algorithm progresses through four phases, starting with a formalization and then producing three executable backends:
+This Claude Code plugin supports the full lifecycle of a dynamic-programming algorithm in
+any repository that carries a `dp-compile.toml` manifest. Every algorithm progresses
+through five stages — a formalization, then four executable backends:
 
-0. **Formalize** (`FORMALIZATION.md`) — Language-agnostic pseudocode, understanding & adaptation focus
-1. **Prototype** (`_python.py`) — Pure Python, correctness focus
-2. **Compile** (`_cython.pyx`) — Cython with typed memoryviews, performance focus
-3. **Parallelize** (`_numba.py`) — Numba CUDA kernels, scalability focus
+| # | Phase key | What it is |
+|---|---|---|
+| 0 | `formalization` | Language-agnostic pseudocode; understanding and adaptation |
+| 1 | `python` | Pure Python; correctness. The reference every later phase is checked against |
+| 2 | `cython` | Typed memoryviews; single-threaded performance |
+| 3 | `cpu_parallel` | `@njit(parallel=True)` with `prange`; parallel correctness, no GPU required |
+| 4 | `cuda` | `@cuda.jit`; scale |
 
-The plugin ensures the agent follows this sequence without skipping phases, losing test coverage, or introducing behavioral differences between backends. Phase advancement uses `make`-like timestamp logic: a backend is considered **stale** if its prerequisite file has a newer modification time, even if the file exists. Staleness propagates transitively — updating `FORMALIZATION.md` marks `_python.py`, `_cython.pyx`, and `_numba.py` all stale in sequence.
+**The filenames are the repository's, not the plugin's** — each phase is a path template in
+the manifest. Phases 3 and 4 are both Numba, and neither is called `numba`: that names the
+library, and a name shared by two phases cannot distinguish them.
+
+The plugin ensures the agent follows this sequence without skipping phases, losing test
+coverage, or introducing behavioral differences between backends. **Staleness is decided by
+recorded provenance, not by modification time**: each derived artifact carries a
+`derived-from` header naming its source and that source's SHA-256, and is stale when the
+recorded hash no longer matches. That survives `git checkout`, which resets every mtime,
+and it records the *direction* of each edge — so a formalization recovered from an
+implementation is marked stale by a change to the kernel, rather than the reverse. The full
+rule is `commands/references/phase-detection.md`.
 
 ## Skills
 
 | Skill                    | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
-| `algorithm-formalize`    | Guide Phase 0: pseudocode formalization from source material |
-| `algorithm-prototype`    | Guide Phase 1: pure Python implementation + tests        |
-| `cython-translation`     | Guide Phase 2: Cython translation with equivalence check |
-| `gpu-parallelization`    | Guide Phase 3: Numba CUDA parallelization                |
-| `scoring-matrix`         | Create and manage scoring matrices for custom alphabets  |
+| `algorithm-formalize`    | Phase 0: pseudocode formalization from source material   |
+| `algorithm-prototype`    | Phase 1: pure Python implementation + tests              |
+| `cython-translation`     | Phase 2: Cython translation with equivalence check       |
+| `cpu-parallelization`    | Phase 3: `@njit(parallel=True)` with `prange`            |
+| `gpu-parallelization`    | Phase 4: Numba CUDA parallelization                      |
 | `benchmarking`           | Compare performance across backends                      |
-| `alignment-viz`          | Visualize alignment results                              |
-| `package-release`        | PyPI packaging and release workflow                      |
 
 ## Commands
 
@@ -52,7 +66,10 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
   → Cython translation → same tests pass automatically
 
 /dp-compile:next-phase needleman_wunsch
-  → Numba GPU → same tests pass (or skip if no GPU)
+  → Numba CPU-parallel (prange) → same tests pass, on any machine
+
+/dp-compile:next-phase needleman_wunsch
+  → Numba CUDA → same tests pass, or skip loudly if no GPU
 
 /dp-compile:benchmark needleman_wunsch
   → see performance comparison across backends
@@ -60,22 +77,26 @@ The plugin ensures the agent follows this sequence without skipping phases, losi
 
 ### Updating a formalization mid-lifecycle
 
-If `FORMALIZATION.md` is edited after `_python.py` (or later backends) already exist,
-`/phase-check` will report the **effective phase** as 0 and flag the downstream files as
-stale. Running `/next-phase` will regenerate `_python.py` from the updated formalization —
-not patch it — and cascade from there:
+If the formalization is edited after later phases already exist, `/phase-check` reports the
+phase-1 file as **stale** and everything below it as **blocked**, and `/next-phase`
+regenerates the stale artifact rather than patching it:
 
 ```
-# Edit FORMALIZATION.md after Cython backend already exists
+# Edit the formalization after the Cython backend already exists
 /dp-compile:phase-check needleman_wunsch
-  → Phase 0 (effective) — _python.py and _cython.pyx are stale
+  → python: stale (formalization changed) — cython: blocked
 
 /dp-compile:next-phase needleman_wunsch
-  → regenerates _python.py from updated formalization → tests pass
+  → regenerates the python phase from the updated formalization → tests pass
 
 /dp-compile:next-phase needleman_wunsch
-  → regenerates _cython.pyx from updated _python.py → tests pass
+  → the cython phase is now stale in its own right → regenerated → tests pass
 ```
+
+**Stale and blocked are different states, and the difference is what makes this
+converge.** A blocked artifact's own recorded source has not changed yet, so it is not
+regenerated speculatively; it becomes stale the moment its source actually is. Each
+artifact is rebuilt exactly once, when the thing it was derived from really moves.
 
 ## Key Architectural Patterns
 
@@ -115,22 +136,21 @@ dp-compile/
 │   ├── algorithm-formalize/       # Phase 0 skill
 │   ├── algorithm-prototype/       # Phase 1 skill
 │   ├── cython-translation/        # Phase 2 skill
-│   ├── gpu-parallelization/       # Phase 3 skill
-│   ├── scoring-matrix/            # Scoring matrix generation
-│   ├── benchmarking/              # Cross-backend benchmarking
-│   ├── alignment-viz/             # Visualization
-│   └── package-release/           # PyPI packaging
+│   ├── cpu-parallelization/       # Phase 3 skill
+│   ├── gpu-parallelization/       # Phase 4 skill
+│   └── benchmarking/              # Cross-backend benchmarking
 ├── commands/
 │   ├── new-algorithm.md
 │   ├── phase-check.md
 │   ├── next-phase.md
 │   ├── benchmark.md
-│   └── references/
-│       └── phase-detection.md    # Shared phase/staleness logic (@-included by phase-check and next-phase)
+│   └── references/               # @-included fragments, not commands
+│       ├── manifest.md           # The dp-compile.toml contract
+│       └── phase-detection.md    # Nominal phase, staleness, and the target
 ├── hooks/
 │   ├── hooks.json
 │   └── scripts/
-│       └── pre-commit-check.sh
+│       └── pre-commit-check.py
 └── README.md
 ```
 

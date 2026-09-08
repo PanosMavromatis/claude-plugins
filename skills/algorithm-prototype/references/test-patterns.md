@@ -256,8 +256,13 @@ def test_tc15_all_zeros_matrix(align_fn):
   cases with unique parameters use inline setup
 - When adding a new backend, **no test changes are needed** — the parametrization
   picks it up automatically
-- GPU-specific tests go in a separate `test_<name>_numba_specific.py` file marked
-  with `@pytest.mark.gpu`
+- Backend-specific tests — those that reach past the public API into one phase's
+  internals — go in their own file or in the labelled non-shared section described above,
+  never among the shared cases. Mark the GPU ones so a machine without a device can
+  deselect them (`@pytest.mark.gpu` is the usual spelling; the repository's own convention
+  wins). Name such a file after the **phase**, not after the library: `cpu_parallel` and
+  `cuda` both use Numba, so a `_numba_` in the filename says which library and not which
+  backend.
 - Use `pytest.approx()` for all score comparisons (float precision)
 - Match the formalization's assertion precision level:
   - **Exact**: `assert result.score == pytest.approx(6.0)` and

@@ -344,7 +344,9 @@ from the same test specifications.
 
 ## What this skill does NOT do
 
-- **No Python, Cython, or Numba code.** Not even "starter" code or "scaffolding."
+- **No implementation code of any kind** — not the pure-Python phase, not the `.pyx`,
+  and neither of the two Numba phases (`cpu_parallel` and `cuda`). Not even "starter"
+  code or "scaffolding." Each has its own skill and its own source to translate from.
 - **No test code.** Test *specifications* (input/expected-output pairs) belong
   here. Test *implementation* (pytest files, fixtures, assertions) is Phase 1's
   concern.

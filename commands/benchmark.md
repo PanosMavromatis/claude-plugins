@@ -47,15 +47,34 @@ Before benchmarking, check for staleness using the phase-detection logic:
 
 @references/phase-detection.md
 
-Apply the staleness rules above to the algorithm directory. If **any backend file is stale**, stop and report:
-> "Cannot benchmark `<algorithm>`: `<file>` is stale (its prerequisite `<prereq>` was modified more recently). Run `/next-phase <algorithm>` to regenerate stale backends before benchmarking."
+Apply the phase-detection logic above. If **any implementation phase is `stale` or
+`blocked`**, stop and report:
+> "Cannot benchmark `<algorithm>`: `<file>` is `<stale|blocked>` (`<source>` has changed
+> since it was generated). Run `/next-phase <algorithm>` to regenerate it before
+> benchmarking."
 
-Do **not** proceed to benchmarking if any staleness is detected.
+Do **not** proceed if anything is stale or blocked. **Blocked counts here even though it
+is not yet a regeneration target**: it means an ancestor has changed, so the backend is
+about to be regenerated and the number measured now describes code that is on its way out.
+A benchmark compares backends only if they all implement the same algorithm — that is the
+entire premise, and a stale or blocked backend breaks it.
+
+The formalization's own state is **not** a gate. It is a document; it compiles to nothing
+and contributes no timing. A stale formalization is a documentation problem, and refusing
+to measure four working backends over it would be a gate on the wrong artifact.
 
 ### 2. Check backend count
 
-Verify at least two non-stale backends exist (Python + Cython, or Python + Cython + Numba). If only one backend exists:
-> "Only the Python backend exists for `<algorithm>`. Benchmarking requires at least two backends to compare. Run `/next-phase <algorithm>` to add a Cython backend."
+Count the **fresh implementation phases** — `python`, `cython`, `cpu_parallel`, `cuda`,
+as far as the manifest declares them. Benchmarking needs at least two:
+
+> "Only the Python backend exists for `<algorithm>`. Benchmarking requires at least two
+> backends to compare. Run `/next-phase <algorithm>` to add a Cython backend."
+
+Name every backend that will be measured, and every declared phase excluded, with its
+reason — absent, stale, blocked, or (for `cuda`) no device available. **A skipped GPU
+backend must be as visible as a measured one**: a table of three rows where four were
+expected is otherwise read as a result rather than as an omission.
 
 ### 3. Run the repository's benchmark command
 
@@ -76,7 +95,11 @@ If the user requested memory profiling (e.g., "benchmark with memory", "include 
 After the command completes:
 1. Display whatever tabular result it printed, or read the file it names
 2. Mention any plot or artifact path it reports, so the user can open it
-3. Highlight crossover points between backends, and any anomalies
+3. Highlight **each** crossover, naming the pair it lies between. With four backends
+   there are three transitions worth reporting — python → cython, cython → cpu_parallel,
+   cpu_parallel → cuda — and each has its own crossover length, or none. A crossover that
+   does not exist within the lengths measured is a finding, not a gap: it says the faster
+   backend never repays its overhead at this scale.
 4. Offer a brief (2-3 sentence) interpretation of the results
 
 Do **not** suggest code optimizations unless the user asks.

@@ -231,7 +231,11 @@ the same treatments.
 - Don't optimize the Python implementation — clarity over speed
 - Don't use numpy inside the DP computation — save that for Phase 2
 - Don't skip edge-case tests "for now"
-- Don't create Cython (`_cython.pyx`) or Numba (`_numba.py`) files yet
+- **Don't create any later phase's file yet** — not the `cython` translation, not the
+  `cpu_parallel` kernel, not the `cuda` one. Each is translated from the phase before it
+  by its own skill, and a file written ahead of its turn has no source to be checked
+  against. (There is no phase named `numba`: both parallel phases use that library, so
+  the name cannot distinguish them.)
 
 ## Gotchas
 

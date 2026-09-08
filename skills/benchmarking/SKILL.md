@@ -13,8 +13,9 @@ description: >
 
 # Benchmarking Skill
 
-Compare wall-clock performance across available backends (Python, Cython, Numba)
-for a single algorithm, producing a markdown table and scaling plot.
+Compare wall-clock performance across the backends a repository actually has — up to
+four of them: pure Python, Cython, Numba CPU-parallel and Numba CUDA — for a single
+algorithm, producing whatever table and plot the repository's own harness emits.
 
 ## When to trigger
 
@@ -44,20 +45,28 @@ If the name doesn't match a key in the manifest's `[algorithms]` table:
 ### 2. Run phase-check for staleness
 
 Before benchmarking, run the equivalent of `/phase-check <algorithm>` to determine:
-- Which backends exist (Python, Cython, Numba)
-- Whether any backend is **stale** (prerequisite has a newer mtime)
+- Which of the manifest's declared implementation phases exist.
+- The state of each: `fresh`, `stale`, or `blocked`. **Staleness is decided by the
+  provenance header each artifact carries, not by modification time** — the full rule is
+  in `commands/references/phase-detection.md` and is not restated here, because two
+  statements of one rule drift apart and this is the copy that would be missed.
 
-If any backend is stale, **stop and report**:
-> "Cannot benchmark `<algorithm>`: `<file>` is stale (its prerequisite `<prereq>`
-> was modified more recently). Run `/next-phase <algorithm>` to regenerate stale
-> backends before benchmarking."
+If any implementation phase is **stale or blocked**, stop and report:
+> "Cannot benchmark `<algorithm>`: `<file>` is `<stale|blocked>` (`<source>` has changed
+> since it was generated). Run `/next-phase <algorithm>` to regenerate it before
+> benchmarking."
 
 **Rationale**: comparing backends that implement different versions of the algorithm
-produces meaningless results.
+produces meaningless results. `blocked` gates for the same reason `stale` does — an
+ancestor has changed, so the backend is about to be regenerated and any number measured
+now describes code on its way out.
 
-### 3. At least two non-stale backends must exist
+The formalization's state is **not** a gate: it is a document, it compiles to nothing, and
+it contributes no timing.
 
-If only one backend is available (typically just `_python.py`), there is nothing to
+### 3. At least two fresh backends must exist
+
+If only one is available (typically just the pure-Python phase), there is nothing to
 compare. Report:
 > "Only the Python backend exists for `<algorithm>`. Benchmarking requires at least
 > two backends to compare. Run `/next-phase <algorithm>` to add a Cython backend."

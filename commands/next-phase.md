@@ -43,11 +43,39 @@ proceed against an assumed layout.
 @references/phase-detection.md
 
 1. Resolve the algorithm name (see above) and confirm it has an entry in the manifest's `[algorithms]` table.
-2. Apply the phase-detection logic above to determine the **effective phase**.
-3. If the current phase is failing (tests fail or formalization not approved), stop and tell the user what needs to be fixed before advancing.
-4. **Handle stale artifacts.** If the effective phase is earlier than the nominal phase (i.e., a prerequisite was updated after a downstream file was generated), target the first stale artifact for regeneration — not the next missing file. For example, if `FORMALIZATION.md` was modified after `_python.py`, the effective phase is 0 and the task is to regenerate `_python.py`, not to write `_cython.pyx`.
-5. Route to the appropriate skill based on the effective phase. **Use the `Skill` tool** with the fully namespaced skill name — do NOT use `Read` on the corresponding `SKILL.md` file. `Read` just loads the file's contents as context; only `Skill` activates the skill through the harness so its references and examples are wired up correctly.
-   - Phase 0 → Phase 1: `Skill` with `skill: "dp-compile:algorithm-prototype"`.
-   - Phase 1 → Phase 2: `Skill` with `skill: "dp-compile:cython-translation"`.
-   - Phase 2 → Phase 3: `Skill` with `skill: "dp-compile:gpu-parallelization"`.
-   - Phase 3 with no stale artifacts: report "This algorithm is fully implemented across all backends." and stop.
+2. Apply the phase-detection logic above to determine **the target** — the artifact this
+   invocation acts on. It is either a stale artifact to regenerate or an unwritten phase
+   to write; the reference decides which, and there is always exactly one to start from.
+3. If the phase the target depends on is failing (its tests fail, or the formalization has
+   not been approved), stop and tell the user what needs to be fixed before advancing.
+4. **Say what the target is and why, before routing.** Name it, say whether it is being
+   regenerated or written for the first time, and — when regenerating — name the source
+   whose change made it stale. When the phase-detection step reported *two* minimal stale
+   artifacts, name both and say which is being done first; the other is the next
+   invocation's target, not something silently dropped.
+5. Route to the skill for **the target's own phase**, not for "the phase after the current
+   one". These differ whenever the target is a regeneration rather than an advance, and
+   they differ in a recovered graph even when nothing is stale. **Use the `Skill` tool**
+   with the fully namespaced skill name — do NOT use `Read` on the corresponding
+   `SKILL.md` file. `Read` just loads the file's contents as context; only `Skill`
+   activates the skill through the harness so its references and examples are wired up
+   correctly.
+
+   | Target phase | Skill |
+   |---|---|
+   | 0 `formalization` | `dp-compile:algorithm-formalize` |
+   | 1 `python` | `dp-compile:algorithm-prototype` |
+   | 2 `cython` | `dp-compile:cython-translation` |
+   | 3 `cpu_parallel` | `dp-compile:cpu-parallelization` |
+   | 4 `cuda` | `dp-compile:gpu-parallelization` |
+
+   Phase 0 appears in this table because a **recovered** formalization can be a target: it
+   derives from the kernel, so editing the kernel makes the document stale and regenerating
+   it is ordinary work rather than a special case. A formalization written from a paper has
+   no source in the repository and never becomes a target this way.
+
+6. When phase detection reports no target — nothing stale, and every phase the manifest
+   declares already exists — report "This algorithm is complete across every backend this
+   repository declares." and stop. Say which phases those were: a repository that omits
+   `cuda` from `[phases]` is complete at 3, and reporting a bare "fully implemented" would
+   read as though a GPU backend had been written.

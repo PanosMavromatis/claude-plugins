@@ -45,11 +45,27 @@ Apply the phase-detection logic above to each algorithm being checked.
 
 ## Report format
 
-Produce a clear, concise status report for each algorithm checked. Include:
-- Algorithm name and directory path.
-- Effective phase (e.g. "Phase 1 — Python backend").
-- Whether the effective phase differs from the file-existence phase and why (i.e., which file is stale and which prerequisite was modified more recently).
-- For each present, non-stale backend: test status (pass / fail / not run).
-- For Phase 0: whether the formalization has been reviewed and approved.
+Produce a clear, concise status report for each algorithm checked.
+
+**Report the artifacts, not a single phase number.** The nominal phase is one line of the
+report rather than its conclusion: under recorded provenance the artifacts form a graph,
+and for an algorithm whose formalization was recovered from its kernel there is no single
+number that says both what exists and what is trustworthy. A table of five rows says both
+without having to choose.
+
+- Algorithm name, and the path each declared phase resolves to.
+- **Nominal phase** — the highest-numbered declared phase whose file exists.
+- **One row per declared phase**, with its state from the phase-detection step: `absent`,
+  `fresh`, `stale`, or `blocked`. For a `stale` row, name the source whose change made it
+  stale. For a `blocked` row, name the stale ancestor it is waiting on.
+- Phases the manifest **does not declare**, listed once as not applicable to this
+  repository. An omitted `cuda` is a decision, and a report that simply stops at 3 without
+  saying so reads like an unfinished algorithm.
+- **Test status for `fresh` backends only** — pass / fail / not run. Say explicitly that
+  stale and blocked backends were not tested, and why: their source may disagree with what
+  they were derived from, so a pass and a failure are equally uninformative.
+- Any provenance header that was missing, with the file named — the mtime fallback is in
+  use for that file and the report is where that becomes visible.
+- For phase 0: whether the formalization has been reviewed and approved.
 
 After the report, **stop**. Do not suggest running `/next-phase`, do not offer to continue implementation, and do not speculate about what should happen next.

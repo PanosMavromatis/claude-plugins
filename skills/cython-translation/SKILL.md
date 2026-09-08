@@ -235,6 +235,18 @@ Open the generated `.html` file. Yellow lines still touch the Python/C API — t
 are slow. The inner DP loop must be white (pure C). If any line in the DP loop
 is yellow, add missing type declarations.
 
+## What this skill does NOT do
+
+- **No later phase's file.** This skill writes the `cython` artifact and stops. The
+  `cpu_parallel` kernel (`@njit(parallel=True)` with `prange`) and the `cuda` kernel are
+  separate phases with their own skills, and each translates from the phase before it —
+  writing one here gives it no source to be checked against. There is no phase named
+  `numba`: both parallel phases use that library, so the name cannot distinguish them.
+- **No change to the public signature.** Every phase implements the same one; see the
+  wrapper/kernel split above.
+- **No edits to the tests to make the translation pass.** If a test fails, the Cython is
+  wrong — that is the entire value of translating against an existing suite.
+
 ## Gotchas
 
 - **`cdef` vs `cpdef`**: `cdef` functions cannot be called from Python. Use
