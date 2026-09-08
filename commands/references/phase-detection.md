@@ -111,6 +111,22 @@ A headerless file also supplies no edge, so its dependency is taken to be the pr
 declared phase — the forward chain, which is the only thing that can be assumed in the
 absence of a record.
 
+**With one exception, and it is not a corner case: never let the fallback reverse an edge
+that is already recorded.** Before assuming the forward chain for a headerless file, check
+whether some *other* artifact's header names it. If one does, the edge between that pair
+is on record, running the other way, and adding the fallback's guess would make a cycle.
+
+This is exactly the shape a recovered algorithm has. Its `_python.py` carries no header —
+correctly, since it is the root and derives from nothing the plugin tracks — while the
+formalization's header names it. Applying the fallback there would give `_python.py` an
+incoming edge from the document that was written *from it*, and because a recovered
+document is necessarily newer than its own source, mtime would then report the kernel
+stale the moment the recovery lands. The kernel would be regenerated from a description of
+itself.
+
+A file that no header names and that carries none of its own is a root: it has no incoming
+edge and nothing in the repository can make it stale.
+
 ## Step 4 — Staleness
 
 An artifact is **stale** when the SHA-256 recorded in its header no longer matches the
@@ -207,3 +223,4 @@ the first stale artifact is the first broken link, and regenerating it is exactl
 | All declared phases present and fresh | 4 | — | — | none — complete |
 | `cuda` omitted from `[phases]`; 0–3 present and fresh | 3 | — | — | none — complete for this repository |
 | `cuda` written straight from `cython`; `cpu_parallel` never written | 4 | — | `cuda` (source absent) | write `cpu_parallel` — the gap, which the later file does not hide |
+| Recovery just landed; headerless `_python.py`, doc names it | 1 | — | — | write `cython`. `_python.py` is the root, **not** stale against the newer doc |

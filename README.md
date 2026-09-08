@@ -54,7 +54,7 @@ rule is `commands/references/phase-detection.md`.
 
 | Command          | Description                                        |
 | ---------------- | -------------------------------------------------- |
-| `/new-algorithm` | Scaffold a new algorithm and start Phase 0 (formalization) |
+| `/new-algorithm` | Register an algorithm with the plugin and start phase 0 by whichever of the three entrances applies |
 | `/phase-check`   | Report phase and staleness status for one algorithm (or all); exits without suggesting next steps |
 | `/next-phase`    | Advance one algorithm to the next phase; requires an explicit name argument (asks if missing) |
 | `/benchmark`     | Run cross-backend benchmarks for an algorithm      |
@@ -84,6 +84,31 @@ rule is `commands/references/phase-detection.md`.
 /dp-compile:benchmark needleman_wunsch
   → see performance comparison across backends
 ```
+
+### Starting from code that already exists
+
+An algorithm whose kernel was translated from a legacy implementation has no source
+material to formalize from, and `/new-algorithm` detects that rather than asking:
+
+```
+/dp-compile:new-algorithm
+  → name it; phase-1 file already exists at the resolved path
+  → "That makes this the reverse entrance." → confirm
+  → registers it in dp-compile.toml → recovers FORMALIZATION.md from the kernel
+  → human reviews and approves
+
+/dp-compile:next-phase viterbi
+  → the formalization is fresh and phase 1 exists → Cython translation
+```
+
+The recovered document's `Derived from` names the kernel, so the kernel is the root of
+this algorithm's graph and the document is downstream of it. **Phase 1 is not stale after a
+recovery**, even though the document is newer than it — that direction is recorded, and a
+headerless root is never given a reversed edge by the mtime fallback.
+
+A third entrance covers a formalization the user already has: `/new-algorithm` places it,
+checks it against the template's mandatory sections and the repository's invariants, and
+stops for review without authoring anything.
 
 ### Updating a formalization mid-lifecycle
 

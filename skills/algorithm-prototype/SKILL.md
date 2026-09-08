@@ -14,8 +14,10 @@ When the user runs `/next-phase` for an algorithm that has a committed, approved
 Python backend for a specific algorithm.
 
 Do **not** trigger on "new algorithm" or "add an algorithm" requests — those belong to
-`algorithm-formalize` (Phase 0). If the user asks to implement an algorithm but
-`FORMALIZATION.md` is missing, stop and tell them to run `/new-algorithm` first.
+phase 0, which has two skills: `algorithm-formalize` going forward from source material,
+and `algorithm-recover` going backward from an implementation that already exists. If the
+user asks to implement an algorithm but the formalization is missing, stop and tell them to
+run `/new-algorithm` first; it decides between the two.
 
 ## What to do
 

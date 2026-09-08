@@ -130,6 +130,13 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
   independent check, and a phase-1 defect gets written down as the specification. What
   keeps it honest is evidence the code cannot supply: the legacy source, an account of it,
   the manifest's `[algorithms.<name>].oracles`, and the human review.
+- **The mtime fallback must never reverse an edge that is already recorded.** A headerless
+  file normally falls back to "its source is the previous declared phase", but if another
+  artifact's header already names it, that pair's edge is on record running the other way,
+  and adding the guess makes a cycle. This is not hypothetical: a recovered algorithm's
+  `_python.py` is correctly headerless and its formalization names it, so the naive
+  fallback would report the kernel stale against a document written *from* it — the moment
+  the recovery lands, every time.
 - **`stale` and `blocked` are different states.** An artifact is stale when its own recorded source hash no longer matches; it is blocked when something further upstream is stale but its own source has not changed yet. Only stale artifacts are regeneration targets — a blocked one becomes stale of its own accord once its source is regenerated, which is what makes the process terminate with each artifact rebuilt once. Under the old mtime rule staleness propagated by fiat; here it propagates by consequence.
 - **Staleness is decided by recorded provenance, not by mtime.** Each derived artifact carries a `derived-from` header naming its source and that source's SHA-256, and is stale when the recorded hash no longer matches. This survives `git checkout`, which resets every mtime, and it encodes *direction* — a formalization recovered from an implementation records that it derives from the code, so editing the kernel marks the document stale rather than the reverse, which a timestamp cannot express. Compute the hash with the file's own header line excluded, or re-stamping any file spuriously invalidates everything downstream of it. The shared logic lives in `commands/references/phase-detection.md`.
 - **Nothing in this plugin knows a repository's layout.** Paths, build and test commands, backend registration and the encoder all come from the consumer's root `dp-compile.toml`, whose contract is `commands/references/manifest.md`. There are deliberately **no defaults**: with none, a repository without a manifest would resolve paths under a layout it does not have, find nothing, and be told "algorithm not found" — a missing file misdiagnosed as a missing algorithm.

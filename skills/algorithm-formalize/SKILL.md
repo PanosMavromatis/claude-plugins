@@ -3,7 +3,8 @@ name: algorithm-formalize
 description: >
   Use this skill when the user wants to formalize a dynamic-programming algorithm
   before implementation. Trigger when the user says "formalize," "pseudocode,"
-  "write up the algorithm," "prepare for implementation," or runs `/new-algorithm`.
+  "write up the algorithm," "prepare for implementation," or runs `/new-algorithm`
+  and chooses the forward entrance.
   Also trigger on the name of a DP algorithm (Needleman-Wunsch, Smith-Waterman,
   Hirschberg, Gotoh, Viterbi, Baum-Welch, forward-backward, banded alignment, etc.)
   when neither its formalization nor its phase-1 file exists at the paths the
