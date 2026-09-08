@@ -159,6 +159,37 @@ To make that self-enforcing, the plugin ships a second hook, `hooks/remind-disab
 
 **Manifest gotcha — do not "declare" the hooks path.** `.claude-plugin/plugin.json` must **not** carry a `hooks` key pointing at `hooks/hooks.json`. Claude Code auto-loads that standard file by convention; a manifest reference to the same path raises a `Duplicate hooks file detected` error that fails the **entire** plugin load (commands included). The manifest's `hooks` key is only for *additional* hook files at non-standard paths. (This bit us once — commit `f94242d` added exactly such a declaration and silently broke `--plugin-dir` loading until it was removed.)
 
+## Companion plugin: `dp-compile`
+
+`dp-compile` (a separate repository) guides dynamic-programming algorithms through a staged
+translation and **assumes this plugin is loaded**, delegating branches, plans, commits,
+merges and documentation to it. The direction matters: `commit-commands` is an overlap to be
+disabled beside this plugin, `dp-compile` is a consumer of it.
+
+**Nothing in this repository implements or maintains that relationship**, and that is the
+point worth remembering. `dp-compile` detects this plugin by reading its own tool list for
+anything namespaced `workflow-claude:` — the same judgement `/smart-merge` makes about MCP
+availability. A detection contract (a `SessionStart` marker this plugin writes and the other
+reads) was considered on that side and rejected: it would couple both plugins forever for a
+check one of them can make alone, and would assume hooks fire, which depends on the load
+path. So unlike the `commit-commands` hook, where editing `hooks.json` means updating
+`_meta/plugin-conflict-report.md` in the same commit, there is no reciprocal obligation here.
+
+The one real coupling is **names**. `dp-compile` names `/smart-commit`, `/new-branch`,
+`/hitl-step`, `/step`, `/smart-merge` and `/agents-docs-update` in its own prose; renaming
+any of them breaks it silently, and no test in this repository would notice. Treat a command
+rename as a cross-repository change.
+
+Two behaviours worth knowing when reasoning about a session that loads both:
+
+- **The two `PreToolUse` hooks match disjoint tool sets** — `protect-agent-docs.py` on
+  `Write|Edit|MultiEdit`, `dp-compile`'s kernel gate on `Bash` — so no tool call matches both
+  and there is no ordering question between them. `_meta/plugin-conflict-report.md` §4.4.
+- **`/agents-docs-update` runs before the commit and changes the staged set** that
+  `dp-compile`'s gate then reads to decide whether a kernel is involved. It stages only
+  documentation, so it cannot change that decision today — but nothing enforces it, and
+  staging anything else would move the gate's behaviour without either plugin noticing.
+
 ## Conventions when editing command prompts
 
 - **Confirmation discipline.** Most commands here treat git writes (commit, push, branch deletion) and file deletions as confirmation-required. Keep that pattern — don't relax it without an explicit reason. Read-only diagnostics (`git status`, `git log`, `git diff`) run freely.

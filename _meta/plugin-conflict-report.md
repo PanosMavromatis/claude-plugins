@@ -118,6 +118,62 @@ Both match `Write|Edit|MultiEdit`. They run at different phases (Pre vs. Post) a
 - `github` plugin is MCP/tooling, ships no colliding command files.
 - `claude-md-management:/revise-claude-md` + skill `claude-md-improver` touch `CLAUDE.md`. In a *consuming* project that adopts the agent-docs convention, those edits to a protected `CLAUDE.md` would be **blocked by `workflow-claude`'s hook** when the sentinel is present — a potential future friction point in consumers, **not** in this repo (no sentinel layout here). Flagged for awareness only.
 
+### 4.4 `dp-compile` composes with `workflow-claude` by layer, not by arrangement
+
+**Added 2026-09-08.** `dp-compile` is a companion plugin, not a marketplace one — it guides
+dynamic-programming algorithms through a staged translation and assumes `workflow-claude` is
+present, delegating branches, plans, commits, merges and documentation rather than
+reimplementing them. It is loaded the same three ways `workflow-claude` is (see §1.0), and
+one of those — a plugin tree placed in a project's `.claude/skills/` — is how at least one
+repository loads *this* plugin today.
+
+**The two `PreToolUse` hooks cannot collide.** `workflow-claude`'s `protect-agent-docs.py`
+matches `Write|Edit|MultiEdit`; `dp-compile`'s `pre-commit-check.py` matches `Bash`. No tool
+call matches both, so there is no ordering question between them and no possibility of one
+masking the other. This is a stronger property than §4.2's "they compose correctly" — those
+two at least run on the same calls.
+
+**`dp-compile`'s gate fires inside `/smart-commit`, and that is the design.** Hooks stack,
+so the `git commit` that `/smart-commit` runs at its Step 4 triggers the gate exactly as a
+hand-typed one would. The consequence is the one worth wanting: **delegating the commit does
+not bypass the check.** `dp-compile` enforces deterministically through a hook and
+`workflow-claude` orchestrates advisorily through commands, so the two occupy different
+layers rather than competing for the same one.
+
+The gate is scoped: it runs the consumer's build and test commands only when the staged set
+touches a path that a `dp-compile.toml` `[phases]` template resolves to, and exits silently
+otherwise. Three consequences for this plugin's commands:
+
+- **`/agents-docs-update` runs first and changes the staged set** — it is `/smart-commit`'s
+  Step 1 — so the gate sees the *final* staged set, which is the right one. It stages only
+  documentation, never a kernel, so it cannot change the gate's decision. That holds only
+  while it stays documentation-only; a future version staging anything else would move the
+  gate's scoping decision without either plugin noticing.
+- **The suite runs once per commit**, after the docs are staged and before the commit
+  object exists. A blocked commit leaves the staged set intact, so re-running
+  `/smart-commit` after a fix is the ordinary recovery.
+- **`security-guidance`'s `PostToolUse` review is downstream of the gate.** If `dp-compile`
+  blocks, no commit happens and no security review fires — correct ordering by construction
+  rather than by arrangement.
+
+**Two accepted costs, named so they are not mistaken for defects.**
+
+- The hook matches `Bash` with no `if` filter and decides for itself whether the command is
+  a commit, so it spawns one short-lived process per `Bash` tool call. That is deliberate:
+  §3 of `dp-compile`'s own notes records that the two official plugins using the `if` field
+  spell their patterns incompatibly, so at least one syntax matches nothing — and a matcher
+  that matches nothing yields a hook that never fires and never says so.
+- In a repository that loads `dp-compile` but has **no** `dp-compile.toml`, every commit
+  prints one line saying the gate was skipped. That is the no-op-with-a-message rule working
+  as intended — a silent skip would leave a repository ungated with nothing saying so — but
+  it is a line on every commit, and worth expecting rather than diagnosing.
+
+**Not verified:** the hook declares a 600-second timeout, and what Claude Code does when a
+`PreToolUse` hook exceeds it — allow, block, or report — has not been measured here, and
+there is no CLI that exercises hook runtime behaviour. A consumer whose suite approaches ten
+minutes should establish that behaviour before relying on the gate, or point
+`[commands].test` at a faster subset.
+
 ---
 
 ## 5. Note on the `_meta/` directory itself — and why it's tracked

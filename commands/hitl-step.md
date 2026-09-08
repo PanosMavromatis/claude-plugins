@@ -71,6 +71,7 @@ The file has a three-tier structure:
 ```
 ## Section header        ← not a checkbox; just groups goals
 - [ ] Top-level goal     ← the unit of work per iteration
+  > **Note:** ...        ← a finding; never a checkbox (see 3b-bis)
   - [ ] Subgoal          ← acceptance criterion for the parent goal
   - [ ] Subgoal
 ```
@@ -121,6 +122,29 @@ If the goal requires the user to make a decision (pick X vs Y, confirm a constra
 
 4. Continue executing with the information gathered.
 
+### 3b-bis. Findings → `> **Note:**`, never a checkbox
+
+Work turns up things that are worth keeping and are **not tasks**: a measurement, a
+surprise, a claim in the codebase that turned out to be false, a reason something was left
+alone. These get a `> **Note:**` blockquote under the relevant goal or subgoal, in the same
+2-space-indented form as the Q&A above:
+
+```
+- [x] The goal
+  > **Note:** what was observed, and why it will matter to whoever reads this next.
+```
+
+**Do not write a finding as a `- [ ]` line.** A checkbox is a promise that something will
+be done, so a note wearing one is read as outstanding work by anyone scanning the file —
+and, because a plan is usually surveyed with a top-level `grep -c '^- \[ \]'`, an indented
+one is *simultaneously* invisible to the count and alarming to a reader. If a note really
+does imply future work, it is not a note: give it `[-]` and name the goal that picks it up,
+per 3f.
+
+The distinction to apply: **`> **Note:**` records something observed; `[-]` records
+something postponed.** "The validator warns about this file and that is expected" is a
+note. "This file's rewrite is deferred to goal C1" is `[-]`.
+
 ### 3c. Writes → propose, confirm, execute
 
 If the goal requires creating or modifying files (Dockerfile, script, config):
@@ -161,6 +185,14 @@ Determine the parent goal's final state based on the states of its subgoals and 
 - **`[~]` — Still in progress**: real progress was made (some subgoals flipped to `[x]`) but the goal isn't done yet. Leave the parent as `[~]` so the next `/hitl-step` resumes here. This is a legitimate Step 4 outcome — not every iteration has to finish a top-level goal.
 - **`[-]` — Descoped**: the entire goal is being abandoned. Add a `> **Descoped:** reason` note under the parent.
 
+**Check the subgoals before flipping the parent — do not do it from memory.** A goal that
+took several turns has scrolled its own acceptance criteria out of view, and the `[x]` rule
+above is precisely a claim about lines you are no longer looking at. Re-read them, or
+`Grep` the goal's line range for `- \[[ ~!]\]`, and resolve every hit before step 2 below.
+A hit that turns out not to be a task at all is a finding written as a checkbox: convert it
+to `> **Note:**` per 3b-bis rather than ticking it, since ticking implies work that was
+never done.
+
 **Applying the result:**
 
 1. Update each subgoal's marker to reflect its current state (`[x]`, `[!]`, `[-]`, or `[~]` — never `[ ]` once work has touched it).
@@ -193,4 +225,15 @@ Tell the user:
 - How many goals were processed out of N requested, and each goal's final state (`[x]`, `[!]`, `[-]`, or `[~]`) with a one-line summary.
 - **Blocked items**: if any subgoal or goal landed in `[!]` this iteration, surface the blocking reason explicitly — the user needs to resolve it before the next run can close that goal.
 - **Section completion check**: if the just-completed section has all top-level goals in `[x]` or `[-]` state (under the nearest `##` above), say so and suggest running `/smart-commit` with a proposed message (e.g., `feat(docker): <section topic>`). Sections with a `[!]` goal are **not** complete.
+
+  **Verify this at every indent, not just at the top level.** Step 4 should already have
+  made it impossible for a `[x]` parent to hide an open subgoal, but this is the line the
+  user acts on, so it is worth re-deriving rather than inheriting:
+
+  ```bash
+  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s" | "$0}' <plan file>
+  ```
+
+  Report "section complete" only if that prints nothing for the section. A completion claim
+  is the one report a reader will not re-check.
 - What the next pending top-level goal is (if any) — prefer a `[~]` in-progress goal over a `[ ]` not-started one when naming it, so the user knows the next `/hitl-step` will resume rather than start fresh.
