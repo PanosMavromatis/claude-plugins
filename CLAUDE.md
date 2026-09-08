@@ -137,6 +137,15 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
   `_python.py` is correctly headerless and its formalization names it, so the naive
   fallback would report the kernel stale against a document written *from* it — the moment
   the recovery lands, every time.
+- **A kernel must never be the only thing validating itself.** Phases 2-4 are checked
+  against phase 1, so nothing downstream can check phase 1. Written forward that is fine —
+  the specification came from outside. Recovered, it is not: the document was read off the
+  kernel and the test cases were extracted from the kernel's own suite, so the whole chain
+  agrees with the kernel because it all came from it. A differential oracle is the only
+  input that breaks the circle, which is why `/next-phase` refuses to advance past phase 1
+  while a declared one is unexercised. Where the comparison is not an equality check, **pin
+  the divergence rather than widening the assertion** — a tolerance accepts the next
+  divergence too.
 - **`stale` and `blocked` are different states.** An artifact is stale when its own recorded source hash no longer matches; it is blocked when something further upstream is stale but its own source has not changed yet. Only stale artifacts are regeneration targets — a blocked one becomes stale of its own accord once its source is regenerated, which is what makes the process terminate with each artifact rebuilt once. Under the old mtime rule staleness propagated by fiat; here it propagates by consequence.
 - **Staleness is decided by recorded provenance, not by mtime.** Each derived artifact carries a `derived-from` header naming its source and that source's SHA-256, and is stale when the recorded hash no longer matches. This survives `git checkout`, which resets every mtime, and it encodes *direction* — a formalization recovered from an implementation records that it derives from the code, so editing the kernel marks the document stale rather than the reverse, which a timestamp cannot express. Compute the hash with the file's own header line excluded, or re-stamping any file spuriously invalidates everything downstream of it. The shared logic lives in `commands/references/phase-detection.md`.
 - **Nothing in this plugin knows a repository's layout.** Paths, build and test commands, backend registration and the encoder all come from the consumer's root `dp-compile.toml`, whose contract is `commands/references/manifest.md`. There are deliberately **no defaults**: with none, a repository without a manifest would resolve paths under a layout it does not have, find nothing, and be told "algorithm not found" — a missing file misdiagnosed as a missing algorithm.

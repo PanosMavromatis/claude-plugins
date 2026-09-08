@@ -203,8 +203,15 @@ Give every case one of three provenances, and say which:
 
 **An oracle is not necessarily an equality check.** Where the port deliberately fixed a
 defect, the oracle and the kernel are *expected* to differ, and the case states where and
-why. A recovery that quietly relaxes such a case until it passes has erased the finding
-that justified the fix.
+why — **pinned exactly**, as an enumerated disagreement rather than a tolerance. A recovery
+that quietly relaxes such a case until it passes has erased the finding that justified the
+fix, and a relaxed bound silently accepts the next divergence too.
+
+Each oracle also gets an entry in the document's `Differential oracles` section: what
+produced it, which inputs it pairs with, whether the comparison is an equality check, where
+it is not, and which TC carries it. The manifest lists where the files are; that section is
+where what they *mean* is recorded, which is what a reviewer needs and what the manifest
+cannot hold.
 
 Constructed cases are not optional, because an extracted suite inherits every blind spot
 of the suite it came from. Two recur:
@@ -241,6 +248,14 @@ either Numba phase, not a test file, not a backend-registry row — and, in part
 not "fix" the phase-1 kernel to match the document you just wrote.** If the recovery found
 a real defect, that is a finding to report; correcting it is a separate change with its own
 review, and folding it into a documentation commit hides it.
+
+**Report every specified case that no existing test implements**, by TC number, and say it
+plainly: this document now specifies behaviour that nothing checks. The differential cases
+are the ones that matter most here — phase 1 already exists, so writing their test code is
+not a lifecycle phase and belongs to whoever owns the suite, but until it is written the
+chain has no external check at all. `/next-phase` will refuse to advance past phase 1 while
+a declared oracle is unexercised, and that refusal is the intended outcome rather than an
+obstacle to route around.
 
 Present the formalization to the user and say:
 

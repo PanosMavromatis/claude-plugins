@@ -164,6 +164,17 @@ manifest lists them, and the plugin has one code path.
 | `package` | Substituted into `{package}` in the templates. Omit in a single-package repository whose templates do not use it. |
 | `oracles` | Files holding known-good outputs for a differential test — typically produced by a legacy implementation being ported. **An oracle is not necessarily an equality check**: where a port deliberately fixes a defect in its source, the difference is expected and must be stated in the formalization. |
 
+**An oracle is a pairing, not a file.** An output is a differential test only alongside the
+inputs that produced it, so both must be tracked — an output whose inputs live on one
+machine cannot be made into a test later. This key records *where the files are*, which is
+layout and the plugin's business; what they mean, what produced them, which inputs they
+pair with and where the comparison is expected to disagree belong in the formalization's
+`Differential oracles` section, which is what a human reviews.
+
+Declaring an oracle has a consequence: `/next-phase` will not advance past phase 1 while a
+declared oracle is unexercised by the suite. Phases 2 to 4 are checked against phase 1, so
+an unchecked phase 1 makes the chain agree with itself.
+
 Any phase key may also appear inside `[algorithms.<name>]`, overriding the repository-wide
 template for that one algorithm.
 

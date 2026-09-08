@@ -11,8 +11,8 @@ for the algorithm, and fill in each section.
 
 Sections marked *optional* may be omitted where they do not apply. Every other section is
 mandatory, including the ones a particular algorithm answers briefly — **"this recurrence
-has no backtrace" and "the parallel decomposition is undetermined" are answers, and
-silence is not.**
+has no backtrace", "the parallel decomposition is undetermined" and "there is no oracle"
+are answers, and silence is not.**
 
 ---
 
@@ -134,6 +134,42 @@ predecessor can reach the same optimum, the choice between them is *contract*: t
 correct backends that break ties differently will disagree, and the suite meant to prove
 their equivalence will fail on a difference neither of them got wrong.
 
+## Differential oracles
+
+*"None" is a complete answer, and the commonest one — a formalization written from a paper
+usually has no oracle. Say it in one line rather than omitting the heading.*
+
+An **oracle** is a set of outputs produced by something other than the code in this
+repository — almost always the legacy implementation a kernel was ported from, which left
+its results beside its inputs. It is the only evidence about this algorithm that is not
+downstream of code written here, which is what makes it worth a section of its own.
+
+The manifest's `[algorithms.<name>].oracles` lists *where the files are*, because that is
+layout and the plugin resolves it. This section records *what they mean*, which the
+manifest cannot: it is read by a human deciding whether the comparison proves anything.
+
+For each oracle, state:
+
+1. **What produced it**, and when — the implementation, its version or commit, and the
+   parameters it ran under. An oracle whose producer is unidentified is a file of numbers.
+2. **Which inputs it pairs with.** An output is not a differential test on its own; the
+   test is the pairing, so the inputs must be recorded and tracked beside the outputs. If
+   the inputs are absent, say so — the oracle is then unusable and the section should say
+   why it is being kept anyway, if it is.
+3. **Whether the comparison is an equality check.** Frequently it is not: where the port
+   deliberately fixed a defect in its source, the oracle is *wrong* exactly where the fix
+   bites, and the two are expected to disagree there.
+4. **Where they disagree, pinned exactly** — which cases, which positions, how many out of
+   how many, and the reason, cross-referenced to the deviations section.
+
+> **Pin the divergence; never widen the assertion to cover it.** "Agrees at 1268 of 1269
+> positions, differing only at position 0, because the seeding defect was fixed" is a
+> statement a test can enforce and a reviewer can check. "Mostly agrees" is a statement
+> that silently accepts the *next* divergence too, which is the one nobody intended.
+
+5. **Which TC-XX carries the comparison**, so the specification and the oracle are joined
+   in both directions.
+
 ## Test Cases
 
 Language-agnostic input/expected-output pairs that any implementation must satisfy. Not
@@ -155,8 +191,14 @@ Each case states its **precision level**, and they are not interchangeable:
 - **Exact** — the correct output is unambiguous: a specific value, a specific path.
 - **Property-based** — several outputs are equally correct, so assert the value plus the
   structural properties that must hold.
-- **Relational** — the test compares two runs rather than checking one: symmetry, or
-  monotonicity in a parameter.
+- **Relational** — the test compares two runs rather than checking one: symmetry,
+  monotonicity in a parameter, or **agreement with a differential oracle**.
+
+A differential case is relational rather than exact because the document cannot carry the
+outputs: a corpus-sized oracle is thousands of values, and pasting them in would make the
+specification a copy of a file that already exists. What the case states instead is the
+*relation* — this implementation, run over those inputs, against that file, agreeing
+everywhere except where the `Differential oracles` section says it will not.
 
 Required minimum coverage, adapted to the family:
 
@@ -164,6 +206,10 @@ Required minimum coverage, adapted to the family:
 - **Boundary**: empty input, both inputs empty, single-element input, badly asymmetric lengths
 - **Structural**: whatever the family's optimal solution can contain that a naive one cannot
 - **Parameter edge cases**: parameters that dominate the objective, and degenerate ones
+- **Differential**: one case per oracle the `Differential oracles` section records, stated
+  relationally, including the pinned divergence where the comparison is not an equality
+  check. **Where an oracle exists this case is not optional**, and it is the only case in
+  the suite whose expected values were not produced by this repository.
 - **Ties**: at least one case where two predecessors are exactly equal, exercising the
   tie-breaking rule. **Learned or measured parameters rarely tie**, so a suite drawn only
   from real data can pass while the rule is wrong — construct the tie deliberately.

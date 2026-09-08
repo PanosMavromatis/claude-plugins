@@ -98,7 +98,8 @@ exactly one.
 
 | Phase | Newly possible failure | The check that finds it |
 |---|---|---|
-| 1 `python` | — it *is* the oracle | The formalization's TC-XX cases; any `[algorithms].oracles` the manifest names |
+| 1 `python`, written forward | — it *is* the reference | The formalization's TC-XX cases |
+| 1 `python`, recovered from | Anything the kernel already got wrong | A differential oracle — nothing else can |
 | 2 `cython` | Boundary and type errors introduced by translation | A property test over generated inputs |
 | 3 `cpu_parallel` | Races; a tie-break lost to concurrency | Thread-count invariance; a deliberately constructed tie |
 | 4 `cuda` | Barrier placement; device-only behaviour | The simulator, then a device — and a skip that is loud |
@@ -108,6 +109,44 @@ Model B the shared cases need no change at all when a backend is added — that 
 value of the parameterisation — so what a phase contributes is only its own new check.
 Under the third state, everything goes in the labelled non-shared section, and the report
 must not describe a passing run as backend equivalence, because nothing ran twice.
+
+**A differential test belongs in the shared set, always.** It is the one check written
+against something outside the repository, so putting it in a non-shared section means every
+backend after the first is compared only against phase 1 — and inherits, unexamined,
+whatever phase 1 got wrong. Inheritance across phases is mechanical when the case is shared
+and does not happen at all when it is not.
+
+### Phase 1 — the differential test, and what it is evidence of
+
+**Phase 1 is the reference for phases 2 to 4, so nothing downstream can check phase 1
+itself.** For an algorithm written forward that is acceptable: the formalization came from a
+source outside the repository, and the TC-XX cases were specified before the code existed.
+For an algorithm whose formalization was *recovered* from the kernel, it is not — the
+document was read off the code, the tests were extracted from the code's own suite, and
+every later backend is compared to the code. Everything in the chain then agrees with the
+kernel because everything in the chain came from it.
+
+An oracle is the only input that breaks the circle. Where the manifest's
+`[algorithms.<name>].oracles` names one, the differential case is mandatory, and where it
+names none for a recovered algorithm, say so plainly in the report: the suite is
+self-referential, and a green run is evidence of internal consistency and of nothing else.
+
+Three rules for writing it:
+
+- **Pin the divergence; do not widen the assertion.** An oracle produced by an
+  implementation whose defect the port deliberately fixed is *wrong* exactly where the fix
+  bites, so the test asserts agreement everywhere else and the exact, enumerated
+  disagreement there. Relaxing it to a tolerance or a "mostly agrees" threshold buys
+  nothing and silently accepts the next divergence, which is the one nobody intended.
+- **A green differential run is evidence about the corpus, not about the algorithm.** The
+  oracle was produced from whatever data someone happened to have, and real data is not
+  adversarial. Measured on one such suite: reversing the tie-breaking rule broke nothing,
+  because learned float parameters produced **zero exact ties in 3804 positions**. The
+  constructed cases below are what cover that, and the differential test does not replace
+  them.
+- **An oracle needs its inputs tracked beside its outputs.** The test is the pairing, not
+  the output file; an output whose inputs live on one machine is not a differential test
+  and cannot be made into one later.
 
 ### Phase 2 — the property test
 

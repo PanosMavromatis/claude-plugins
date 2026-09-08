@@ -246,9 +246,15 @@ Write the complete file to the path the manifest's `[phases].formalization` temp
 gives for this algorithm, creating any directories it names. **The section order and the
 mandatory set are `references/formalization-template.md`'s**, and one rule there is worth
 repeating because it is the one most often broken: a section whose answer is short is
-still a section. "This recurrence has no backtrace" and "the parallel decomposition is
-undetermined" are answers; omitting the heading is not, because a reader then cannot tell
-a considered answer from an oversight.
+still a section. "This recurrence has no backtrace", "the parallel decomposition is
+undetermined" and "there is no oracle" are answers; omitting the heading is not, because a
+reader then cannot tell a considered answer from an oversight.
+
+`Differential oracles` is the one most likely to be skipped on this entrance, since a
+formalization written from a paper usually has none — write the one line saying so. It is
+not always none: where the source's authors published a reference implementation or a
+worked dataset, outputs from it are an oracle in exactly the sense that section means, and
+they are the only check on this algorithm that will not have come from this repository.
 
 ### Step 8: Hard stop
 

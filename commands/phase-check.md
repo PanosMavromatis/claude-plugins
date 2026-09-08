@@ -64,6 +64,10 @@ without having to choose.
 - **Test status for `fresh` backends only** — pass / fail / not run. Say explicitly that
   stale and blocked backends were not tested, and why: their source may disagree with what
   they were derived from, so a pass and a failure are equally uninformative.
+- **Any oracle the manifest declares that the suite does not exercise**, named. It is the
+  only check in the repository that is not downstream of code written here, so an unused
+  one is the difference between a suite that verifies the algorithm and one that verifies
+  its own internal consistency.
 - Any provenance header that was missing, with the file named — the mtime fallback is in
   use for that file and the report is where that becomes visible.
 - For phase 0: whether the formalization has been reviewed and approved, and **which

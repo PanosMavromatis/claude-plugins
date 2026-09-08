@@ -48,6 +48,16 @@ proceed against an assumed layout.
    to write; the reference decides which, and there is always exactly one to start from.
 3. If the phase the target depends on is failing (its tests fail, or the formalization has
    not been approved), stop and tell the user what needs to be fixed before advancing.
+
+   **One further gate, and only when advancing past phase 1**: if the manifest declares
+   `[algorithms.<name>].oracles`, confirm that phase 1's suite actually exercises them
+   before writing phase 2. Phases 2 to 4 are checked against phase 1, so a phase 1 that has
+   never been compared to anything outside this repository makes the whole chain agree with
+   itself — and for an algorithm whose formalization was *recovered*, the document and the
+   extracted test cases came from that same kernel, so there is nothing left in the chain
+   that could disagree with it. Where the oracle exists and is unused, stop and say which
+   file is declared and unexercised; where the manifest declares none, say so and continue,
+   because a forward algorithm's specification came from outside the repository already.
 4. **Say what the target is and why, before routing.** Name it, say whether it is being
    regenerated or written for the first time, and — when regenerating — name the source
    whose change made it stale. When the phase-detection step reported *two* minimal stale
