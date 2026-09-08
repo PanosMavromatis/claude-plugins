@@ -29,7 +29,8 @@ dp-compile/
 │   ├── benchmark.md
 │   └── references/          # @-included, shared by several commands. NOT commands:
 │       ├── manifest.md      #   the dp-compile.toml contract every command reads first
-│       └── phase-detection.md
+│       ├── phase-detection.md
+│       └── workflow-claude.md
 ├── dev/                     # Developer-only tooling (not part of the plugin runtime)
 │   └── smoke-test.sh
 ├── hooks/                   # Deterministic event handlers
@@ -113,8 +114,8 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 -->
 
 - NEVER put commands/, agents/, or skills/ inside .claude-plugin/. They will silently fail to load.
-- **`claude plugin validate` emits three warnings here, and all three are expected. Do not "fix" any of them.** A clean run is not the goal; a run whose every warning is accounted for is.
-  - Two are `commands/references/*.md` having no frontmatter. Those files are `@`-included fragments, not commands — the validator scans every `.md` under `commands/`. Adding frontmatter would silence the warning by registering both fragments as invocable commands, which is worse than the warning.
+- **`claude plugin validate` emits four warnings here, and all four are expected. Do not "fix" any of them.** A clean run is not the goal; a run whose every warning is accounted for is. **The count tracks the number of files in `commands/references/`, so it rises by one whenever a fragment is added** — update this entry in the same commit, or the next reader cannot tell an expected warning from a new one.
+  - Three are `commands/references/*.md` having no frontmatter. Those files are `@`-included fragments, not commands — the validator scans every `.md` under `commands/`. Adding frontmatter would silence the warning by registering each fragment as an invocable command, which is worse than the warning.
   - One is `CLAUDE.md at the plugin root is not loaded as project context`, suggesting a skill instead. That is correct about an *installed* plugin and beside the point for this file: it is context for developing the plugin, in this repository, where the repo root and the plugin root are the same directory and it loads normally. Moving it into `skills/` would ship plugin-development instructions to every consumer.
 - **Five stages, and no phase is called `numba`.** `formalization → python → cython → cpu_parallel → cuda`. Phases 3 and 4 both use Numba, so that name distinguishes nothing; `cpu_parallel` is `@njit(parallel=True)` with `prange` and needs no GPU, `cuda` is `@cuda.jit`. The same strings are the manifest's `[phases]` keys, the token a path template usually contains, and the backend name a consumer registers.
 - **Phase 0 has two skills, and the discriminator is a file.** `algorithm-formalize` goes

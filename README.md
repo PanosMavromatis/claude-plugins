@@ -38,6 +38,33 @@ and it records the *direction* of each edge — so a formalization recovered fro
 implementation is marked stale by a change to the kernel, rather than the reverse. The full
 rule is `commands/references/phase-detection.md`.
 
+## Prerequisites
+
+**`dp-compile` assumes the [`workflow-claude`](https://github.com/PanosMavromatis/workflow-claude) plugin is loaded**, and
+delegates to it rather than duplicating it: branches through `/new-branch`, plans through
+`/step` or `/hitl-step`, commits through `/smart-commit`, merges through `/smart-merge`, and
+documentation through `/agents-docs-update`. This plugin owns the algorithm lifecycle and
+nothing else.
+
+Three ways it gets loaded, and a command that finds it missing names all three rather than
+assuming one:
+
+| Load path | What it looks like |
+|---|---|
+| Marketplace install | `/plugin install workflow-claude@<marketplace>`, once one is published |
+| Session flag | `claude --plugin-dir <path>/workflow-claude` — what that plugin's own README documents |
+| Project tree | the plugin's directories placed at `.claude/skills/workflow-claude/` in the consuming repository |
+
+The third is neither a marketplace install nor a `--plugin-dir`, and it is how at least one
+repository loads it today — which is why a message naming only `--plugin-dir` would send a
+user to fix something that is not how they loaded it.
+
+**Absence is not fatal, and is not uniform either.** `/phase-check` and `/benchmark`
+delegate nothing, so they print one line and produce their full output. `/next-phase` and
+`/new-algorithm` do every step that needs nothing from `workflow-claude` and then stop at
+the step that does — a phase file written and left uncommitted costs one `git commit`, and
+is a better outcome than a command that refused to start.
+
 ## Skills
 
 | Skill                    | Purpose                                                  |
@@ -182,7 +209,8 @@ dp-compile/
 │   ├── benchmark.md
 │   └── references/               # @-included fragments, not commands
 │       ├── manifest.md           # The dp-compile.toml contract
-│       └── phase-detection.md    # Nominal phase, staleness, and the target
+│       ├── phase-detection.md    # Nominal phase, staleness, and the target
+│       └── workflow-claude.md    # Presence check and the two absence severities
 ├── hooks/
 │   ├── hooks.json
 │   └── scripts/

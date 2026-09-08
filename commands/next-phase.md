@@ -38,6 +38,15 @@ Resolve every path, command and algorithm name through the manifest above. If th
 repository has no `dp-compile.toml`, stop and say so with the template — do not
 proceed against an assumed layout.
 
+## `workflow-claude` is assumed
+
+@references/workflow-claude.md
+
+**`/next-phase` takes the stop-at-the-delegation severity.** Print the one line at the head, do
+every step that needs nothing from `workflow-claude`, and stop when you reach the step that
+does — naming what is left undone. Do not substitute: no `git commit` run here, no branch
+created here, and no quiet finish as though the step had not existed.
+
 ## Behavior
 
 @references/phase-detection.md
