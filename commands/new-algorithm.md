@@ -6,13 +6,21 @@ description: "Scaffold a new algorithm and start Phase 0 (formalization)"
 
 Start the implementation of a new alignment algorithm.
 
+## The manifest comes first
+
+@references/manifest.md
+
+Resolve every path, command and algorithm name through the manifest above. If the
+repository has no `dp-compile.toml`, stop and say so with the template — do not
+proceed against an assumed layout.
+
 ## Behavior
 
 1. Ask the user: "What algorithm do you want to implement? Give me the name and a brief description or reference."
 
 2. Confirm the algorithm name. Convert it to `snake_case` for use as the directory name (e.g., "Smith-Waterman" becomes `smith_waterman`). Show the user the converted name and ask them to confirm.
 
-3. Check if `src/tokalign/algorithms/<name>/` already exists.
+3. Check whether the manifest's `[algorithms]` table already has an entry for `<name>`, and whether any of that algorithm's phase paths already exist on disk.
    - If it does, ask the user: "A directory for `<name>` already exists. Is this a restart of a previous attempt, or a mistake?" If it's a restart, proceed. If it's a mistake, abort.
    - If it does not exist, proceed to step 4.
 

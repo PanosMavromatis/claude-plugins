@@ -13,10 +13,10 @@ Report the implementation status of one algorithm, or all algorithms. This is a 
 2. Convert to lowercase.
 3. Replace spaces, hyphens, and other separators with underscores.
    - Examples: `"Needleman-Wunsch"` → `needleman_wunsch`, `"smith waterman"` → `smith_waterman`
-4. Look up the resulting name as a directory under `src/tokalign/algorithms/`.
+4. Look up the resulting name in the manifest's `[algorithms]` table.
 
 **If the normalised name does not match any existing directory**:
-- Compute the edit distance between the normalised name and each directory under `src/tokalign/algorithms/`.
+- Compute the edit distance between the normalised name and each key in `[algorithms]`.
 - If exactly one candidate has an edit distance ≤ 3 (a plausible typo), ask:
   > "I couldn't find `<name>`. Did you mean `<candidate>`? (yes/no)"
   If the user confirms, report on that algorithm. If not, ask them to enter the name again.
@@ -26,8 +26,16 @@ Report the implementation status of one algorithm, or all algorithms. This is a 
 
 **If no argument is provided**, ask the user:
 > "No algorithm name was provided. Should I report on all implemented algorithms? (yes/no)"
-- If yes, run the report for every directory found under `src/tokalign/algorithms/`.
+- If yes, run the report for every key in the manifest's `[algorithms]` table.
 - If no, ask which specific algorithm they want to check and wait for an answer.
+
+## The manifest comes first
+
+@references/manifest.md
+
+Resolve every path, command and algorithm name through the manifest above. If the
+repository has no `dp-compile.toml`, stop and say so with the template — do not
+proceed against an assumed layout.
 
 ## Phase detection
 

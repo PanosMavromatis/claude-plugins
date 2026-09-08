@@ -19,10 +19,10 @@ Do not attempt to infer or guess — wait for an explicit answer.
 2. Convert to lowercase.
 3. Replace spaces, hyphens, and other separators with underscores.
    - Examples: `"Needleman-Wunsch"` → `needleman_wunsch`, `"smith waterman"` → `smith_waterman`
-4. Look up the resulting name as a directory under `src/tokalign/algorithms/`.
+4. Look up the resulting name in the manifest's `[algorithms]` table.
 
 **If the normalised name does not match any existing directory**:
-- Compute the edit distance (or Levenshtein distance) between the normalised name and each directory name in `src/tokalign/algorithms/`.
+- Compute the edit distance (or Levenshtein distance) between the normalised name and each key in `[algorithms]`.
 - If exactly one candidate has an edit distance ≤ 3 (a plausible typo), ask:
   > "I couldn't find `<name>`. Did you mean `<candidate>`? (yes/no)"
   If the user confirms, proceed with the candidate. If not, ask them to enter the name again.
@@ -30,11 +30,19 @@ Do not attempt to infer or guess — wait for an explicit answer.
   > "I couldn't find an algorithm named `<name>`. Here are the algorithms available: `<list>`. Please enter the name again."
   Wait for a new answer and repeat the lookup.
 
+## The manifest comes first
+
+@references/manifest.md
+
+Resolve every path, command and algorithm name through the manifest above. If the
+repository has no `dp-compile.toml`, stop and say so with the template — do not
+proceed against an assumed layout.
+
 ## Behavior
 
 @references/phase-detection.md
 
-1. Resolve the algorithm name (see above) and confirm the directory `src/tokalign/algorithms/<name>/` exists.
+1. Resolve the algorithm name (see above) and confirm it has an entry in the manifest's `[algorithms]` table.
 2. Apply the phase-detection logic above to determine the **effective phase**.
 3. If the current phase is failing (tests fail or formalization not approved), stop and tell the user what needs to be fixed before advancing.
 4. **Handle stale artifacts.** If the effective phase is earlier than the nominal phase (i.e., a prerequisite was updated after a downstream file was generated), target the first stale artifact for regeneration — not the next missing file. For example, if `FORMALIZATION.md` was modified after `_python.py`, the effective phase is 0 and the task is to regenerate `_python.py`, not to write `_cython.pyx`.
