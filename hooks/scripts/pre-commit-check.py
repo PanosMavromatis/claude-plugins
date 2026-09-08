@@ -77,8 +77,15 @@ def kernel_paths(cfg: dict) -> set[str]:
     parameter objects alongside kernels -- so an ordinary edit to a utility module would
     run the whole suite. Listing algorithms is what the manifest is for, and it is
     exactly the reason discovery-by-glob was rejected for it.
+
+    The `formalization` phase is excluded. It is the specification stage rather than an
+    implementation phase -- a Markdown document that compiles to nothing and is imported
+    by nothing -- so staging it cannot break a backend, and rebuilding and running the
+    whole suite over a prose edit is a cost with no corresponding risk. Staleness is a
+    separate mechanism and reports the consequence of that edit on its own.
     """
-    phases = cfg.get("phases") or {}
+    phases = {k: v for k, v in (cfg.get("phases") or {}).items()
+              if k != "formalization"}
     algorithms = cfg.get("algorithms") or {}
     paths: set[str] = set()
     for name, meta in algorithms.items():

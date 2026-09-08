@@ -32,6 +32,8 @@ expected=(
   "skills/algorithm-formalize/SKILL.md"
   "skills/algorithm-prototype/SKILL.md"
   "skills/cython-translation/SKILL.md"
+  "skills/cpu-parallelization/SKILL.md"
+  "skills/cpu-parallelization/references/decomposition-patterns.md"
   "skills/gpu-parallelization/SKILL.md"
   "skills/benchmarking/SKILL.md"
   "commands/new-algorithm.md"
@@ -43,8 +45,11 @@ expected=(
   "hooks/hooks.json"
   "hooks/scripts/pre-commit-check.py"
 )
-# Not yet present, added when written:
-#   skills/cpu-parallelization/SKILL.md   (the ADR-0016 phase between Cython and CUDA)
+# Deliberately not listed yet. The check is `-s` (exists and non-empty), so listing a
+# placeholder would fail rather than warn:
+#   skills/gpu-parallelization/SKILL.md is a stub, and its references/ and examples/
+#   hold zero-byte placeholders. Add the references and the example here when the
+#   CUDA phase is written for real.
 
 missing=0
 echo "Checking component placement:"
