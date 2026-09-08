@@ -91,97 +91,142 @@ writing one — but they describe the repository's harness, not this skill's.
 
 ### 2. Review and present the output
 
-The script produces:
-- **`results.md`**: a markdown table with timing results per backend per sequence length
-- **`scaling.png`**: a log-log scaling plot showing how each backend scales
-- **`results.json`**: raw data for programmatic consumption
+**Read what the command emitted; do not assume a shape.** A harness may print a table, write
+files, or both, and what it writes is the repository's choice. Present whatever it produced
+— reproduce a printed table directly in the response, and name the path of any file or plot
+it reports so the user can open it.
 
-If `--memory` was used, additional columns/plots for peak memory are included.
+Then say three things about the numbers:
 
-Present the markdown table directly in the response. Mention the plot file path so
-the user can open it. Highlight:
-- **Crossover points**: at what sequence length does Cython beat Python? GPU beat Cython?
-- **Scaling behavior**: does each backend show the expected O(mn) complexity?
-- **Anomalies**: unexpected slowdowns, high variance, non-monotonic scaling
+- **Each crossover, named by the pair it lies between.** With four backends there are three
+  transitions — `python → cython`, `cython → cpu_parallel`, `cpu_parallel → cuda` — and each
+  has its own crossover input size, or none. **A crossover that does not exist within the
+  sizes measured is a result, not a gap**: it says the faster backend never repays its
+  overhead at this scale, which is exactly what a reader needs in order to decide which
+  backend to ship.
+- **Scaling.** Does each backend show the complexity the formalization claims? A backend
+  whose curve has the wrong slope is a more interesting finding than one that is merely
+  slow, because slope is a property of the algorithm and constants are properties of the
+  machine.
+- **Anomalies**, with the usual cause named where there is one. `cython` slower than
+  `python` suggests missing type declarations or an object-mode fallback; `cpu_parallel`
+  slower than `cython` at every size suggests thread overhead exceeding the work, or
+  oversubscription against a threaded BLAS; `cuda` slower end-to-end while its kernel is
+  fast suggests host/device copies inside the launch loop.
 
-### 3. Interpret results (briefly)
+### 3. Report the machine, and say what the numbers are a claim about
 
-Offer a 2-3 sentence interpretation:
-- Which backend is fastest at each scale
-- Whether the speedup justifies the compilation/GPU overhead
-- Any red flags (e.g., Cython slower than Python suggests a GIL issue or
-  missing type declarations)
+**A crossover is a property of the machine, not of the algorithm.** The `cython →
+cpu_parallel` crossover moves with core count; the `cpu_parallel → cuda` crossover moves
+with the device. The same kernels on a laptop and on a workstation will disagree about
+which backend to use at a given size, and both measurements are correct.
 
-Do **not** suggest optimizations or code changes unless the user asks.
+So a benchmark report states the machine it came from: core count, the thread count used,
+the GPU if one was present, and which backends were excluded and why. Without those a
+number is not reproducible and is not comparable to the next one.
 
-## Benchmark methodology
+This matters beyond tidiness because of where a benchmark result tends to end up. "Cython
+wins below 500" is a true local observation that becomes false the moment it is written into
+a README as a fact about the algorithm — the same shape as any measurement promoted from
+*here, today* to *always*. Report the conditions with the number so that the promotion is
+visibly unsupported.
 
-### Sequence generation
+### 4. Interpret briefly
 
-Generate benchmark sequences by sampling from the alphabet's symbol list:
+Two or three sentences: which backend is fastest at each scale, whether the speedup repays
+the compilation or transfer overhead, and any red flag from the anomalies above.
 
-```python
-import random
-seq = [random.choice(alphabet.symbols) for _ in range(length)]
-```
+Do **not** suggest optimizations or code changes unless the user asks. A measurement is not
+a mandate.
 
-**Never** generate random strings — they won't be in the alphabet and will fail at
-encoding. Use a fixed random seed for reproducibility.
+## Methodology — what a good harness does
+
+The plugin owns no harness, and these notes are not instructions to build one. They are
+what to check when reading a repository's results, and what to apply if the repository asks
+for a harness as a piece of work in its own right.
+
+### Inputs go through the repository's encoder
+
+Generate inputs by sampling the symbols the encoder actually knows, read from the
+`[project].encoder` documents — never by generating arbitrary values. Arbitrary values fail
+at the encoding boundary and measure the error path. Seed the generator, so a surprising
+result can be re-examined rather than re-rolled.
+
+Make the input representative in the dimension the algorithm is sensitive to: an alphabet of
+two symbols, a model with three states, or sequences that are all the same length can each
+produce a curve that no real workload will reproduce.
 
 ### Timing
 
-- Use `time.perf_counter()` for wall-clock measurements
-- Run a warmup iteration (discarded) before timed runs
-- Default: 5 timed iterations per (backend, length) pair
-- Report mean and standard deviation
+- `time.perf_counter()`, never `time.time()`.
+- **Discard a warm-up iteration**, and see the compilation note below.
+- Several timed repeats per (backend, size) pair, and report the spread as well as the
+  centre. A single number hides the variance that makes a GPU result unreliable.
+- Reduce the repeat count at large sizes rather than dropping the size: the pure-Python
+  backend at a size the compiled ones find easy can take minutes, and its cost is the point
+  of the comparison.
 
-### Memory profiling (optional, `--memory` flag)
+### Compilation is not execution, and it is now two different costs
 
-- Uses `memory_profiler.memory_usage()` to measure peak RSS during alignment
-- Adds ~10x overhead — only enable when investigating memory scaling
-- Reports peak memory in MiB
+**This applies to phase 3 exactly as it does to phase 4**, which is easy to miss because the
+CPU-parallel phase looks like ordinary Python:
 
-### Scoring setup
+- `@njit(parallel=True)` compiles on first call, per signature. A benchmark that includes it
+  attributes the compiler's work to the kernel.
+- `@cuda.jit` compiles to PTX on first launch, and is typically slower still.
+- `cache=True` moves that cost to the first run *of the process ever*, not of the session.
+  So a harness measuring "compilation overhead" gets a different answer depending on whether
+  a cache file happens to exist — which means the cache state belongs in the report, or the
+  cache should be off for that particular measurement.
 
-Use a simple identity scoring matrix for benchmarks (match=1, mismatch=-1,
-gap_open=-2, gap_extend=-0.5). The goal is to compare backend speed, not to
-produce meaningful alignments. Both sequences use the same alphabet and length.
+A warm-up per (backend, signature) discards all three. One warm-up for the whole run does
+not, because a new input dtype or dimensionality triggers a fresh compilation.
 
-## Output files
+### Thread count is a parameter, not an ambient fact
 
-Output layout belongs to the repository. A harness typically emits some combination of a
-table, machine-readable data, and a plot — for example:
+A `cpu_parallel` number without a thread count is not interpretable. Fix it explicitly —
+`NUMBA_NUM_THREADS`, or the repository's own control — and report it. Sweeping it is often
+more informative than sweeping the input size, since it separates "this decomposition
+scales" from "this machine is wide".
 
-```
-benchmarks/results/needleman_wunsch/
-├── results.md       # Markdown table
-├── results.json     # Raw timing data
-└── scaling.png      # Log-log scaling plot
-```
+Beware oversubscription: a threaded BLAS, or a caller already inside a parallel region, will
+make a correct parallel kernel look slower than the serial one. That reads like a bad
+decomposition and is not.
 
-If `--memory` is used, the same files include memory data (extra columns in the
-table, second y-axis or separate subplot in the plot).
+## Output
+
+Where results are written, and in what format, belongs to the repository. Read what the
+command prints and follow it to whatever it names. Do not assume a file exists because a
+previous repository wrote one.
 
 ## What NOT to do
 
-- Don't benchmark stale backends — the comparison is meaningless
-- Don't benchmark a single backend — there's nothing to compare
-- Don't generate random strings for sequences — sample from `alphabet.symbols`
-- Don't use `time.time()` — use `time.perf_counter()` for precision
-- Don't suggest code optimizations unless the user asks
-- Don't run benchmarks with unrealistically small alphabets (use >= 4 symbols)
-- Don't skip the warmup iteration — first-run JIT/import overhead skews results
-- Don't display plots interactively (`plt.show()`) — save to file only
+- Don't benchmark stale or blocked backends — the comparison is meaningless.
+- Don't benchmark a single backend — there is nothing to compare.
+- Don't invent a benchmark command, or offer to build a harness, when `[commands].benchmark`
+  is absent.
+- Don't generate inputs that bypass the encoder.
+- Don't use `time.time()`.
+- Don't report a timing that includes a first compilation.
+- Don't report a `cpu_parallel` or `cuda` number without the thread count or device.
+- Don't state a crossover as a property of the algorithm.
+- Don't suggest code optimizations unless the user asks.
 
 ## Gotchas
 
-- Cython backends must be compiled before benchmarking — if the `.so` is missing,
-  run the manifest's `[commands].build` first
-- The first call to a Numba backend triggers JIT compilation — always discard the
-  warmup run
-- Large sequence lengths (>5000) can take minutes with the pure Python backend —
-  the script adjusts iteration count automatically (fewer reps for longer sequences)
-- `memory-profiler` is not in the default dev dependencies — it must be installed
-  separately (`uv pip install memory-profiler`) before using `--memory`
-- matplotlib uses the `Agg` backend (headless) — plots are saved to files, never
-  displayed interactively
+- **The compiled backends must be built first.** Run `[commands].build`; a missing extension
+  is a stale or absent backend, which the staleness gate above should already have caught.
+- **The first call compiles.** Phase 3 and phase 4 both, and phase 4 more slowly.
+- **A parallel float sum is reassociated**, so `cpu_parallel` and `cython` can differ in the
+  last bits. That is a correctness note the equivalence suite owns, but it surfaces here as
+  a puzzling "the backends disagree" during a benchmark run.
+- **GPU timing needs a synchronise.** A kernel launch is asynchronous, so a timer stopped
+  without waiting for the device measures the launch and not the work.
+- **Variance is the GPU's tell.** Thermal throttling, another process on the device, or a
+  transfer contending for bandwidth all show up as spread rather than as a wrong mean.
+- **A profiling flag can cost an order of magnitude.** Memory profiling in particular is
+  usually not free; do not leave it on for a timing run, and do not compare a profiled
+  number with an unprofiled one.
+- **Plots are files.** A harness that opens an interactive window has no useful behaviour in
+  a non-interactive session; if one does, that is worth reporting rather than working
+  around.

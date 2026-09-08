@@ -88,7 +88,12 @@ so is the correct outcome, not a failure.
 Where the command writes its output is the repository's business, not this command's. Read
 what the command prints and follow it to whatever files it names.
 
-If the user requested memory profiling (e.g., "benchmark with memory", "include memory"), add the `--memory` flag. This requires `memory-profiler` to be installed.
+**Pass no flag the manifest did not give you.** A request like "benchmark with memory" is a
+request about the repository's harness, not about this command: whether it profiles memory,
+and what it spells that as, is the harness's business. Run the configured command, say what
+was asked for, and let the user point at the option if one exists. Appending an invented
+flag either errors or — worse, on a harness that ignores unknown arguments — silently
+returns an ordinary timing run labelled as something else.
 
 ### 4. Present results
 
@@ -100,6 +105,12 @@ After the command completes:
    cpu_parallel → cuda — and each has its own crossover length, or none. A crossover that
    does not exist within the lengths measured is a finding, not a gap: it says the faster
    backend never repays its overhead at this scale.
-4. Offer a brief (2-3 sentence) interpretation of the results
+4. **Report the machine.** Core count, the thread count the parallel backend ran with, the
+   device if one was present, and every declared backend excluded with its reason. A
+   crossover is a property of the machine rather than of the algorithm — the
+   cython → cpu_parallel one moves with core count, the cpu_parallel → cuda one with the
+   device — so a number without its conditions is neither reproducible nor comparable, and
+   is one copy-paste away from becoming a false claim about the algorithm in a README.
+5. Offer a brief (2-3 sentence) interpretation of the results
 
 Do **not** suggest code optimizations unless the user asks.
