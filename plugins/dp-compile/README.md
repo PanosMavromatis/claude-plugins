@@ -9,7 +9,7 @@ the encoder and the documents stating a kernel's invariants all come from a
 `dp-compile.toml` at the consumer's root, so the plugin works in any repository that
 carries one and in none that does not.
 
-**It assumes [`workflow-claude`](https://github.com/PanosMavromatis/workflow-claude) and
+**It assumes [`workflow-claude`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-claude) and
 delegates to it.** Branches, plans, commits, merges and documentation belong to that
 plugin; this one runs no `git` command of its own, opens no branch, and writes no plan
 file. **Install both.** Every command checks for the companion at its head, and when it is
@@ -54,7 +54,7 @@ rule is `commands/references/phase-detection.md`.
 
 ## Prerequisites
 
-**`dp-compile` assumes the [`workflow-claude`](https://github.com/PanosMavromatis/workflow-claude) plugin is loaded**, and
+**`dp-compile` assumes the [`workflow-claude`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-claude) plugin is loaded**, and
 delegates to it rather than duplicating it: branches through `/new-branch`, plans through
 `/step` or `/hitl-step`, commits through `/smart-commit`, merges through `/smart-merge`, and
 documentation through `/agents-docs-update`. This plugin owns the algorithm lifecycle and

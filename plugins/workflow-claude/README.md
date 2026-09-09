@@ -69,7 +69,7 @@ This is expected, not a conflict — nothing breaks, and the two plugins' hooks 
 ## Companion plugins
 
 `commit-commands` overlaps with this plugin and should be disabled beside it.
-[`dp-compile`](https://github.com/PanosMavromatis/dp-compile) is the opposite case: it
+[`dp-compile`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/dp-compile) is the opposite case: it
 **assumes** this plugin is loaded and hands work to it.
 
 `dp-compile` guides a dynamic-programming algorithm through a staged translation — a
