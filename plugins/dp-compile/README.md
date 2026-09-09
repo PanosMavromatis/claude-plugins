@@ -65,13 +65,19 @@ assuming one:
 
 | Load path | What it looks like |
 |---|---|
-| Marketplace install | `/plugin install workflow-claude@<marketplace>`, once one is published |
-| Session flag | `claude --plugin-dir <path>/workflow-claude` — what that plugin's own README documents |
+| Marketplace install | `workflow-claude@mavromatis-ai-labs`, declared in a project's `.claude/settings.json` or installed with `claude plugin install`. The usual path. |
+| Session flag | `claude --plugin-dir <path>/workflow-claude` — the development path, for editing that plugin rather than using it |
 | Project tree | the plugin's directories placed at `.claude/skills/workflow-claude/` in the consuming repository |
 
-The third is neither a marketplace install nor a `--plugin-dir`, and it is how at least one
-repository loads it today — which is why a message naming only `--plugin-dir` would send a
-user to fix something that is not how they loaded it.
+The third is neither a marketplace install nor a `--plugin-dir`, which is why a message
+naming only one path would send a user to fix something that is not how they loaded it.
+pfsmgraph used that route until 2026-09-09 and now declares a marketplace install; both
+remain supported, and this plugin has no way to tell which is in force.
+
+One path cannot reach the absence message at all. This plugin's manifest declares
+`workflow-claude` in `dependencies`, so a marketplace install of `dp-compile` installs it
+too and enabling one enables the other. The runtime detection survives for `--plugin-dir`
+sessions, where nothing enforces co-loading.
 
 **Absence is not fatal, and is not uniform either.** `/phase-check` and `/benchmark`
 delegate nothing, so they print one line and produce their full output. `/next-phase` and

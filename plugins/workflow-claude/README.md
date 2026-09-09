@@ -10,11 +10,33 @@ A collection of Claude Code commands, skills, hooks, and scripts bundled togethe
 
 ## Installing & the `commit-commands` overlap
 
-This plugin is loaded deliberately per-project via the CLI flag, not through a marketplace:
+This plugin is published in the **`mavromatis-ai-labs`** marketplace — the
+[`PanosMavromatis/claude-plugins`](https://github.com/PanosMavromatis/claude-plugins)
+monorepo. A consuming project registers the marketplace and enables the plugin in one
+committed file:
 
+```jsonc
+// <consumer-project>/.claude/settings.json
+{
+  "extraKnownMarketplaces": {
+    "mavromatis-ai-labs": {
+      "source": { "source": "github", "repo": "PanosMavromatis/claude-plugins" }
+    }
+  },
+  "enabledPlugins": {
+    "workflow-claude@mavromatis-ai-labs": true
+  }
+}
 ```
-claude --plugin-dir <path-to>/workflow-claude
-```
+
+`claude plugin marketplace add PanosMavromatis/claude-plugins` followed by `claude plugin
+install workflow-claude@mavromatis-ai-labs --scope project` writes the same keys
+imperatively. Prefer the declaration: it is what a fresh clone reproduces from, and what a
+reviewer sees in a diff. The same file is where you disable `commit-commands`, below.
+
+**`--plugin-dir` is the development path, not the install path.** `claude --plugin-dir
+<path-to>/workflow-claude` loads a directory for a single session with no marketplace
+involved — what to reach for when editing this plugin rather than using it.
 
 The official `commit-commands` plugin (`/commit`, `/commit-push-pr`) overlaps with `/smart-commit` and `/smart-merge` — but with the opposite philosophy. Running the `commit-commands` versions silently skips doc-sync, version/tag handling, and the branch-doc PR flow. When both are active at once you risk reaching for the wrong, lossier command.
 
@@ -99,8 +121,9 @@ Two notes on how the two behave together:
   and produces its full output; one that does delegate performs every step that needs
   nothing from this plugin and stops at the step that does. Its absence message names all
   three load paths, including a plugin tree placed in a project's `.claude/skills/` — which
-  is neither a marketplace install nor `--plugin-dir`, and is how at least one repository
-  loads *this* plugin today.
+  is neither a marketplace install nor `--plugin-dir`. That route stays supported and worth
+  naming: pfsmgraph loaded *this* plugin that way until 2026-09-09, when it moved to a
+  marketplace install.
 - **The hooks cannot collide.** `dp-compile` ships a `PreToolUse` hook on `Bash` that gates
   a commit on the consumer's test suite when a kernel file is staged; this plugin's
   `protect-agent-docs.py` matches `Write|Edit|MultiEdit`. No tool call matches both. Because

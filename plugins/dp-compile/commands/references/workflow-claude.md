@@ -103,14 +103,19 @@ Print it **once**, at the head, and not again on each later step.
 
 > `workflow-claude` is not loaded in this session. `dp-compile` delegates branches, plans,
 > commits and merges to it, so `<the delegated step>` will not run — everything before it
-> will. Three ways it gets loaded, and which one applies is yours to know: a marketplace
-> install, `claude --plugin-dir <path>/workflow-claude`, or a plugin tree placed at
+> will. Three ways it gets loaded, and which one applies is yours to know: an install from
+> a marketplace, where it is published as `workflow-claude@mavromatis-ai-labs`;
+> `claude --plugin-dir <path>/workflow-claude`; or a plugin tree placed at
 > `.claude/skills/workflow-claude/` in this project.
 
-**Name all three load paths.** A message naming only `--plugin-dir` sends a user to fix
-something that is not how they loaded it — and the `.claude/skills/` route is neither a
-marketplace install nor the `--plugin-dir` the plugin's own README documents, yet it is how
-at least one repository loads it today.
+**Name all three load paths.** A message naming only one sends a user to fix something that
+is not how they loaded it — and the `.claude/skills/` route is neither a marketplace install
+nor the `--plugin-dir` the plugin's own README documents.
+
+**A marketplace install cannot reach this message.** `plugin.json` declares
+`workflow-claude` in `dependencies`, so installing `dp-compile` from a marketplace installs
+it too. What survives is the `--plugin-dir` session, where nothing enforces co-loading —
+which is the case this message exists for.
 
 Do not guess which path this repository uses, and do not offer to install anything: loading
 a plugin changes the user's session, and it is theirs to do.
