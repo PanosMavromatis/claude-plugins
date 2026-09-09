@@ -54,8 +54,15 @@ Watch the blank lines: a section run flush against the following `## ` heading b
 
 ```bash
 git add docs/plan/DO.md
-git commit -m "docs(plan): open revision <label>"
+git commit -m "<subject>"
 ```
+
+> **Subject.** The wording below is the message's *content*; its **form** is the
+> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
+> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted.
+>
+> Content: revision `<label>` is being opened.
 
 ### 6. Report
 

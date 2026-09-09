@@ -69,7 +69,12 @@ If neither file exists, note this and proceed using only the commit log and diff
 
 Based on the branch doc (if present), the commits in `main..HEAD`, and the diff stat:
 
-- **Title**: one line, imperative mood, sentence case, ~50-72 chars, no trailing period. Describes the umbrella scope of the whole branch, not any single commit.
+- **Title**: one line, ~50-72 chars, no trailing period. Describes the umbrella scope of the whole branch, not any single commit.
+
+  **Match the repository's title convention rather than assuming one.** Run `gh pr list --state merged --limit 15 --json number,title` (or MCP `list_pull_requests` with `state: closed`) and follow the dominant form — a conventional-commit prefix (`feat(scope): …`) or a plain imperative in sentence case. This is the same question `/smart-commit` Step 3 answers for commit subjects, and in practice a repository answers both the same way; read the titles anyway, since it costs one call and a repository is free to differ.
+
+  Unlike the commit log, **this evidence needs no discounting.** This command has never hardcoded a PR *title* string — only a form — so no template has ever written one, and every merged title is a form a human chose. Measured 2026-09-08: 13 of this repository's last 15 merged PR titles are conventional, and 15 of 15 in the other repository using this plugin are plain imperative. Both were unanimous among titles anyone actually authored.
+
 - **Body**: Markdown-formatted. Group commits thematically (not chronologically) under section headers. Include Summary, and sections for the major themes present (e.g., Implementation, Infrastructure, Documentation, Testing). Keep it scannable.
 - **Plan pointer**: if a branch plan exists, end the body with a line naming it — `Plan: \`feat-user-auth\` under \`docs/plan/\`` (substituting the real directory name). The plan lands on `main` with this merge, so the record it points at is permanent.
 
@@ -89,8 +94,15 @@ If the doc exists, run:
 
 ```bash
 git rm docs/git/<branch-name>.md
-git commit -m "Remove branch doc (merging to main)"
+git commit -m "<subject>"
 ```
+
+> **Subject.** The wording below is the message's *content*; its **form** is the
+> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
+> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted.
+>
+> Content: the branch doc is being removed because the branch is merging to `main`.
 
 If the doc doesn't exist, skip this step.
 
@@ -173,9 +185,16 @@ For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare
 
 ```bash
 git add docs/plan/03-example-revision/feat-user-auth/DO.md docs/plan/DO.md
-git commit -m "Record merge of feat/user-auth in plans (PR #123)"
+git commit -m "<subject>"
 git push
 ```
+
+> **Subject.** The wording below is the message's *content*; its **form** is the
+> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
+> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted.
+>
+> Content: the merge of `<branch>` is being recorded in the plans, naming the PR number.
 
 The example shows a plan filed into a revision directory deliberately. A flat `docs/plan/feat-user-auth/DO.md` is the more common case, and writing that here invites reconstructing the path instead of reusing the resolved one — which fails silently, since `git add` on a non-existent path errors but a wrong-but-existing path would not.
 

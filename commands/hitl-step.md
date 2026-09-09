@@ -224,7 +224,7 @@ Tell the user:
 
 - How many goals were processed out of N requested, and each goal's final state (`[x]`, `[!]`, `[-]`, or `[~]`) with a one-line summary.
 - **Blocked items**: if any subgoal or goal landed in `[!]` this iteration, surface the blocking reason explicitly — the user needs to resolve it before the next run can close that goal.
-- **Section completion check**: if the just-completed section has all top-level goals in `[x]` or `[-]` state (under the nearest `##` above), say so and suggest running `/smart-commit` with a proposed message (e.g., `feat(docker): <section topic>`). Sections with a `[!]` goal are **not** complete.
+- **Section completion check**: if the just-completed section has all top-level goals in `[x]` or `[-]` state (under the nearest `##` above), say so and suggest running `/smart-commit` with a proposed message naming the section topic. **Do not put a subject form on it** — no conventional prefix, no imperative template. `/smart-commit` Step 3 reads the convention from the repository, and a form pasted in here would be a guess arriving ahead of the command that actually knows. Sections with a `[!]` goal are **not** complete.
 
   **Verify this at every indent, not just at the top level.** Step 4 should already have
   made it impossible for a `[x]` parent to hide an open subgoal, but this is the line the

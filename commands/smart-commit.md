@@ -47,16 +47,38 @@ A multi-component repo usually carries a per-component version manifest, and the
 
 Based on the **full set of staged changes** now in the index (the original staged changes, any doc updates or regenerated artifacts from Step 1, and any version manifests synced in Step 2), write a commit message.
 
-Follow conventional commit format:
-```
-<type>(<scope>): <short summary>
+### Match the repository's convention — do not assume one
 
-<optional body with bullet points for notable changes>
-```
+**This plugin cannot know what convention its consumer uses, so read it rather than
+prescribe it.** Run `git log --oneline -20` and follow the dominant subject form. The two
+you will almost always see:
 
-- `type`: feat, fix, refactor, docs, chore, test, style, perf, ci, build
-- `scope`: the primary area affected (e.g., auth, api, cli, config)
-- Summary: imperative mood, lowercase, no period, ≤72 chars
+- **Conventional commits** — `<type>(<scope>): <short summary>`, where `type` is one of
+  feat, fix, refactor, docs, chore, test, style, perf, ci, build and `scope` names the
+  primary area affected. Summary imperative, lowercase, no period.
+- **Plain imperative** — a capitalised imperative subject with no prefix, usually followed
+  by a substantial body explaining why.
+
+**Discount any subject that matches one of this plugin's own bookkeeping templates** —
+`Remove branch doc …`, `Record merge of … in plans (PR #N)`, `Add branch doc and plan for
+…`, `file merged plans …`, `open revision …`, `close revision …`. Those record what a
+command proposed, not what the repository chose, so counting them measures this plugin
+rather than its consumer.
+
+That clause is not hypothetical. Measured on this plugin's own repository, 2026-09-08: of
+the last 40 non-merge commits, 21 were conventional and 19 were not — near-parity, and a
+rule reading only the raw split would report no clear convention. **All 19 were
+template-generated**, and all 21 subjects a human actually chose were conventional. The
+templates had polluted the very history the rule reads, and they did it worst in the
+repository that generated them.
+
+If the split is genuinely close after discounting, say so and ask rather than guessing —
+a wrong guess is silently wrong in every future commit.
+
+Then write the message, in whichever form the history showed:
+
+- Summary: ≤72 chars, imperative mood, no trailing period.
+- Body: optional bullet points for notable changes.
 - If documentation was updated as part of this commit, mention it briefly in the body (e.g., "- update README to reflect new CLI flags", "- sync docs/agents/core.md with new module layout")
 - If component version manifests were synced in Step 2, mention it briefly in the body (e.g., "- sync ui/package.json and engine/pyproject.toml to VERSION 0.2.0")
 
