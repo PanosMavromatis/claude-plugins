@@ -135,8 +135,15 @@ Run (substituting the real branch name and the plan filename actually created):
 
 ```bash
 git add docs/git/<branch-name>.md docs/plan/<flattened-branch>/DO.md
-git commit -m "Add branch doc and plan for <branch-name>"
+git commit -m "<subject>"
 ```
+
+> **Subject.** The wording below is the message's *content*; its **form** is the
+> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
+> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted.
+>
+> Content: a branch doc and plan are being added for `<branch-name>`.
 
 If the master plan was backlinked in step 6, include it in the same `git add`.
 

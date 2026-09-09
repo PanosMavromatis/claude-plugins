@@ -58,8 +58,17 @@ If any `git mv` fails, stop and report. Do not continue with the remaining moves
 
 ```bash
 git add -A
-git commit -m "chore(plan): file merged plans into revision directories"
+git commit -m "<subject>"
 ```
+
+> **Subject.** The wording below is the message's *content*; its **form** is the
+> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
+> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted.
+>
+> Content: merged plans are being filed into revision directories. Name the
+> revisions actually filed if there are only one or two — a subject that says which is
+> more use later than one that says "merged plans".
 
 Nothing else needs updating, and that is worth stating in the report: every command finds a plan by its directory **name**, not its path, so moving a plan breaks no lookup. The one thing a move *does* break is a path written into an immutable record — which is why `/smart-merge` names the plan in the PR body rather than pointing at a path.
 
