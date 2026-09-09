@@ -9,6 +9,14 @@ the encoder and the documents stating a kernel's invariants all come from a
 `dp-compile.toml` at the consumer's root, so the plugin works in any repository that
 carries one and in none that does not.
 
+**It assumes [`workflow-claude`](https://github.com/PanosMavromatis/workflow-claude) and
+delegates to it.** Branches, plans, commits, merges and documentation belong to that
+plugin; this one runs no `git` command of its own, opens no branch, and writes no plan
+file. **Install both.** Every command checks for the companion at its head, and when it is
+missing prints one line and stops at the point where it would have delegated — so
+`dp-compile` alone still runs, but stops short of the surrounding workflow rather than
+reimplementing half of it badly.
+
 ## Overview
 
 Every algorithm progresses through five stages — a formalization, then four executable
