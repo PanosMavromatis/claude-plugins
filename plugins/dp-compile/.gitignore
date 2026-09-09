@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor swap / backup files
+*.swp
+*.swo
+*~
+# Python bytecode (the hook is a Python script)
+__pycache__/
+*.py[cod]

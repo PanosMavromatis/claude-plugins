@@ -1,0 +1,8 @@
+{
+    "name": "dp-compile",
+    "description": "Guides dynamic-programming algorithms through a staged translation from pseudocode to pure Python to compiled and parallel backends, enforcing equivalence against the reference implementation at every stage. Requires a dp-compile.toml at the consumer's repository root, and assumes the companion workflow-claude plugin, to which it delegates branches, plans, commits and merges rather than reimplementing them.",
+    "version": "0.3.0",
+    "author": {
+        "name": "Panos Mavromatis & Claude"
+    }
+}
