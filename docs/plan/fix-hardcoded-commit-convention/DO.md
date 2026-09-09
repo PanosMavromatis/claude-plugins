@@ -1,6 +1,6 @@
 # fix/hardcoded-commit-convention
 
-**Status**: active
+**Status**: merged — PR #21 — 2026-09-08
 **Created**: 2026-09-08
 **Subgoal**: standalone
 
