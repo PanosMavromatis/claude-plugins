@@ -1,8 +1,12 @@
 {
-    "name": "workflow-claude",
-    "description": "A collection of Claude Code commands, skills, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.",
-    "version": "0.2.0",
-    "author": {
-        "name": "Panos Mavromatis & Claude"
-    }
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "workflow-claude",
+  "description": "A collection of Claude Code commands, skills, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.",
+  "author": {
+    "name": "Panos Mavromatis",
+    "email": "ai.labs@panos-mav.dev",
+    "url": "https://github.com/PanosMavromatis"
+  },
+  "repository": "https://github.com/PanosMavromatis/claude-plugins",
+  "license": "MIT"
 }
