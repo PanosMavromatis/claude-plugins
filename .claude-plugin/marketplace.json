@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "mavromatis-ai-labs",
+  "description": "Claude Code plugins published by Mavromatis AI Labs",
+  "owner": {
+    "name": "Mavromatis AI Labs",
+    "email": "ai.labs@panos-mav.dev",
+    "url": "https://github.com/PanosMavromatis"
+  },
+  "plugins": []
+}
