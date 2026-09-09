@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+
+# direnv — local environment, may carry credentials
+.envrc
+.direnv/
