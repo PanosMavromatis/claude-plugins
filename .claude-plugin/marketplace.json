@@ -7,5 +7,18 @@
     "email": "ai.labs@panos-mav.dev",
     "url": "https://github.com/PanosMavromatis"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "workflow-claude",
+      "source": "./plugins/workflow-claude",
+      "description": "Branch, plan, commit and merge workflow commands with agent-docs hooks. Applicable to most projects.",
+      "category": "development"
+    },
+    {
+      "name": "dp-compile",
+      "source": "./plugins/dp-compile",
+      "description": "Staged translation of dynamic-programming kernels from pseudocode through Python, Cython and Numba backends. Requires dp-compile.toml; depends on workflow-claude.",
+      "category": "development"
+    }
+  ]
 }
