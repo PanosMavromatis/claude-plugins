@@ -98,7 +98,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 {
   "name": "dp-compile",
   "description": "Guides dynamic-programming algorithms through a staged translation from pseudocode to pure Python to compiled and parallel backends, enforcing equivalence against the reference implementation at every stage.",
-  "version": "0.2.0"
+  "version": "0.4.0"
 }
 ```
 

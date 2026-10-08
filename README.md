@@ -54,14 +54,18 @@ name at the cost of typing it forever; with two plugins that is premature. Decid
 plugin costs a permanent `renames` entry in the catalog. Revisit when a real collision
 appears.
 
-**No `version` field**, in either `plugin.json` or the catalog entries. The version then
-resolves to this repository's commit SHA, so every push is an update consumers can pick up
-with no release ceremony. An explicit version someone forgets to bump freezes every consumer
-silently — `/plugin update` reports "already at the latest version" and nothing looks wrong.
-The monorepo consequence, which is expected rather than a defect: both plugins resolve to
-the repository's HEAD, so a commit touching one marks both as updated. Explicit versions and
-`<name>--v<version>` tags arrive together, and only when a dependency first needs a version
-*constraint* rather than a bare name.
+**An explicit `version` in each `plugin.json`**, and none in the catalog entries, where
+`plugin.json` would win anyway. This reverses a 2026-09-09 decision to omit it, which had
+the version resolve to this repository's commit SHA so that every push was an update with
+no release ceremony. What changed is that the plugins are now developed with themselves:
+`workflow-claude` drives the work that edits it, so the installed copy must move only on a
+deliberate release, never because `main` moved, or a half-finished change would be running
+the session that finishes it. The cost the earlier decision named is real and still applies
+— a version nobody bumps freezes every consumer silently, and `/plugin update` reports
+"already at the latest version" — so **every revision that changes a plugin ends with a
+bump**. Each plugin now resolves to its own version rather than the shared HEAD, so a
+commit touching one no longer marks both as updated. Tags are still deferred: they wait
+for a dependency that needs a version *constraint* rather than a bare name.
 
 ## Developing
 
@@ -83,9 +87,8 @@ claude plugin validate .
 claude plugin validate ./plugins/<name>
 ```
 
-Both emit warnings, and that is the expected state: the omitted `version` is one, and
-`dp-compile`'s `commands/references/*.md` are `@`-included fragments that must not carry
-frontmatter. Each plugin's own `CLAUDE.md` enumerates the warnings it expects — check
+Both emit warnings, and that is the expected state: `dp-compile`'s
+`commands/references/*.md` are `@`-included fragments that must not carry frontmatter. Each plugin's own `CLAUDE.md` enumerates the warnings it expects — check
 against that list rather than aiming for a clean run. `--strict` is unusable here for the
 same reason.
 
