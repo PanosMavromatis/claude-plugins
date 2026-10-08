@@ -103,6 +103,7 @@ installed.
 - [ ] Add `dev/measure-context.sh`, which measures what a session and each command
   load, and record its baseline here as the figure later revisions are judged
   against.
+  > **Branch:** chore/measure-context
 
 ## Closed revisions
 
