@@ -1,6 +1,10 @@
 # Master plan — branch-scoped plan files
 
-**Status**: active
+**Status**: merged — superseded by docs/plan/TODO.md — 2026-10-08
+
+Moved from the plugin on 2026-10-08. PR numbers in this tree refer to
+[PanosMavromatis/workflow-claude](https://github.com/PanosMavromatis/workflow-claude)
+(archived), not this repository.
 
 Introduce a two-tier plan convention across the plugin's commands:
 
