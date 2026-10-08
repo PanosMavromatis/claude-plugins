@@ -40,5 +40,16 @@
   > `CLAUDE.md` is edited through the source, as the hook intends.
   > **Done:** `plugins/workflow-claude/CLAUDE.md` now describes the marketplace layout —
   > root master plan, history under `docs/plan/workflow-claude/` moved by one `git mv`.
-- [ ] Index revisions 02–04 under `## Closed revisions` in the root master plan,
+- [x] Index revisions 02–04 under `## Closed revisions` in the root master plan,
       at their new paths
+  > **Done:** three pointers in `/close-revision`'s own format, each checked to
+  > resolve, under a paragraph naming `docs/plan/workflow-claude/` as the plugin's
+  > history (revision 1, two standalone plans) and the archived repository its PR
+  > numbers belong to — which is also the master-plan goal's "link it from this file".
+  > **Note:** `open-revision.sh`'s reopen guard greps for `revision <label> — closed`,
+  > but `close-revision.sh` writes `**Revision <label>** — closed` — capital R and
+  > bold markers between — so the guard never matches its sibling's output. Its other
+  > guard, a directory at `docs/plan/<label>`, no longer covers 02–04 either, now that
+  > they sit under `workflow-claude/`. Low risk while new labels start at 05; the fix
+  > belongs to R1, where `/master-plan` replaces `/open-revision` and should read the
+  > closed index in the form `/close-revision` writes.
