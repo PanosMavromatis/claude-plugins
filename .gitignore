@@ -12,3 +12,15 @@
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
 .apdisk
+
+# Editor swap / backup files
+*.swp
+*.swo
+*~
+
+# Local environment (.env, or direnv) — may carry credentials
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
