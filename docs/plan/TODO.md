@@ -23,7 +23,7 @@ because nothing in this repository is a DP kernel. R0 and R1 run on the current
 plan layout, and a new layout is adopted only after the release that reads it is
 installed.
 
-- [~] Add `version` fields to both `plugin.json`s (`workflow-claude` `0.9.0`,
+- [x] Add `version` fields to both `plugin.json`s (`workflow-claude` `0.9.0`,
   `dp-compile` `0.4.0`). Commit `.claude/settings.json` declaring the
   `mavromatis-ai-labs` marketplace and enabling `workflow-claude` only. Push,
   update the install, and confirm with `claude --debug` that exactly one
@@ -56,9 +56,47 @@ installed.
   > by a bump at the end of every revision that changes a plugin.
   > **Remaining:** the install follows `main`, so pushing, updating the install and
   > the `claude --debug` check wait until this branch is merged.
+  > **Ran:** merged as PR #1 (`954f67e`); then `claude plugin update
+  > workflow-claude@mavromatis-ai-labs`, which reported `fa04349e36dc` → `0.9.0` —
+  > but for a project path under a *pfsmgraph session's scratchpad* (`…/dep-test`),
+  > not this repository.
+  > **Note:** this repository had **no install record of its own**. The driver had
+  > been running from that orphaned record (its directory no longer exists),
+  > resolved through `enabledPlugins` and the shared cache, and the earlier
+  > "already at the latest version" from `/plugin` was reading it too. Fixed with
+  > `claude plugin install workflow-claude@mavromatis-ai-labs --scope project` run
+  > here, which recorded this repository at `0.9.0`. The orphaned `dep-test`
+  > records (both plugins) are left in `installed_plugins.json`: harmless now, and
+  > `uninstall --scope project` cannot reach a directory that is gone.
+  > `claude plugin list` lists every project's installs, so it is not the
+  > "exactly one" check; `/plugin` in-session is.
+  > **Q:** the install rewrote `.claude/settings.json` into the CLI's own layout
+  > (same keys, different order and wrapping). Keep it or restore the committed form?
+  > **A:** Keep the CLI's layout, so later CLI writes do not churn it; commit it with
+  > the next goal.
+  > **Remaining:** restart, then confirm with `/plugin` in-session that exactly one
+  > `workflow-claude` loads, at `0.9.0`.
+  > **Result:** after the restart, the session process (`claude --resume …`, pid
+  > 92738) holds the cache's in-use marker on `workflow-claude/0.9.0/.in_use/` and on
+  > no other cached copy; the marker on `fa04349e36dc` was released at the restart.
+  > Exactly one `workflow-claude` is loaded, at `0.9.0`.
+  > **Note:** why the record was missing, from a debug log of an earlier session in
+  > this repository: "Skipped auto-recording workflow-claude@mavromatis-ai-labs for
+  > project … — enabled only by repo-authored settings". **A committed
+  > `enabledPlugins` never installs anything by itself**, by design — a cloned
+  > repository cannot install code on its own say-so — so a fresh clone needs the
+  > explicit `claude plugin install … --scope project` (or an accepted install
+  > prompt) once. A matching copy already in the shared cache masked that here.
+  > **Done:** both plugins versioned (`0.9.0`, `0.4.0`), the marketplace declared in
+  > the committed settings, the README's reversal of the no-version decision
+  > recorded, merged as PR #1, and this repository's own install verified at
+  > `0.9.0`.
+  > **Commit:** deferred — these closing notes and the CLI-layout
+  > `.claude/settings.json` land with goal 2's commit.
 - [ ] Move `plugins/workflow-claude/docs/plan/` to `docs/plan/workflow-claude/`
   with `git mv`, link it from this file, and stamp the moved master plan closed.
   `dp-compile` has no plan tree to move.
+  > **Branch:** chore/move-plan-history
 - [ ] Add `dev/measure-context.sh`, which measures what a session and each command
   load, and record its baseline here as the figure later revisions are judged
   against.
