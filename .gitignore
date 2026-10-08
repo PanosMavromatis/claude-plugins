@@ -24,3 +24,6 @@
 !.env.example
 .envrc
 .direnv/
+
+# Local scratchpad, not committed
+/tmp/
