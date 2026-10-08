@@ -1,6 +1,6 @@
 # chore/move-plan-history
 
-**Status**: active
+**Status**: merged — PR #2 — 2026-10-08
 **Created**: 2026-10-08
 **Subgoal**: revision 05-subagent-refactor-R0 — move `plugins/workflow-claude/docs/plan/` to `docs/plan/workflow-claude/`
 

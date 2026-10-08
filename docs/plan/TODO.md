@@ -93,10 +93,13 @@ installed.
   > `0.9.0`.
   > **Commit:** deferred — these closing notes and the CLI-layout
   > `.claude/settings.json` land with goal 2's commit.
-- [ ] Move `plugins/workflow-claude/docs/plan/` to `docs/plan/workflow-claude/`
+- [x] Move `plugins/workflow-claude/docs/plan/` to `docs/plan/workflow-claude/`
   with `git mv`, link it from this file, and stamp the moved master plan closed.
   `dp-compile` has no plan tree to move.
   > **Branch:** chore/move-plan-history
+  > **Done:** history moved as 21 pure renames and indexed under Closed revisions;
+  > its master plan stamped superseded, so the old `/step` sees no active plan in it;
+  > the plugin's `CLAUDE.md` layout paragraph corrected — PR #2
 - [ ] Add `dev/measure-context.sh`, which measures what a session and each command
   load, and record its baseline here as the figure later revisions are judged
   against.
