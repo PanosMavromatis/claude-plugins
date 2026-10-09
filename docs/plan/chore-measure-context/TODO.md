@@ -1,6 +1,6 @@
 # chore/measure-context
 
-**Status**: active
+**Status**: merged — PR #3 — 2026-10-08
 **Created**: 2026-10-08
 **Subgoal**: revision 05-subagent-refactor-R0 — add `dev/measure-context.sh` and record its baseline
 

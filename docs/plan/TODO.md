@@ -100,10 +100,12 @@ installed.
   > **Done:** history moved as 21 pure renames and indexed under Closed revisions;
   > its master plan stamped superseded, so the old `/step` sees no active plan in it;
   > the plugin's `CLAUDE.md` layout paragraph corrected — PR #2
-- [ ] Add `dev/measure-context.sh`, which measures what a session and each command
+- [x] Add `dev/measure-context.sh`, which measures what a session and each command
   load, and record its baseline here as the figure later revisions are judged
   against.
   > **Branch:** chore/measure-context
+  > **Done:** script landed, checked against the design figures (one script bug, four
+  > plan errors, all resolved), and the baseline below recorded — PR #3
   > **Baseline:** `dev/measure-context.sh` on `PanosMavromatis/pfsmgraph` at `5e8ad6e`,
   > with commands from `workflow-claude` 0.9.0 (byte-identical to the `d640d65e9f7a`
   > install that repository runs). Tokens are bytes / 4.
