@@ -31,7 +31,8 @@ ships whichever the measurements favour.
   the same rungs and report, with `stop` folded into `error` (`problem:`/`fix:`
   diagnostics) and `goal-file:` and `warnings:` added; run on the same suite plus a case
   for every diagnostic
-- Step 1 switched to the script; the agent kept or deleted on the evidence
+- Step 1 switched to the script, and the agent deleted: nothing shipped calls it, and
+  git history keeps it
 - Measured against the alternative: a subagent that runs the script and troubleshoots
   its diagnostics itself
 

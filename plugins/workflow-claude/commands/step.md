@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, Agent
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count] [plan-path]"
 ---
@@ -23,32 +23,33 @@ to `-` (`feat/user-auth` → `feat-user-auth/`). That name is a plan's identity,
 location: it may sit anywhere beneath `docs/plan/`, and `git mv` reorganises plans
 without any command changing.
 
-The `workflow-claude:plan-locator` agent resolves the plan. It holds the five-rung order
-once, for both step commands. Do not resolve the plan yourself.
+The bundled `scripts/locate-plan.sh` resolves the plan, by the five rungs the plugin's
+`CLAUDE.md` describes, for both step commands. It is read-only and deterministic. Do not
+resolve the plan yourself.
 
-1. Run `git branch --show-current`.
-2. Spawn `subagent_type: workflow-claude:plan-locator` with one line per input you have:
+1. Run it, with the path token from `$ARGUMENTS` after `--`, or nothing after it if there
+   is none:
 
-       branch: <the current branch>
-       model: DO.md
-       path: <the path token from `$ARGUMENTS`, if any>
-       goal: <an item the user named, if any>
+       ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh DO.md -- <path>
 
-   If the spawn itself fails, say so with the error and stop. There is no second
-   resolution path in this command.
-3. **Wait for the report.** The spawn may run in the background; do not begin Step 2
-   until the report has arrived. Then act on `result:`:
-   - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`, before any
-     work. If `status:` begins with `merged`, use it but say so: the branch was probably
-     reopened after merging.
-   - `ask`: show `candidates:` and `message:`, wait for the user's choice, and re-spawn
-     with it as `path:`. Never pick a candidate yourself.
-   - `stop`: an explicit path resolved to nothing. Say so and stop; a typo must never
-     run another plan.
-   - `none`: say there is no plan, and stop.
-4. **Check before trusting.** Confirm the `next:` line matches the file verbatim, with a
-   one-line `Read` or within the read Step 2 makes anyway, provided that read covers the
-   line. If it does not match, the report is wrong: say so and stop rather than guess.
+   If the user named an item out of order, run it once to find the plan, `Grep` that
+   file for the item, and run it again with `--goal <line>` before the `--`.
+2. Act on the exit status and `result:`. A key with several items continues on lines
+   indented two spaces.
+   - exit 0, `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
+     before any work, and show every `warnings:` line; then carry on. If `layout:` is
+     `per-goal`, say this version cannot yet edit goal files, and stop.
+   - exit 0, `ask`: show `candidates:` and `message:`, wait for the user's choice, and
+     run the script again with it as the path. Never pick a candidate yourself.
+   - exit 0, `none`: say there is no plan, and stop.
+   - exit 1, `error`: the repository breaks a convention resolution relies on. Relay
+     each `problem:` line with its `fix:` line, and stop. The fix is the user's to make;
+     do not work around it.
+   - exit 2, any other status, or no `result:` line: the script itself failed. Show its
+     output and stop. There is no second resolution path in this command.
+3. **Check before trusting.** Confirm the `next:` line matches the file verbatim, within
+   the read Step 2 makes or with a one-line `Read`. A mismatch means the file changed
+   after the script read it: run the script once more, and stop if it still disagrees.
 
 A master plan (`kind: legacy-master` or `revision-master`) grows without bound, and past
 ~500 subgoals a whole-file read silently truncates. Never read one whole: read bounded
@@ -63,7 +64,7 @@ A plan file may carry a status line near the top:
 **Status**: merged — PR #123 — 2026-08-29
 ```
 
-`/new-branch` writes `active` at creation; `/smart-merge` rewrites it to `merged` when the branch lands. For the locator's glob rung, a plan counts as **merged** only if it has a `**Status**:` line whose value begins with `merged`. Everything else — `active`, any other value, or no status line at all — counts as **active**. Failing toward "active" is deliberate: plans merged outside `/smart-merge` never get stamped, and showing a stale option costs a second while hiding a live one costs much more.
+`/new-branch` writes `active` at creation; `/smart-merge` rewrites it to `merged` when the branch lands. For the script's glob rung, a plan counts as **merged** only if it has a `**Status**:` line whose value begins with `merged`. Everything else — `active`, any other value, or no status line at all — counts as **active**. Failing toward "active" is deliberate: plans merged outside `/smart-merge` never get stamped, and showing a stale option costs a second while hiding a live one costs much more.
 
 The file uses standard Markdown checkbox syntax:
 

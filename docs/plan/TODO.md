@@ -10,9 +10,12 @@ revision into `docs/plan/<label>/`.
 
 The second step of the subagent refactor; R0 (`05-subagent-refactor-R0`) set up versions,
 the marketplace install and the context baseline. R1 moves two jobs out of the main
-session and into `workflow-claude` agents. `plan-locator` finds the plan and goal a
-command is working on. `plan-drafter` writes a master plan from a design document. R1
-also adds the per-goal plan layout and the `/master-plan` command those agents serve.
+session. Finding the plan and goal a command is working on goes to a deterministic
+script, `scripts/locate-plan.sh`: it was first built as an agent, `plan-locator`, and
+that agent's test suite showed a job made only of rules belongs in a script
+(`feat-plan-locator`). Writing a master plan from a design document goes to an agent,
+`plan-drafter`, which the new `/master-plan` command runs. R1 also adds the per-goal
+plan layout.
 The installed 0.9.0 driver does the work, on the old layout. This revision **builds**
 the new layout but does not **adopt** it. This repository's own plans stay in the
 old form until the first step of R2, which runs on the 0.10.0 release this revision
@@ -22,14 +25,16 @@ ends with. Settled, and not to be reopened:
 - Every agent is written with plugin-dev's `agent-development` and checked by
   `plugin-validator` before the bump.
 
-- [ ] `agents/plan-locator.md`. Steps 1–2 of `/step` and `/hitl-step` call it, the shared
-      Step 1 text shrinks, and the lockstep `sed` check is updated to match.
+- [ ] `scripts/locate-plan.sh` resolves the plan for `/step` and `/hitl-step`: Step 1 of
+      both runs it, the shared Step 1 text shrinks, and the lockstep `sed` check is
+      updated to match. (Built first as the agent `agents/plan-locator.md`, which the
+      branch's test suite replaced.)
   > **Branch:** feat/plan-locator
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
-- [ ] `/smart-merge` step 7 goes through `plan-locator`, stamps the branch index and
-      edits `_TODO.md`.
+- [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
+      index and edits `_TODO.md`.
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
       `--dry-run` that writes to a given path. `/close-revision` stamps, `/file-plans`
       becomes legacy-only and `/open-revision` becomes an alias. Fix the reopen guard:

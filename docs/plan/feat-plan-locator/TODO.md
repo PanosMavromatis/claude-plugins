@@ -401,15 +401,61 @@
   > copy too. Run read-only on this repository, it resolves this plan at rung 2
   > (`next:` goal 7, both subgoals), and with `--branch main` the master plan at rung 3
   > (line 25, revision subgoal 1). Nothing calls it yet; that is goal 8.
-- [ ] Switch Step 1 of `/step` and `/hitl-step` to the script
-  - [ ] Run it through `Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*)`; on
+- [x] Switch Step 1 of `/step` and `/hitl-step` to the script
+  > **Q:** What happens to `agents/plan-locator.md` once Step 1 runs the script: delete
+  > it, keep it unused, or defer the decision to goal 10?
+  > **A:** Delete it. Nothing shipped calls it, git history keeps it, and goal 10 builds
+  > its variant that wraps the script on a scratch copy. The plugin's self-descriptions
+  > ("an agent") are reverted with it.
+  - [x] Run it through `Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*)`; on
         `error`, relay `problem:` and `fix:` to the user and stop; keep the `next:`
         check, which now guards against the file changing between the script and the
         edit; lockstep diff empty
-  - [ ] Decide the fate of `agents/plan-locator.md` (deleted, or kept for work that needs
+    > **Note:** the new Step 1 handles the five outcomes:
+    > - `found`: state it and show the warnings;
+    > - `ask`: re-run with the chosen path;
+    > - `none`: stop;
+    > - exit 1 `error`: relay each `problem:` with its `fix:`, and stop without working
+    >   around it;
+    > - exit 2, another status, or no `result:` line: stop, as a failed spawn did.
+    >
+    > A goal the user names out of order is now `Grep`ped by the command and passed as
+    > `--goal <line>`. A `per-goal` plan stops with "not yet supported", because no
+    > command edits goal files before revision subgoal 2. A `next:` mismatch re-runs the
+    > script once before stopping. `allowed-tools` drops `Agent` and
+    > `Bash(git branch --show-current:*)`, since the script reads the branch itself.
+    > The body runs the path unquoted, as `/open-revision` does, so it matches its
+    > `allowed-tools` pattern; goal 9's headless runs test exactly that. Sizes:
+    > `hitl-step.md` 16,533 → 16,813 bytes and `step.md` 7,824 → 8,103. The text is a
+    > little longer than the spawn version because it now has two halting outcomes.
+    > The lockstep diff is empty.
+  - [x] Decide the fate of `agents/plan-locator.md` (deleted, or kept for work that needs
         judgement)
-  - [ ] Update the plugin's `CLAUDE.md`, the working plan's §4.1 table, and the R1
+    > **Note:** deleted with `git rm`, which also removes the empty `agents/` directory.
+    > The plugin's "commands, an agent, hooks, and scripts" in `plugin.json` and the
+    > README became "commands, hooks, and scripts". The README's `agents/` entry is
+    > gone, and its `scripts/` entry now counts four plan scripts, `locate-plan.sh` first.
+  - [x] Update the plugin's `CLAUDE.md`, the working plan's §4.1 table, and the R1
         subgoal's wording in `docs/plan/TODO.md`
+    > **Note:** the plugin's `CLAUDE.md` (38,827 → 39,375 bytes):
+    > - "Why resolution is an agent" became "Why resolution is a script", recording why
+    >   the agent was replaced, the 16-key report as the interface, and `error` as a
+    >   halt the command relays;
+    > - the command list, the rung-list intro, the status-stamp parties, the lockstep
+    >   bullet and the script-backed-commands bullet name the script; the last now
+    >   lists six commands.
+    >
+    > The master plan: the R1 preamble now gives resolution to a script and drafting to
+    > `plan-drafter`, and subgoals 1 and 3 name the script. The working plan (untracked):
+    > - the §4.1 row is replaced, and a dated "Changed" paragraph says why;
+    > - every place where the agent resolved now names the script (§4.2, §4.3's guide
+    >   list, §4.4's flush, the command-delta rows, D5, R1 steps 1 and 3, §7.7);
+    > - the historical mentions and the `feat/plan-locator` examples are left alone.
+  > **Done:** Step 1 of both commands runs `scripts/locate-plan.sh`, the agent is
+  > deleted, and every description of the plugin, the master plan and the working plan
+  > says so. Checks: `claude plugin validate` passes with its pre-existing advisory
+  > items only; no file in the plugin names the agent; the 64-case suite passes on the
+  > shipped script. The rewritten commands themselves are untested until goal 9.
 - [ ] Re-run the command cases (c18–c20, headless) against the script version, so the
       Step 1 that ships is the one that was tested
 - [ ] Measure the alternative split: a subagent that runs the script, reads its
