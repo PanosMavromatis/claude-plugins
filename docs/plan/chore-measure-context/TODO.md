@@ -38,4 +38,12 @@
   > the five command bodies, the largest plan and archive.
   > **Note:** the reference clone was read through `git -C` and absolute paths only, and
   > reports 0 changes afterwards.
-- [ ] Record the baseline under goal 3 in the root master plan
+- [x] Record the baseline under goal 3 in the root master plan
+  > **Note:** `PanosMavromatis/pfsmgraph` is public, and this repository already names it
+  > in seven tracked files (ten times in `dp-compile`'s `commands/references/manifest.md`).
+  > **Q:** how should the baseline identify the measured repository?
+  > **A:** name it at its commit — `PanosMavromatis/pfsmgraph` at `5e8ad6e`, with figures
+  > and file paths — so anyone can reproduce it with `dev/measure-context.sh`.
+  > **Done:** a `> **Baseline:**` block under the master plan's goal 3 — session start,
+  > `docs/agents/**`, branch plans, largest archive, master plan, per-call loads, inline-log
+  > counts; all 19 figures re-checked against a fresh run of the script.

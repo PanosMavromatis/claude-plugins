@@ -104,6 +104,23 @@ installed.
   load, and record its baseline here as the figure later revisions are judged
   against.
   > **Branch:** chore/measure-context
+  > **Baseline:** `dev/measure-context.sh` on `PanosMavromatis/pfsmgraph` at `5e8ad6e`,
+  > with commands from `workflow-claude` 0.9.0 (byte-identical to the `d640d65e9f7a`
+  > install that repository runs). Tokens are bytes / 4.
+  >
+  > | Measure | Bytes | ≈ Tokens |
+  > |---|--:|--:|
+  > | Session start: `CLAUDE.md` → `docs/agents/core.md` + `docs/agents/claude.md` | 134,148 | 33,537 |
+  > | `docs/agents/**` (3 files) | 180,458 | 45,114 |
+  > | Branch plans (41): smallest / median / largest | 3,573 / 15,871 / 62,866 | 893 / 3,967 / 15,716 |
+  > | Largest revision archive, `chore-revise-plugins/_TODO.md` | 159,315 | 39,828 |
+  > | Master plan `docs/plan/TODO.md` (70 lines) | 4,243 | 1,060 |
+  >
+  > Per call, own text plus what it reads whole (≈ tokens): `/hitl-step` 8,730–20,479,
+  > `/step` 6,497–18,246, `/smart-merge` 9,640–21,388 (each by branch-plan median–max),
+  > `/agents-docs-update` 56,462, `/smart-commit` 58,535. Inline logs across the branch
+  > plans: 539 Note, 277 Q, 272 A, 228 Done. Later revisions are judged against these
+  > figures; they cover the main session only, so total usage is judged separately.
 
 ## Closed revisions
 
