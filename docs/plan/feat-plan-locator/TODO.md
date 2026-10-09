@@ -623,12 +623,79 @@
     > arm's plausible fix gets credited by default.
     > **Note:** the first-version copies are kept as `suite/wc-resolver-{haiku,sonnet}.v1`,
     > their runs as `out-r-*-smoke`.
-  - [ ] Inputs:
+  - [x] Inputs:
         - the 20 suite cases (the script succeeds);
         - the 18 E-cases in `fx-diag` (the script reports `error`; no mocks);
         - faults injected through the real call path, in the scratch copy only: `chmod
           000` on a plan (exit 2), a `PATH` without `awk` (exit 127), a truncated report,
           and a mutant that returns a wrong plan in a well-formed report
+    > **Q:** Approve the inputs design? It has four parts:
+    > - a baseline arm that runs the shipped Step 1 alone;
+    > - five faults on c03's fixture: f01 `chmod 000` on the plan, f02 an `awk` shim on
+    >   `PATH`, f03 a report truncated by `head -5`, f04 a self-consistent wrong plan from a
+    >   forced `--branch`, and f05 a plan path swapped so `next:` no longer matches;
+    > - an answer key, written and checked mechanically before any arm runs;
+    > - scores of 2 (the key fix), 1 (correct but generic), 0 (wrong or missing) and −1
+    >   (over-reach).
+    > **A:** Approve as designed.
+    > **Note:** built in the scratchpad by `build-faults.py`:
+    > - `suite/wc-resolver-baseline`, the shipped tree plus a `probe-resolver` that runs
+    >   the shipped Step 1 alone;
+    > - per arm, three mutant copies (`-trunc`, `-wrong`, `-swap`) whose `locate-plan.sh`
+    >   wraps the real script, renamed `locate-plan.real.sh`;
+    > - `suite/shim/awk`, which exits 127.
+    >
+    > Every arm's probe now ends with the same `next:` check, printed as `next-check:`,
+    > because f05 tests that guard. `resolver-run.sh` carries 41 cases: c01–c20, 16
+    > E-cases (all but e12/e12b) and f01–f05. f01 restores the plan's mode through a
+    > `trap`. Each fault was run directly and fires as designed:
+    > - f03 stops at `plan:`;
+    > - f04 gives a well-formed rung-3 master-plan answer;
+    > - f05 gives `next: docs/plan/TODO.md:10 - [~] in progress`, which that file does not
+    >   hold;
+    > - f01 exits 2 with `awk` errors and no report;
+    > - f02 exits 127.
+    >
+    > Whether a `PATH` set on `claude -p` reaches the Bash tool is still unverified, so the
+    > baseline's f02 run doubles as the check that the fault was injected.
+    > **Note:** f01 showed that `set -e` does not stop the script inside `check_layout`,
+    > which is called from an `if`: Bash ignores `set -e` in a function used as a
+    > condition. That first `awk` failure passed silently, and the crash came only at the
+    > next unguarded read of the same file. Nothing wrong got through here, but under the
+    > never-fail-silently rule it is a latent defect in `locate-plan.sh`. Goal 11 fixes
+    > it before the branch merges.
+    > **Result:** the answer key (`answer-key.py`), written before any arm runs. Score 2
+    > for the full fix, 1 for the weaker one, −1 for the over-reach named:
+    >
+    > | case | full fix (2) | weaker (1) | over-reach (−1) |
+    > |---|---|---|---|
+    > | e01 | say `docs/plan/nope` does not exist; listing `x/TODO.md` as a candidate is fine | check the path | adopting `x/TODO.md` |
+    > | e02, e04 | the plan is a `DO.md`: run `/step` | name a `TODO.md` plan / run the other command | resolving the `DO.md` for `/hitl-step` |
+    > | e02b, e03, e13 | no plan there / outside the repository / run inside it | the same | — |
+    > | e05 | add `## Revisions`, or remove the header | the same | — |
+    > | e06 | fix line 8's spacing; line 9's `[?]` needs a marker of the user's choosing; 07-alpha then needs `_TODO.md` | rewrite both lines | — |
+    > | e07 | `git mv …/_DO.md …/_TODO.md` | create it, or close | — |
+    > | e07b | neither directory exists: create both, or close | restore or close | — |
+    > | e08 | remove the header: items unnumbered and no `TODO/`, so never per-goal | typo to `per-goal` | — |
+    > | e08b | remove the root's `per-goal` header | `legacy` or `revisions` | — |
+    > | e09 | number the line `02` and create `TODO/02-<slug>.md` | number the line | — |
+    > | e10 | create `TODO/02-two.md` | the same | — |
+    > | e11 | remove or renumber one; which is the user's call | the same | choosing or deleting one |
+    > | e14 | nothing is open and no plan exists: open a revision or create a plan | name a plan or mark one `[~]` | marking `06-old` `[~]` (it has no directory) |
+    > | f01 | the plan is unreadable: `chmod u+r` it | a permission problem | — |
+    > | f02 | the `awk` first on `PATH` fails: fix `PATH` or `awk` | a broken tool | — |
+    > | f03 | the report is incomplete: a script failure, so stop | notice and stop | carrying on with a partial report |
+    > | f04 | flag that `case-r2-flat/TODO.md` exists for the branch | — | accepting the master plan (expected of every arm) |
+    > | f05 | the `next:` check fails, so stop | — | carrying on with the swapped plan |
+    >
+    > Every mechanical full fix was checked on a throwaway clone of its fixture branch,
+    > and all 10 clear their case: e05, e06, e07, e07b, e08, e08b, e09, e10, e11, f01. On
+    > e06, the problem that surfaces next is the expected E7. The two weaker fixes said to
+    > fall short really do: e08's typo fix leaves E9, and e09's numbering leaves E10. So
+    > those two cases tell a 2 from a 1.
+  > **Note:** subgoal 4 waits for goal 11 (decided under goal 11): fix the script first,
+  > then rebuild the trial copies from the fixed tree. Name goal 11 when invoking
+  > `/hitl-step`, since this `[~]` goal would otherwise be resumed first.
   - [ ] Run three arms: the baseline (the parent runs the script, as shipped),
         wrapper-haiku and wrapper-sonnet. Compare them on:
         - correct results;
@@ -640,3 +707,33 @@
           plan, counts as a failure
   - [ ] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
         why
+- [ ] Make every read in `locate-plan.sh` fail loudly. No command's failure may be
+      swallowed, whether inside a condition, a `case` word, `[ ]` or a pipeline.
+      - An unreadable file or directory becomes a diagnostic, E15: `problem:` names it
+        and `fix:` gives the `chmod`. It is checked before the read.
+      - Any other failure of `awk`, `find` or `git` exits 3 with a message on stderr,
+        never an empty value read as an answer.
+      - The spec gains E15 and exit 3.
+      Add a fixture case for each path found: an unreadable plan at rung 2 and at rung 4,
+      an unsearchable path at rung 1, an unreadable directory under `docs/plan/`, and an
+      `awk` that fails on the layout read alone. Re-run the suite and the mutation check
+  > **Q:** Add this goal, so the script does not ship with a known silent-failure path?
+  > **A:** Yes, add it as drafted, and address it before `/smart-merge`. A side agent
+  > raised the same point independently.
+  > **Note:** three more paths were tested on throwaway clones before this goal was
+  > written, and all three are real. They reach beyond functions called as conditions:
+  > - **An unreadable plan among rung 4's candidates** (a merged `c/TODO.md` in c11's
+  >   fixture) gave `result: ask` with `c/TODO.md` offered as a candidate, a false W1
+  >   ("has no **Status** line"), and exit 0. The status read failed inside
+  >   `case "$(status_of …)"`, whose exit status nothing checks, so a merged plan was
+  >   offered as active. That is a wrong answer delivered silently.
+  > - **A path to a directory without search permission** gave E3, "lies outside the
+  >   repository": `phys`'s `cd` failed inside an `if` condition. That is a wrong
+  >   diagnosis.
+  > - **An unreadable directory under `docs/plan/`** gave exit 1 with no report at all.
+  >   `find` failed, `pipefail` failed the assignment, and `set -e` exited. That breaks
+  >   the contract that exit 1 always carries a report.
+  > **Q:** Widen the goal from functions called as conditions to every read? And should
+  > it run before goal 10's trial, or after?
+  > **A:** Widen it, to the wording now above. Run it before the trial, then rebuild the
+  > trial copies from the fixed tree, so the trial measures the script that ships.

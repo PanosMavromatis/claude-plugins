@@ -35,6 +35,10 @@ ships whichever the measurements favour.
   git history keeps it
 - Measured against the alternative: a subagent that runs the script and troubleshoots
   its diagnostics itself
+- `locate-plan.sh` hardened so that no read fails silently. An unreadable file or
+  directory becomes a diagnostic (E15), and any other tool failure exits 3. Fault
+  injection found four paths where `set -e` did not apply, one of them giving a wrong
+  answer with exit 0
 
 ## Context
 
