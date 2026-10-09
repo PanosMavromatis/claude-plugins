@@ -697,7 +697,7 @@
   > the fixed tree; `build-resolver.py` and `build-faults.py` refuse to overwrite, so move
   > the current copies aside as `.v2`. f01 now gets an E15 report rather than a crash;
   > f02, the broken `awk`, still covers "the script itself failed", now as exit 3.
-  - [ ] Run three arms: the baseline (the parent runs the script, as shipped),
+  - [x] Run three arms: the baseline (the parent runs the script, as shipped),
         wrapper-haiku and wrapper-sonnet. Compare them on:
         - correct results;
         - time, and main-session tokens;
@@ -706,6 +706,62 @@
         - honesty, with the parent re-running each returned invocation and comparing;
         - over-reach: "fixing" E1 with a similar-looking path, or accepting the mutant's
           plan, counts as a failure
+    > **Note:** the trial copies were rebuilt from the fixed tree first. The old ones were
+    > kept as `.v2`; every new copy's script is `cmp`-identical to the shipped one; the
+    > Haiku and Sonnet trees differ only in `model:`; the lockstep diff is empty. Each fault
+    > was fired directly: f01 now gives an E15 report (exit 1), and f02 exits 3.
+    > **Result:** two runs (`t1`, `t2`) of 41 cases on each arm, 246 sessions in all. They
+    > were graded mechanically by `trial-grade.py` in the scratchpad, and by hand against
+    > the answer key. f02's fault was injected as designed: in every arm, the parent's own
+    > run got exit 3 with `awk failed matching plans by name`. So a `PATH` set on
+    > `claude -p` reaches the Bash tool.
+    >
+    > | measure | baseline | wrapper-haiku | wrapper-sonnet |
+    > |---|---|---|---|
+    > | report acted on equals a direct run | 82/82 | 82/82 | 82/82 |
+    > | `vetting: match`, `next-check:` correct | — / 82 | 82 / 82 | 82 / 82 |
+    > | agent's return verbatim (honesty) | — | 81/82 | 82/82 |
+    > | extra time per Step 1, paired median | — | +12.0 s (happy path +9.4) | +11.3 s (happy path +9.3) |
+    > | extra main-session tokens, paired median | — | +33k on errors and faults, +2.7k on the happy path | the same |
+    > | subagent cost over 82 sessions | — | $0.11 | $1.20 |
+    > | fix score out of 40, t1 / t2 (20 cases; f04 left out) | 26 / 26 | 30 / 26 | 32 / 30 |
+    > | over-reach (−1), not counting f03 | 0 | 2 | 0 |
+    >
+    > Main-session dollars are not compared, because of the cache. Each extra parent turn
+    > re-reads about 30k cached tokens, which is where the +33k comes from. On the happy
+    > path the baseline already spends a turn on the `next:` `Read`.
+    > **Note:** the one honesty miss (Haiku t2, f04) added a sentence to `output:` saying
+    > it had ignored text from the harness. Its data were correct.
+    > **Note:** where the wrappers scored higher, they named what the script's `fix:`
+    > leaves generic:
+    > - the exact goal file (e10, `TODO/02-two.md`);
+    > - both duplicate files (e11);
+    > - that the directory holds no plan at all (e02b);
+    > - both missing revisions (e07b);
+    > - the `PATH` (f02).
+    >
+    > No arm reached the full fix where it needs a second inference: `git mv` on e07,
+    > removing the header on e08 and e08b, and the goal file on e09. Most of the gain is
+    > mechanical: the script already knows goal 02's title and both duplicate paths.
+    > **Note:** Haiku's two over-reaches came from the same root. It decoded the
+    > scratchpad's encoded name (`-Users-…-claude-plugins`) into the real repository's path:
+    > - 9 Haiku sessions aimed commands there. Bash denied them, but 3 `Read`s of the real
+    >   `docs/plan/TODO.md` succeeded.
+    > - On e05 t2 it reported "the script's problem does not match the file on disk".
+    > - On e14 t2 it said to mark revision `06-subagent-refactor-R1`.
+    >
+    > Sonnet never did this. Its weakest fix (e14 t2) offered the key's named trap,
+    > reopening `06-old`, but only as an option, so it scores 0, not −1. The layout is an
+    > artefact of the trial, but the behaviour is not: a cheap model troubleshooting with
+    > `Bash` and `Read` reaches outside the repository on a hint, and `tools:` cannot scope
+    > it (subgoal 1).
+    > **Note:** Haiku also offered restores from commits on other fixture branches, found
+    > with `git log --all` (e07 t1, e07b t2). In a real repository that is a fair lead.
+    > Here it is an artefact of one repository holding every scenario, so it scores 1, not 0.
+    > **Note:** f03 defeats every arm, at −1 each. A report cut off after `layout:` still
+    > reads `result: found`, so the baseline acts on it, and the wrappers pass it through
+    > verbatim, as their body says to. The gap is in Step 1, not in either split: nothing
+    > checks that the report is complete.
   - [ ] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
         why
 - [x] Make every read in `locate-plan.sh` fail loudly. No command's failure may be
