@@ -92,6 +92,18 @@ Both emit warnings, and that is the expected state: `dp-compile`'s
 against that list rather than aiming for a clean run. `--strict` is unusable here for the
 same reason.
 
+Measure what a session and each command load, before and after a change meant to shrink
+it:
+
+```bash
+dev/measure-context.sh <consumer-repo>   # read-only; defaults to this repository
+```
+
+It reports bytes and ≈ tokens (bytes / 4) for the session-start instruction files and
+their imports, each command plus what it reads whole, `docs/agents/**`, the branch plans
+and the master plan. **It measures the main session only**: a subagent's own reads are
+not in it, so total usage is judged separately.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one
