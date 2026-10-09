@@ -269,9 +269,27 @@
   > the script systematically and apply the same suite to it.
   - [x] Haiku suite: 20 cases (17 agent, 3 command) over all five rungs, both models,
         `blocked:` and all-closed; two clean runs back to back, 40 of 40
-  - [ ] Sonnet comparison: the same suite twice (`out-s1`, `out-s2`) on a plugin copy
+  - [x] Sonnet comparison: the same suite twice (`out-s1`, `out-s2`) on a plugin copy
         whose only difference is `model: sonnet`. Compare the pass rate, search-call
         variance and wall time with Haiku's `out-a`/`out-b`, and record the numbers
+    > **Result:** Sonnet also passed 40 of 40, so on the fixed agent the choice is speed
+    > and cost, not correctness. Per-run figures (20 sessions each):
+    >
+    > | run | model | run wall | session median | agent median | agent p90 | searches | agent output tok | agent input tok |
+    > |---|---|---|---|---|---|---|---|---|
+    > | a  | haiku  | 6.3 min | 18.8 s | 6.6 s  | 10.8 s | 4.3 | 1,374 | 54,034 |
+    > | b  | haiku  | 6.0 min | 17.3 s | 6.4 s  | 10.7 s | 4.5 | 1,476 | 56,026 |
+    > | s1 | sonnet | 7.2 min | 21.6 s | 10.6 s | 15.8 s | 4.3 |   889 | 38,188 |
+    > | s2 | sonnet | 7.9 min | 23.6 s | 11.1 s | 19.1 s | 4.5 |   906 | 38,747 |
+    >
+    > "Run wall" sums the sessions' `duration_ms`; file mtimes give 0.6–0.8 min more, which
+    > is process start and checkout between cases. Input tokens include cache reads.
+    > **Note:** the Sonnet agent is ≈1.65× slower at the median and ≈1.6× at p90, and that
+    > accounts for the whole difference in session time. Both made the same number of
+    > model turns (3.8–4.0 per agent) and calls per turn, so the ≈30% fewer tokens Sonnet
+    > shows sit in fixed per-request overhead (tokenizer, system prompt or tool schemas,
+    > which cannot be told apart from here), not in less work done. It says nothing about
+    > accuracy, which was equal.
   - [ ] `plugin-validator` agent pass on `plugins/workflow-claude`
 - [ ] Specify `scripts/locate-plan.sh`, a deterministic replacement for the agent's
       resolution, with the same five rungs and the same report keys, so Step 1's
