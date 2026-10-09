@@ -319,23 +319,42 @@
   > - `plugin-validator` passed.
   > It also showed that resolution is rule-shaped and that the command's check cannot see
   > a wrong plan, which is why goals 6–10 exist.
-- [ ] Specify `scripts/locate-plan.sh`, a deterministic replacement for the agent's
+- [x] Specify `scripts/locate-plan.sh`, a deterministic replacement for the agent's
       resolution, with the same five rungs and the same report keys, so Step 1's
       contract barely changes
-  - [ ] Diagnostics: `result: error` with `problem:` (which convention broke, and where)
+  > **Q:** Approve the drafted spec (usage, 16-key report, rungs, reading rules,
+  > diagnostics E1–E13, warnings W1–W11, exit codes, guarantees) with its four
+  > defaults: D1 `stop` retired into `error`; D2 a `goal-file:` key now, with
+  > `subgoals:` pointing into the goal file; D3 list values on two-space continuation
+  > lines instead of commas (branch names may contain commas); D4 the spec kept as
+  > `docs/plan/feat-plan-locator/locate-plan-spec.md`?
+  > **A:** Approve all.
+  - [x] Diagnostics: `result: error` with `problem:` (which convention broke, and where)
         and `fix:` (the command or edit that repairs it) wherever a result would be
         impossible or a guess. At least: a `[~]` revision whose `_F` is missing; a
         malformed index line; `**Layout**: per-goal` with a goal file missing or
         duplicated; a branch plan present only under the other model; a path naming a
         directory with no plan file in it
-  - [ ] Warnings: a `warnings:` line for results that are valid but suspicious (no
+    > **Note:** the spec has fourteen (E1–E14). E14 was added while writing it out: a path
+    > naming the root index when no revision is open, where rung 3 would fall through but
+    > rung 1 must not.
+  - [x] Warnings: a `warnings:` line for results that are valid but suspicious (no
         `**Status**:`, which counts active as today; an unrecognised status value).
         The command shows them and carries on
-  - [ ] Exit codes, and the script's guarantees: read-only, deterministic, Bash 3.2-safe,
+  - [x] Exit codes, and the script's guarantees: read-only, deterministic, Bash 3.2-safe,
         the style of `open-revision.sh`
-  - [ ] Edge rules found by `plugin-validator`, each with a fixture case: an empty branch
+  - [x] Edge rules found by `plugin-validator`, each with a fixture case: an empty branch
         (detached HEAD, as in a rebase, a bisect or a CI checkout) skips rung 2; no
         `docs/plan/F` at rung 3 falls through to rung 4
+    > **Note:** both are specified; their fixture cases are goal 7's to build. The
+    > detached HEAD is covered by W4's case, and the rung-3 fall-through needs a case of
+    > its own, since it raises no diagnostic unless `docs/plan/F′` exists (W8).
+  > **Done:** `docs/plan/feat-plan-locator/locate-plan-spec.md` (12.7 KB) is the contract
+  > goal 7 implements against: usage with `--goal <line>` and `--branch`, a fixed 16-key
+  > report (the agent's 12 less `stop`, plus `goal-file:`, `warnings:`, `problem:`,
+  > `fix:`), the five rungs, reading rules (fences ignored, all subgoal markers listed,
+  > per-goal goal files), diagnostics E1–E14, warnings W1–W11, exit codes 0/1/2, and the
+  > read-only, deterministic, Bash 3.2 guarantees.
 - [ ] Implement `scripts/locate-plan.sh` and run the suite on it
   - [ ] The 17 resolution cases, run directly, with no `claude -p`, and graded by the
         same expectations

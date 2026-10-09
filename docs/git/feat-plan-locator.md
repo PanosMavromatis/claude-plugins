@@ -27,8 +27,10 @@ ships whichever the measurements favour.
 - The lockstep `sed` check in the plugin's `CLAUDE.md` updated to match
 - Tested outside this session, on each rung: a 20-case headless suite (Haiku, then
   Sonnet); `plugin-validator` passes
-- `scripts/locate-plan.sh`: the same rungs and report, plus `error`/`problem:`/`fix:`
-  diagnostics and `warnings:`; run on the same suite plus a case for every diagnostic
+- `scripts/locate-plan.sh`, specified in `docs/plan/feat-plan-locator/locate-plan-spec.md`:
+  the same rungs and report, with `stop` folded into `error` (`problem:`/`fix:`
+  diagnostics) and `goal-file:` and `warnings:` added; run on the same suite plus a case
+  for every diagnostic
 - Step 1 switched to the script; the agent kept or deleted on the evidence
 - Measured against the alternative: a subagent that runs the script and troubleshoots
   its diagnostics itself
