@@ -146,8 +146,33 @@
   > `CLAUDE.md`. The spawn runs in the background, so Step 1 must wait for the report.
   > Two runs fixed the agent's report on the way. The rewrite in the next goal names that
   > `subagent_type` and relies on repo-relative paths.
-- [ ] Replace Steps 1–2 of `/hitl-step` and `/step` with "spawn `plan-locator`, use
+- [x] Replace Steps 1–2 of `/hitl-step` and `/step` with "spawn `plan-locator`, use
       what it returns", keeping the shared text byte-identical
+  > **Q:** If the agent cannot be spawned at all (an older Claude Code, plugin agents
+  > disabled, an API error), should Step 1 stop and say so, or fall back to using an
+  > explicit `path` argument directly?
+  > **A:** Stop and say so.
+  > **Note:** two things left out on purpose. Step 5's loop stays a `Grep` on the
+  > resolved file instead of re-spawning the agent as the working plan's §4.1 has it: on
+  > a known file a `Grep` is exact and instant, and a re-spawn costs ≈7 s per iteration.
+  > The per-goal layout is not handled either. The report has no key for a per-goal
+  > plan's goal file (`next:` would name the index line), and the step commands learn goal
+  > files in revision subgoal 2, which must add that key, or a `next:` convention, to the
+  > agent first.
+  > **Done:** Steps 1–2 of both commands rewritten.
+  > - Step 1 is now shared: run `git branch --show-current`; spawn
+  >   `workflow-claude:plan-locator`; wait for the background report; act on `result:`
+  >   (`found`/`ask`/`stop`/`none`); stop if the spawn fails; check `next:` with a one-line
+  >   `Read` before trusting it.
+  > - Step 2 reads the report's `next:`/`subgoals:`/`blocked:`.
+  > - "For rung 4" in the status-stamp paragraph became "for the locator's glob rung", and
+  >   `allowed-tools` gained `Agent`.
+  > - Sizes: `hitl-step.md` 19,052 → 16,453 bytes, `step.md` 10,118 → 7,744.
+  > - Both files were built from one template, and the lockstep `sed` diff is empty.
+  >   `claude plugin validate` passes.
+  > **Note:** the commands are untested until task 4. The probe exercised the agent, not
+  > these Step 1–2 texts, so task 4 must run the rewritten `/hitl-step` and `/step`
+  > themselves in the scratch session, not only the agent.
 - [ ] Update the lockstep `sed` check in the plugin's `CLAUDE.md` to match the new
       Step 1
 - [ ] Test the agent outside this session (scratch session or `claude plugin eval`)

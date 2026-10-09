@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, Agent
 description: Execute the next top-level goal from a docs/plan TODO.md with human-in-the-loop Q&A, logged inline.
 argument-hint: "[count] [plan-path]"
 ---
@@ -29,31 +29,44 @@ Top-level goals and subgoals use these markers. The plan file may include a lege
 
 All five markers apply to both top-level goals and subgoals. Parent-state rules are defined in Step 4.
 
-## Step 1: Locate and read the plan file
+## Step 1: Locate the plan file
 
-Plan files live under `docs/plan/`. There are two kinds:
+Plan files live under `docs/plan/`: the **master plan**, whose items each spawn a branch,
+and **branch plans**, a `TODO.md` in a directory named for the branch with `/` flattened
+to `-` (`feat/user-auth` → `feat-user-auth/`). That name is a plan's identity, not its
+location: it may sit anywhere beneath `docs/plan/`, and `git mv` reorganises plans
+without any command changing.
 
-- the **master plan**, `docs/plan/TODO.md`, whose items are subgoals that each spawn a branch;
-- a **branch plan**, `TODO.md` inside a directory named for the branch with `/` flattened to `-`: branch `feat/user-auth` → a directory `feat-user-auth/`. That name is the plan's **identity**; its location is not. `/new-branch` creates the directory directly under `docs/plan/`, but it may be moved anywhere beneath `docs/plan/` afterwards — grouped into a milestone or component directory, say — and resolution still finds it. Reorganise with `git mv`; no command needs updating.
+The `workflow-claude:plan-locator` agent resolves the plan. It holds the five-rung order
+once, for both step commands. Do not resolve the plan yourself.
 
-Resolve in the order below and **stop at the first rung that yields a file**. Call the result **the plan file**, and state which one you resolved to before doing any work.
+1. Run `git branch --show-current`.
+2. Spawn `subagent_type: workflow-claude:plan-locator` with one line per input you have:
 
-1. **Path argument.** If `$ARGUMENTS` contained a path, interpret it as a repo-relative path, a path relative to `docs/plan/`, or a directory under `docs/plan/` — whichever resolves. If it names a directory, look for `TODO.md` inside it. If it resolves to nothing, say so and **stop**; do not fall through to the later rungs, since a typo would silently run a different plan.
-2. **Branch plan.** Run `git branch --show-current` and flatten `/` to `-`; call the result the **plan name**. Find the plan by that name *wherever* it sits under `docs/plan/`, rather than at a fixed path. Check `docs/plan/<plan-name>/TODO.md` first — the flat location `/new-branch` creates, and the answer in nearly every case — and only if that misses, glob `docs/plan/**/<plan-name>/TODO.md`. Trying the exact path first is about cost, not correctness: in a large repo it avoids a recursive walk to find something that is almost always sitting in the obvious place. Branch names are unique per repo, so the name alone is a sufficient key and at most one match is expected.
-   - **Exactly one match** — use it. On a branch created by `/new-branch`, this is normally the answer.
-   - **Several matches** — a plan directory was copied rather than moved, so one of them is stale. List the full paths and ask which to use. Never guess, and never read from more than one.
-   - **No match** — fall through to rung 3.
+       branch: <the current branch>
+       model: TODO.md
+       path: <the path token from `$ARGUMENTS`, if any>
+       goal: <an item the user named, if any>
 
-   If the resolved plan carries a `merged` status stamp (see below), use it anyway but say so, since that usually means the branch was reopened after merging.
-3. **Master plan.** If `docs/plan/TODO.md` exists, use it — on `main`, this is normally the answer. **Read it differently from a branch plan.** A branch plan covers one branch and stays small, so read it whole. The master plan accumulates every subgoal of every revision, each with its `> **Done:**` annotation, and grows without bound — at 250 subgoals it is around 197 KB, and past roughly 500 it exceeds the default 2000-line read limit and a plain read silently truncates. When the master plan is the resolved file, locate what you need with `Grep` and read a bounded window around it (see Step 2) rather than loading the file. Note that you did so, and say how large the file is.
-4. **Glob and ask.** Glob `docs/plan/**/TODO.md` and partition the matches by status stamp:
-   - Exactly one **active** match → use it.
-   - Several active matches → list them and ask which to use. Wait for the answer; do not guess. If any merged plans were excluded, add a line `(N merged plans not shown — name one explicitly to use it)`.
-   - No active matches but some merged ones → list the merged plans and ask whether to use one. Never auto-select a merged plan.
-   - No matches at all → go to rung 5.
-5. **Legacy root file.** If `TODO.md` exists at the project root, use it, but tell the user that plans now live under `docs/plan/` and suggest moving it (`git mv TODO.md docs/plan/TODO.md`).
+   If the spawn itself fails, say so with the error and stop. There is no second
+   resolution path in this command.
+3. **Wait for the report.** The spawn may run in the background; do not begin Step 2
+   until the report has arrived. Then act on `result:`:
+   - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`, before any
+     work. If `status:` begins with `merged`, use it but say so: the branch was probably
+     reopened after merging.
+   - `ask`: show `candidates:` and `message:`, wait for the user's choice, and re-spawn
+     with it as `path:`. Never pick a candidate yourself.
+   - `stop`: an explicit path resolved to nothing. Say so and stop; a typo must never
+     run another plan.
+   - `none`: say there is no plan, and stop.
+4. **Check before trusting.** `Read` the `next:` line alone (`offset` its line,
+   `limit` 1). If it does not match verbatim, the report is wrong: say so and stop
+   rather than guess.
 
-If no rung yields a file, inform the user and stop.
+A master plan (`kind: legacy-master` or `revision-master`) grows without bound, and past
+~500 subgoals a whole-file read silently truncates. Never read one whole: read bounded
+windows around the lines the report names.
 
 ### Status stamp
 
@@ -64,7 +77,7 @@ A plan file may carry a status line near the top:
 **Status**: merged — PR #123 — 2026-08-29
 ```
 
-`/new-branch` writes `active` at creation; `/smart-merge` rewrites it to `merged` when the branch lands. For rung 4, a plan counts as **merged** only if it has a `**Status**:` line whose value begins with `merged`. Everything else — `active`, any other value, or no status line at all — counts as **active**. Failing toward "active" is deliberate: plans merged outside `/smart-merge` never get stamped, and showing a stale option costs a second while hiding a live one costs much more.
+`/new-branch` writes `active` at creation; `/smart-merge` rewrites it to `merged` when the branch lands. For the locator's glob rung, a plan counts as **merged** only if it has a `**Status**:` line whose value begins with `merged`. Everything else — `active`, any other value, or no status line at all — counts as **active**. Failing toward "active" is deliberate: plans merged outside `/smart-merge` never get stamped, and showing a stale option costs a second while hiding a live one costs much more.
 
 The file has a three-tier structure:
 
@@ -78,13 +91,16 @@ The file has a three-tier structure:
 
 ## Step 2: Find the Next Top-level Goal
 
-For a branch plan, which is small, read it whole and scan top-to-bottom. For the **master plan**, locate instead of scanning: `Grep` for `^- \[[ ~]\]` with line numbers on, then `Read` a window around the first hit rather than loading the file. This costs a fixed ~200 tokens where a whole-file read costs ~55k at 250 subgoals, and past ~500 subgoals a plain read truncates — which would hide later goals and make "all work complete" a false report rather than a finding. When in doubt about completion on a large file, confirm by `Grep`, which sees all of it.
+The report's `next:` is the goal: the first indent-0 `[~]`, else the first `[ ]`. `[~]`
+comes first because a goal in progress is where the last run stopped. `subgoals:` lists its
+acceptance criteria. A goal the user named out of order was passed as `goal:`, and
+`next:` is that one.
 
-Select the **first top-level goal whose marker is `[ ]` or `[~]`** — a line beginning with `- [ ] ` or `- [~] ` at indent 0 (no leading spaces). `[~]` takes priority: a goal already in progress is where we left off, and should be resumed before starting a new one. Ignore indented subgoals at this stage; they're acceptance criteria, not separate units.
-
-- Note the goal's line number and text, plus the line numbers of its subgoals (indented lines with any `- [ ]` / `- [~]` / `- [!]` marker that follow it, before the next top-level goal or section header).
-- If the user named a specific goal out of order in their invocation, pick that one instead.
-- If every top-level goal is `[x]` or `[-]`, inform the user that all reachable work is complete and stop. If any top-level goal is `[!]` (blocked), list those separately so the user knows what's waiting on them.
+- Read the goal and its subgoals: the whole file for a branch plan, which is small; for a
+  master plan, a window from `next:` to the last `subgoals:` line and the blockquotes
+  under it.
+- If `next: —`, every top-level goal is `[x]` or `[-]`: say that all reachable work is
+  complete, and stop. List `blocked:` separately, so the user knows what is waiting on them.
 
 ## Step 3: Execute the Goal
 
