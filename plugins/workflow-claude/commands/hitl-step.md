@@ -42,25 +42,26 @@ The bundled `scripts/locate-plan.sh` resolves the plan, by the five rungs the pl
 resolve the plan yourself.
 
 1. Run it, with the path token from `$ARGUMENTS` after `--`, or nothing after it if there
-   is none:
+   is none. Run it alone, in exactly that form, with nothing appended, chained or
+   piped: `allowed-tools` matches that command and nothing else.
 
        ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh TODO.md -- <path>
 
    If the user named an item out of order, run it once to find the plan, `Grep` that
    file for the item, and run it again with `--goal <line>` before the `--`.
-2. Act on the exit status and `result:`. A key with several items continues on lines
-   indented two spaces.
-   - exit 0, `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
+2. Act on `result:`; the report says everything the exit status does. A key with
+   several items continues on lines indented two spaces.
+   - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
      before any work, and show every `warnings:` line; then carry on. If `layout:` is
      `per-goal`, say this version cannot yet edit goal files, and stop.
-   - exit 0, `ask`: show `candidates:` and `message:`, wait for the user's choice, and
+   - `ask`: show `candidates:` and `message:`, wait for the user's choice, and
      run the script again with it as the path. Never pick a candidate yourself.
-   - exit 0, `none`: say there is no plan, and stop.
-   - exit 1, `error`: the repository breaks a convention resolution relies on. Relay
+   - `none`: say there is no plan, and stop.
+   - `error`: the repository breaks a convention resolution relies on. Relay
      each `problem:` line with its `fix:` line, and stop. The fix is the user's to make;
      do not work around it.
-   - exit 2, any other status, or no `result:` line: the script itself failed. Show its
-     output and stop. There is no second resolution path in this command.
+   - no `result:` line (a usage error, or the script itself failed): show its output
+     and stop. There is no second resolution path in this command.
 3. **Check before trusting.** Confirm the `next:` line matches the file verbatim, within
    the read Step 2 makes or with a one-line `Read`. A mismatch means the file changed
    after the script read it: run the script once more, and stop if it still disagrees.

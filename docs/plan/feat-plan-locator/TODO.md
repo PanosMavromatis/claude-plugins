@@ -456,8 +456,56 @@
   > says so. Checks: `claude plugin validate` passes with its pre-existing advisory
   > items only; no file in the plugin names the agent; the 64-case suite passes on the
   > shipped script. The rewritten commands themselves are untested until goal 9.
-- [ ] Re-run the command cases (c18–c20, headless) against the script version, so the
+- [x] Re-run the command cases (c18–c20, headless) against the script version, so the
       Step 1 that ships is the one that was tested
+  > **Note:** run against `suite/wc-script`, a fresh copy of the committed tree, with
+  > `probe-grade.py` in a new `MODE=script` mode. That mode requires a `locate-plan.sh`
+  > call, no `Agent` spawn, no agent transcript and no `permission_denials`. Run against
+  > the agent-version run `out-a`, it failed all three cases on all three counts.
+  > **Result:** runs `g9a` and `g9b`, 6 sessions, 0 pass. Resolution was right in all 6:
+  > - the plan, the rung and the `next:` line (10, 2,487, 8);
+  > - the line confirmed within Step 2's read, with only a 19-line window on the 2,498-line
+  >   master plan;
+  > - no edits and no spawn.
+  >
+  > The unquoted `${CLAUDE_PLUGIN_ROOT}` invocation does match `allowed-tools`. But every
+  > first call was `locate-plan.sh … --; echo "exit=$?"`, which the harness rejected
+  > ("contains multiple operations … requires approval: echo"), and the model then retried
+  > without the echo. Headless, that is a wasted turn; interactively it would be a
+  > permission prompt on every run.
+  > **Note:** the cause is Step 1's "act on the exit status". The Bash tool shows an exit
+  > code only when it is non-zero, so the model echoed it to see it. The exit code is also
+  > redundant for the command: `result:` already tells 0 (`found`/`ask`/`none`) from 1
+  > (`error`), and no `result:` line means 2 or a crash. The exit codes serve hooks, CI
+  > and other scripts.
+  > **Note:** sessions took 14–27 s, against 20–34 s for the agent version, despite the
+  > wasted turn. Cost was $0.06–0.07 on `g9b`; `g9a`'s $0.21–0.26 is the first run on a
+  > new plugin copy, with the cache not yet written. Both used 4 turns, the same as the
+  > agent version.
+  > **Q:** How should Step 1 change: key on `result:` alone and say "run it alone"; keep
+  > the exit status and explain how the tool shows it; or allow-list `echo`?
+  > **A:** Key on `result:`, and say to run it alone with nothing appended. The exit
+  > codes stay in the script and its spec for hooks and CI. Then re-run c18–c20 twice
+  > (`g9c`, `g9d`).
+  > **Result:** after the fix, runs `g9c` and `g9d` pass 6 of 6 on every check:
+  > - one `locate-plan.sh` call per case, no permission denial, no spawn;
+  > - the right plan, rung and `next:` line, confirmed within Step 2's read (19 lines of
+  >   the 2,498-line master plan);
+  > - no edits.
+  >
+  > | Step 1 | calls per case | turns | session |
+  > |---|---|---|---|
+  > | agent (`a`, `b`) | 1 spawn | 4 | 19.7–33.7 s |
+  > | script, first text (`g9a`, `g9b`) | 2, 1 denied | 4 | 14.1–26.7 s |
+  > | script, fixed (`g9c`, `g9d`) | 1 | 3 | 12.2–19.0 s |
+  >
+  > Cost per session ran $0.05–0.25 for the same case and follows whether the prompt
+  > cache was warm (the command text changed between runs), so it is not compared here.
+  > **Done:** the Step 1 that ships is the tested one. The first runs found that
+  > "act on the exit status" made the model chain an `echo` that `allowed-tools` cannot
+  > match. Step 1 now keys on `result:` and says to run the script alone, with nothing
+  > appended. Both commands were changed, the lockstep diff is empty, and two runs pass
+  > 6 of 6, one turn shorter than the agent version.
 - [ ] Measure the alternative split: a subagent that runs the script, reads its
       diagnostics, re-runs it with corrected inputs where it can, and returns a clean
       result, against goals 6–9's split, where the parent troubleshoots
