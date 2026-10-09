@@ -25,6 +25,17 @@
   > page, `/context` for the live breakdown); this script answers "how much does the
   > conversation the user is steering hold", which is the number that drives
   > compaction and attention.
-- [ ] Run it on `tmp/pfsmgraph` at `5e8ad6e` and reproduce the working plan's §1
+- [x] Run it on `tmp/pfsmgraph` at `5e8ad6e` and reproduce the working plan's §1
       numbers; any gap is a script bug or a §1 error, and gets resolved, not averaged
+  > **Done:** five gaps, each traced to one side being wrong. Script bug (fixed): the
+  > log-entry count matched markers quoted inside sentences; anchoring it to line start
+  > reproduces §1 exactly (539 Note, 277 Q, 272 A, 228 Done). §1 errors (corrected in the
+  > working plan): `claude.md` is 10,067 bytes and was never 10,064 in any commit; "48
+  > branch plans" was every `.md` under `docs/plan/` — 41 branch plans, 5 archives, the
+  > master plan, `DEFERRED.md`; plans run 3.6–63 KB with a 15.9 KB median, not 18–63 KB;
+  > `/agents-docs-update` reads ≈ 55k tokens (README 8.6 KB, `docs/agents` 180.5 KB,
+  > `docs/ops` 30.5 KB), not ≈ 50k. Everything else matched to the byte: session start,
+  > the five command bodies, the largest plan and archive.
+  > **Note:** the reference clone was read through `git -C` and absolute paths only, and
+  > reports 0 changes afterwards.
 - [ ] Record the baseline under goal 3 in the root master plan

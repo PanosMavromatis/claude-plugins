@@ -188,8 +188,10 @@ if [ "$NB" -gt 0 ]; then
   row "branch plans: $NB, smallest" "$PLAN_MIN"
   row "branch plans: median" "$PLAN_MED"
   row "branch plans: largest — $(rel "$PLAN_MAX_F")" "$PLAN_MAX"
+  # A log entry starts its line; a marker quoted inside a sentence ("its `> **Done:**`
+  # line is ...") is prose about the convention, not an entry, and is not counted.
   printf '  inline log entries across branch plans: %s Note, %s Q, %s A, %s Done\n' \
-    $(for k in Note Q A Done; do cat "${BRANCH_PLANS[@]}" | grep -c "> \*\*$k:\*\*" || true; done)
+    $(for k in Note Q A Done; do cat "${BRANCH_PLANS[@]}" | grep -cE "^[[:space:]]*> \*\*$k:\*\*" || true; done)
 else
   echo "  (no branch plans)"
 fi
