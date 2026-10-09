@@ -11,15 +11,27 @@ Add `agents/plan-locator.md` to `workflow-claude` and make it Steps 1–2 of `/s
 commands' shared Step 1 shrinks to a few lines. The first subgoal of revision
 `06-subagent-refactor-R1`; the branch also carries the commit that opens that revision.
 
+Testing the agent showed that resolution is rule-shaped work. The branch therefore also
+specifies and builds `scripts/locate-plan.sh`, a deterministic resolver that returns a
+diagnostic (`problem:` and `fix:`) rather than guessing. It measures where
+troubleshooting should live, in the parent or in a subagent that wraps the script, and
+ships whichever the measurements favour.
+
 ## Scope
 
 - `agents/plan-locator.md`, written with plugin-dev's `agent-development`: haiku, tools
-  `Read, Grep, Glob, Bash(git branch --show-current:*)`, body under 3,000 characters,
-  a fixed report shape of paths and line numbers the caller can check with one `Read`
+  `Read, Grep, Glob` (the caller passes the branch name), `omitClaudeMd`, body under
+  3,000 characters, a fixed report of repo-relative paths and line numbers
 - `/hitl-step` and `/step` Steps 1–2 replaced by "spawn `plan-locator`, use what it
   returns", byte-identical apart from the filename
 - The lockstep `sed` check in the plugin's `CLAUDE.md` updated to match
-- Tested outside this session, on each rung; `plugin-validator` passes
+- Tested outside this session, on each rung: a 20-case headless suite (Haiku, then
+  Sonnet); `plugin-validator` passes
+- `scripts/locate-plan.sh`: the same rungs and report, plus `error`/`problem:`/`fix:`
+  diagnostics and `warnings:`; run on the same suite plus a case for every diagnostic
+- Step 1 switched to the script; the agent kept or deleted on the evidence
+- Measured against the alternative: a subagent that runs the script and troubleshoots
+  its diagnostics itself
 
 ## Context
 

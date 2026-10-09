@@ -60,9 +60,9 @@ once, for both step commands. Do not resolve the plan yourself.
    - `stop`: an explicit path resolved to nothing. Say so and stop; a typo must never
      run another plan.
    - `none`: say there is no plan, and stop.
-4. **Check before trusting.** `Read` the `next:` line alone (`offset` its line,
-   `limit` 1). If it does not match verbatim, the report is wrong: say so and stop
-   rather than guess.
+4. **Check before trusting.** Confirm the `next:` line matches the file verbatim, with a
+   one-line `Read` or within the read Step 2 makes anyway, provided that read covers the
+   line. If it does not match, the report is wrong: say so and stop rather than guess.
 
 A master plan (`kind: legacy-master` or `revision-master`) grows without bound, and past
 ~500 subgoals a whole-file read silently truncates. Never read one whole: read bounded

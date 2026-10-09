@@ -190,6 +190,134 @@
   >   `plan-locator`, `/file-plans`) instead of counting them.
   > - The lockstep bullet says "edit the agent, not the commands".
   > The wider rewrite of the plan-convention sections is revision subgoal 5's.
-- [ ] Test the agent outside this session (scratch session or `claude plugin eval`)
+- [~] Test the agent outside this session (scratch session or `claude plugin eval`)
       on each rung, including "explicit path does not resolve → stop" and "several
       matches → ask"; `plugin-validator` passes
+  > **Q:** How should the matrix be run (16 agent cases across all five rungs, both
+  > models, `blocked:` and all-closed, plus the rewritten `/hitl-step` twice and `/step`
+  > once): a headless runner script the user starts once, an interactive session with
+  > 19 checkouts, or `claude plugin eval`?
+  > **A:** The headless runner script.
+  > **Note:** the suite, in the session scratchpad:
+  > - `probe-run.sh` builds `suite/fx` (21 branches, one per case) and `suite/wc` (a copy
+  >   of the working tree's plugin with an argument-taking probe command), then runs each
+  >   case under `claude -p --plugin-dir`;
+  > - `probe-grade.py` checks each case's transcripts against expectations read out of the
+  >   built fixture.
+  > Decoy plans catch a rung that falls through when it should not.
+  > **Result:** smoke test c03 passed on every field. Headless (`-p`), the spawn runs in
+  > the foreground: the report is the agent's final text, not a `SubagentHandback`, so the
+  > grader now reads either, and Step 1's "wait for the report" covers both. The agent
+  > made 4 calls: the tolerated fallback `Glob`, plus a line-count `Grep` that its body
+  > asks for on master plans only. Both are harmless.
+  > **Result:** full suite, 20 cases: 19 pass. The grader was too strict in five cases and
+  > was corrected.
+  > - c09 and c11: whole-file reads of a 7-line index and of a missing file. Only the
+  >   2,498-line master plan must never be read whole, and it never was.
+  > - c18–c20: each command checked `next:` inside the `Read` its Step 2 makes anyway
+  >   (the whole small branch plan, or lines 2480–2498 of the master plan), not in a
+  >   separate one-line `Read`. Every reply says the line matched.
+  > c19 is the truncation case, and both the agent and `/hitl-step` used only `Grep`
+  > and a 19-line window, landing on line 2,487.
+  > **Note:** c09's haiku tried to `Glob` `/Users/…/Developer/Agentic/claude-plugins`, a
+  > path it decoded from the scratchpad directory's slug of this repository's path. The
+  > headless session refused it, which is the permission boundary working. Consumer
+  > repositories have no slug-shaped paths.
+  > **Q:** c05 failed. The plan exists flat and as a copy under `archive/`, and the agent
+  > took the flat one, because rung 2 tries the exact path first. The fallback glob had
+  > seen both copies; 0.9.0 behaves the same way. Should rung 2 always glob and ask if it
+  > finds several, or keep "the flat copy wins"?
+  > **A:** Always glob, and ask if several.
+  > **Note:** "exact path first" was a cost optimisation for the main session. Inside the
+  > agent the glob runs on haiku, off the main context, and the transcripts show it ran
+  > anyway in 17 of 20 cases. The optimisation bought nothing there, and it hid the
+  > likeliest duplicate: a `cp -R` of a flat plan into a group directory.
+  > **Q:** Step 1's check said "`Read` the `next:` line alone (`offset` its line,
+  > `limit` 1)". All three command cases checked the line inside the read Step 2 needs
+  > anyway. Should the wording follow what they do, or should the separate one-line
+  > `Read` stay?
+  > **A:** Change the wording to match.
+  > **Result:** re-run with both changes: 18 of 20 pass, and c05 now asks, listing both
+  > copies. Two cases that passed before failed, both through haiku variance on edges the
+  > body left open.
+  > - c13 reported the root file with absolute paths: no placeholder had a root-file shape.
+  > - c14 doubted an empty search, went looking in the real repository path it had decoded
+  >   from the scratchpad's slug, was refused, and reported `stop` ("could not reach the
+  >   repository") instead of `none`.
+  > **Note:** fixed in the agent (body 2,979 characters).
+  > - Added "The working directory is the repository: search nowhere else, and an empty
+  >   search is an answer."
+  > - Rung 5: "report it as `F`".
+  > - `result: … stop (rung 1 only) …`.
+  > To make room, the stale "A step command loops" trigger went (Step 5 stays a `Grep`),
+  > and the closing line was shortened. One pass per case does not show these edges are
+  > stable: a case passing once is a sample, not a property.
+  > **Result:** two back-to-back runs, `out-a` and `out-b`: 40 of 40 pass, with no
+  > searches outside the fixture; the previous run had 4. The variance has moved from
+  > results to effort: 2–9 search calls per case (mean 4.3 and 4.5), and sessions take
+  > 17–19 s at the median.
+  > **Q:** Is the unreliability Haiku's, and would Sonnet be safer? Does the orchestrator
+  > catch the agent's errors, and would a retry help? Should resolution be a script?
+  > **A:** Measure Sonnet, don't speculate: re-run the suite with it. The orchestrator
+  > must be able to vet all subagent work, as a single agent double-checks itself; Step
+  > 1's line check covers line errors only, not a wrong resolution. Resolution is a set
+  > of rules, so a deterministic script should run it, provided the layout and format
+  > conventions hold. Where they do not, and a result is impossible or unreliable (a plan
+  > file missing from its expected place, say), the script must neither guess nor fail
+  > silently. It should return a diagnostic that the parent passes to the user, naming
+  > the problem and suggesting a fix. Grade the agent suite for what it teaches, then plan
+  > the script systematically and apply the same suite to it.
+  - [x] Haiku suite: 20 cases (17 agent, 3 command) over all five rungs, both models,
+        `blocked:` and all-closed; two clean runs back to back, 40 of 40
+  - [ ] Sonnet comparison: the same suite twice (`out-s1`, `out-s2`) on a plugin copy
+        whose only difference is `model: sonnet`. Compare the pass rate, search-call
+        variance and wall time with Haiku's `out-a`/`out-b`, and record the numbers
+  - [ ] `plugin-validator` agent pass on `plugins/workflow-claude`
+- [ ] Specify `scripts/locate-plan.sh`, a deterministic replacement for the agent's
+      resolution, with the same five rungs and the same report keys, so Step 1's
+      contract barely changes
+  - [ ] Diagnostics: `result: error` with `problem:` (which convention broke, and where)
+        and `fix:` (the command or edit that repairs it) wherever a result would be
+        impossible or a guess. At least: a `[~]` revision whose `_F` is missing; a
+        malformed index line; `**Layout**: per-goal` with a goal file missing or
+        duplicated; a branch plan present only under the other model; a path naming a
+        directory with no plan file in it
+  - [ ] Warnings: a `warnings:` line for results that are valid but suspicious (no
+        `**Status**:`, which counts active as today; an unrecognised status value).
+        The command shows them and carries on
+  - [ ] Exit codes, and the script's guarantees: read-only, deterministic, Bash 3.2-safe,
+        the style of `open-revision.sh`
+- [ ] Implement `scripts/locate-plan.sh` and run the suite on it
+  - [ ] The 17 resolution cases, run directly, with no `claude -p`, and graded by the
+        same expectations
+  - [ ] A fixture case for every diagnostic and warning in the specification
+- [ ] Switch Step 1 of `/step` and `/hitl-step` to the script
+  - [ ] Run it through `Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*)`; on
+        `error`, relay `problem:` and `fix:` to the user and stop; keep the `next:`
+        check, which now guards against the file changing between the script and the
+        edit; lockstep diff empty
+  - [ ] Decide the fate of `agents/plan-locator.md` (deleted, or kept for work that needs
+        judgement)
+  - [ ] Update the plugin's `CLAUDE.md`, the working plan's §4.1 table, and the R1
+        subgoal's wording in `docs/plan/TODO.md`
+- [ ] Re-run the command cases (c18–c20, headless) against the script version, so the
+      Step 1 that ships is the one that was tested
+- [ ] Measure the alternative split: a subagent that runs the script, reads its
+      diagnostics, re-runs it with corrected inputs where it can, and returns a clean
+      result, against goals 6–9's split, where the parent troubleshoots
+  > **Note:** proposed by the user as a possible general principle of agentic
+  > development: pair a script with a specialised subagent, so that determinism is the
+  > default and an LLM's flexibility is kept for troubleshooting. Goals 6–9 keep the
+  > troubleshooting in the parent; this keeps it in the subagent. Neither is assumed
+  > better; measure both. Two constraints carry over. The subagent stays read-only, so
+  > its "corrected inputs" are re-parameterisations (another model, an explicit path),
+  > never edits, and anything only a human can settle (which duplicate is stale) still
+  > goes back as `ask` or `error`. And the parent must still be able to vet the result,
+  > so the subagent returns the exact script invocation it settled on together with its
+  > raw output. The parent can then re-run that one command and compare, deterministically
+  > and cheaply.
+  - [ ] Build the variant (agent body, and the Step 1 that calls it) on a scratch copy,
+        not the shipped tree
+  - [ ] Run the suite and the diagnostic cases on both variants, and compare: correct
+        results, diagnostics resolved without the user, main-session tokens, wall time,
+        and how often the parent's vetting disagreed
