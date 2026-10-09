@@ -173,8 +173,23 @@
   > **Note:** the commands are untested until task 4. The probe exercised the agent, not
   > these Step 1–2 texts, so task 4 must run the rewritten `/hitl-step` and `/step`
   > themselves in the scratch session, not only the agent.
-- [ ] Update the lockstep `sed` check in the plugin's `CLAUDE.md` to match the new
+- [x] Update the lockstep `sed` check in the plugin's `CLAUDE.md` to match the new
       Step 1
+  > **Note:** the `sed` command itself needed no change. Its range, `## Step 1` to
+  > `### Status stamp`, still spans the whole shared text, and it came out empty on the
+  > rewrite. What was stale was the prose around it, in four places, all still saying the
+  > commands hold the five rungs themselves.
+  > **Done:** `plugins/workflow-claude/CLAUDE.md`, 36,733 → 38,615 bytes.
+  > - The command list and the rung list name `agents/plan-locator.md` as the resolver, and
+  >   the agent body as authoritative.
+  > - Rung 3 gains the `**Layout**: revisions` branch.
+  > - A new paragraph, "Why resolution is an agent, and what its contract is", records
+  >   haiku, the tools, `omitClaudeMd`, the report as the interface, Step 1's three
+  >   safeguards, and a pointer to this plan's probe record.
+  > - The status-stamp paragraph names its parties (`/new-branch`, `/smart-merge`,
+  >   `plan-locator`, `/file-plans`) instead of counting them.
+  > - The lockstep bullet says "edit the agent, not the commands".
+  > The wider rewrite of the plan-convention sections is revision subgoal 5's.
 - [ ] Test the agent outside this session (scratch session or `claude plugin eval`)
       on each rung, including "explicit path does not resolve → stop" and "several
       matches → ask"; `plugin-validator` passes
