@@ -24,6 +24,7 @@ ends with. Settled, and not to be reopened:
 
 - [ ] `agents/plan-locator.md`. Steps 1–2 of `/step` and `/hitl-step` call it, the shared
       Step 1 text shrinks, and the lockstep `sed` check is updated to match.
+  > **Branch:** feat/plan-locator
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
