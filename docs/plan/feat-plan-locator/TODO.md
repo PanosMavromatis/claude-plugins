@@ -1,6 +1,6 @@
 # feat/plan-locator
 
-**Status**: active
+**Status**: merged — PR #5 — 2026-10-09
 **Created**: 2026-10-08
 **Subgoal**: revision 06-subagent-refactor-R1 — `agents/plan-locator.md`; `/step` and `/hitl-step` Steps 1–2 call it
 
