@@ -34,7 +34,8 @@ ships whichever the measurements favour.
 - Step 1 switched to the script, and the agent deleted: nothing shipped calls it, and
   git history keeps it
 - Measured against the alternative: a subagent that runs the script and troubleshoots
-  its diagnostics itself
+  its diagnostics itself. The baseline ships; the trial is recorded in goal 10
+- Step 1 refuses a report cut short (no `message:` line), which the trial's f03 found
 - `locate-plan.sh` hardened so that no read fails silently. An unreadable file or
   directory becomes a diagnostic (E15), and any other tool failure exits 3. Fault
   injection found four paths where `set -e` did not apply, one of them giving a wrong

@@ -30,6 +30,20 @@ ends with. Settled, and not to be reopened:
       updated to match. (Built first as the agent `agents/plan-locator.md`, which the
       branch's test suite replaced.)
   > **Branch:** feat/plan-locator
+- [ ] Sharper diagnostics from `scripts/locate-plan.sh`. Its `fix:` lines say what the
+      repository already shows:
+      - create a file that was never committed, rather than restore it;
+      - `git mv` a plan written under the other model;
+      - name the exact goal file;
+      - say that a directory holds no plan at all;
+      - remove a header that no file justifies.
+      `/step` and `/hitl-step` also offer, on an `error` or a failed run, to investigate
+      read-only in the main session, if the user asks. First bring the test suite,
+      fixtures and answer key from `feat-plan-locator` goal 10 into the repository: today
+      they exist only in a session scratchpad. Accepted at 40 of 40, re-graded against
+      that answer key. On every case the script must score at least the best wrapper run,
+      and reach the full fix on e07, e08, e08b and e09, where no arm reached one, with no
+      case lower than today. Required: decided in `feat-plan-locator` goal 10.
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.

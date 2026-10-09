@@ -506,7 +506,7 @@
   > match. Step 1 now keys on `result:` and says to run the script alone, with nothing
   > appended. Both commands were changed, the lockstep diff is empty, and two runs pass
   > 6 of 6, one turn shorter than the agent version.
-- [~] Measure the alternative split: a subagent that runs the script, reads its
+- [x] Measure the alternative split: a subagent that runs the script, reads its
       diagnostics, re-runs it with corrected inputs where it can, and returns a clean
       result, against goals 6–9's split, where the parent troubleshoots
   > **Note:** proposed by the user as a possible general principle of agentic
@@ -762,8 +762,45 @@
     > reads `result: found`, so the baseline acts on it, and the wrappers pass it through
     > verbatim, as their body says to. The gap is in Step 1, not in either split: nothing
     > checks that the report is complete.
-  - [ ] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
+  - [x] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
         why
+    > **Q:** Which split ships for Step 1: the baseline, the baseline plus sharper `fix:`
+    > lines, or a wrapper on Sonnet or Haiku?
+    > **A:** The baseline, either alone or with sharper lines. The user asked for the
+    > trade-offs: a script cannot match what a non-deterministic LLM draws from its own
+    > knowledge, and making the follow-up optional was the wrong call.
+    > **Note:** checked against the script's own output, every gain the wrappers made in
+    > the trial came from repository state the script can read:
+    > - `git log`: never committed, so create rather than restore (e07, e07b);
+    > - the index line: `TODO/02-two.md` (e10);
+    > - `ls`: e02b and e14.
+    >
+    > The full fixes no arm reached are of the same kind: `git mv` on e07, and a header no
+    > file justifies on e08. Knowledge from outside the repository matters for failures no
+    > convention anticipates, and f02 is the trial's one such case. The parent is already
+    > Opus, so it can investigate on the user's request, with no wrapper running on every
+    > step.
+    > **Q:** The baseline ships and sharper diagnostics are required. Where does that work
+    > live: a required R1 subgoal, goal 12 on this branch, or split between them?
+    > **A:** A required R1 subgoal, on its own branch, accepted by re-grading the trial's
+    > answer key.
+    > **Q:** Should Step 1's acceptance of a truncated report (f03) be fixed on this branch,
+    > in the R1 subgoal, or with a closing line from the script?
+    > **A:** On this branch, as goal 12, before the merge.
+    > **Q:** What score accepts the R1 subgoal? The first draft asked for 32 of 40, the best
+    > wrapper run. But that is a total, and it counts f03, which goal 12 fixes in Step 1
+    > rather than in the script.
+    > **A:** 40 of 40. Case by case, the script must score at least the best wrapper run,
+    > which comes to 36 once goal 12 fixes f03. It must also reach the full fix on the four
+    > cases no arm reached (e07, e08, e08b, e09). These are requirements, not targets.
+    > **Done:** the baseline ships. The parent runs `locate-plan.sh` alone, and no
+    > `plan-resolver` agent ships. The reasons:
+    > - correctness was equal in all 246 sessions;
+    > - the wrapper costs about 11 s and a parent turn on every Step 1, for a gain of 4–6
+    >   points out of 40 that appears only when a plan is broken, and that gain can be
+    >   derived from the repository, so it belongs in the script;
+    > - the baseline is read-only by enforcement (`allowed-tools`), the wrapper only by its
+    >   body, and Haiku's reach into the real repository shows the difference.
 - [x] Make every read in `locate-plan.sh` fail loudly. No command's failure may be
       swallowed, whether inside a condition, a `case` word, `[ ]` or a pipeline.
       - An unreadable file or directory becomes a diagnostic, E15: `problem:` names it
@@ -856,3 +893,11 @@
   > **Done:** `locate-plan.sh` no longer takes an empty value from a failed read as an
   > answer anywhere. The four paths found are fixed and covered by fixtures, along with
   > the defect the side agent raised.
+- [ ] Make Step 1 of `/step` and `/hitl-step` refuse an incomplete report. The report's
+      sixteen keys come in a fixed order, with `message:` last, so a report with
+      `result:` but no `message:` line was cut short: show it and stop, as for a report
+      with no `result:` line.
+      - Both files change in lockstep, and the lockstep diff stays empty.
+      - Re-run f03 and c03 headless on a baseline copy rebuilt from the new tree: f03
+        stops, and c03 is unchanged.
+  > **Note:** found by goal 10's f03, the one fault that defeated every arm.
