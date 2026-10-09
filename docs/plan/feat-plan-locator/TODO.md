@@ -693,9 +693,10 @@
     > e06, the problem that surfaces next is the expected E7. The two weaker fixes said to
     > fall short really do: e08's typo fix leaves E9, and e09's numbering leaves E10. So
     > those two cases tell a 2 from a 1.
-  > **Note:** subgoal 4 waits for goal 11 (decided under goal 11): fix the script first,
-  > then rebuild the trial copies from the fixed tree. Name goal 11 when invoking
-  > `/hitl-step`, since this `[~]` goal would otherwise be resumed first.
+  > **Note:** goal 11 is done, so subgoal 4 can run. First rebuild the trial copies from
+  > the fixed tree; `build-resolver.py` and `build-faults.py` refuse to overwrite, so move
+  > the current copies aside as `.v2`. f01 now gets an E15 report rather than a crash;
+  > f02, the broken `awk`, still covers "the script itself failed", now as exit 3.
   - [ ] Run three arms: the baseline (the parent runs the script, as shipped),
         wrapper-haiku and wrapper-sonnet. Compare them on:
         - correct results;
@@ -707,7 +708,7 @@
           plan, counts as a failure
   - [ ] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
         why
-- [ ] Make every read in `locate-plan.sh` fail loudly. No command's failure may be
+- [x] Make every read in `locate-plan.sh` fail loudly. No command's failure may be
       swallowed, whether inside a condition, a `case` word, `[ ]` or a pipeline.
       - An unreadable file or directory becomes a diagnostic, E15: `problem:` names it
         and `fix:` gives the `chmod`. It is checked before the read.
@@ -737,3 +738,65 @@
   > it run before goal 10's trial, or after?
   > **A:** Widen it, to the wording now above. Run it before the trial, then rebuild the
   > trial copies from the fixed tree, so the trial measures the script that ships.
+  > **Note:** the invocation was `/hitl-step goal 11`. Under the command's own argument
+  > rules that reads as N = 11 plus a path, `goal`, which rung 1 would fail to resolve.
+  > It was taken as "goal 11, out of order", which was plainly meant. The grammar has no
+  > way to name a goal, although Step 2 says to pick one the user names; worth fixing
+  > when the step commands are next revised.
+  > **Note:** the audit (every site whose failure can be swallowed or misread):
+  > - A1, `check_layout` used as a condition (L279, L397, L463, through its `awk`);
+  > - A2, `relpath "$(phys …)"` inside an `if` (L355, L360);
+  > - B1, `case "$(status_of …)"` (L481);
+  > - B2, `[ -z "$(status_of …)" ]` (L428);
+  > - B3, `case "$(count_items …)"` (L321, L440);
+  > - C, ten assignments that `set -e` does stop, but with the tool's own status (1, 2 or
+  >   127) and no report, where 1 collides with "error, report follows";
+  > - D, `git symbolic-ref … || true` (L133), which reads any git failure as a detached
+  >   HEAD;
+  > - E, `cd "$ROOT"` (L130).
+  > `dirname`, `basename`, `printf` and arithmetic cannot realistically fail, so they stay.
+  > **Q:** Approve the fix design? E15 for an unreadable file or directory, checked before
+  > every read, plus a scan of `docs/plan/` up front; `die()` and exit 3 for any other
+  > tool failure; no command substitution in a condition, a `case` word or `[ ]`;
+  > `git symbolic-ref`'s status split; the spec updated; and fixtures x09–x14 plus
+  > targeted mutants.
+  > **A:** Approve.
+  > **Result:** fixed in the scratchpad, then copied into the plugin (`cmp` identical,
+  > 755). Four mechanisms:
+  > - E15 is checked before every read, with a scan of `docs/plan/`'s directories once
+  >   rung 1 has not answered;
+  > - `die()` and exit 3 for any other failure of `awk`, `find`, `git`, `cd` or `pwd`;
+  > - no command substitution in a condition, a `case` word or `[ ]` unless its status is
+  >   the thing being tested;
+  > - `git symbolic-ref`'s status 1 (a detached HEAD) is told apart from any other
+  >   failure, which exits 3.
+  >
+  > Seven new cases, each failing on the original script for the bug it targets:
+  >
+  > | case | setup | original script | fixed |
+  > |---|---|---|---|
+  > | x09 | unreadable branch plan | exit 2, `awk` stderr | E15, rung 2 |
+  > | x10 | unreadable merged candidate | **exit 0, `ask`, merged plan offered** | E15, rung 4 |
+  > | x11 | path to an unsearchable directory | E3, "outside" | E15, rung 1 |
+  > | x12 | unreadable directory under `docs/plan/` | `find` error, no report | E15 |
+  > | x13 | `awk` failing on the layout read only | **exit 0, `layout: legacy`** | exit 3, named |
+  > | x14 | `awk` failing on every call | exit 127 | exit 3 |
+  > | x15 | `git symbolic-ref` failing with 128 | — | exit 3 |
+  >
+  > The suite is now 71 cases, all passing on the plugin copy, twice under Bash 3.2 and
+  > twice under Bash 5, with byte-identical output and a clean static check.
+  > **Result:** mutation check, 16 mutants: the original ten, re-anchored, and six that each
+  > remove one new guard. 15 are caught, each by the case built for its rule (n01, the
+  > side agent's defect, by x13). The survivor, n05, drops `|| exit 3` after rung 4's
+  > status read. It is an equivalent mutant: `rung4` runs at top level, so `set -e` still
+  > exits there with the substitution's status, 3, and no input tells the two apart. The
+  > explicit guard is defence in depth against `rung4` ever being called as a condition.
+  > n06 first survived too, as a real gap: no fixture failed `git symbolic-ref` other than
+  > by detaching HEAD. x15's `git` shim was added for it, and now catches it.
+  > **Note:** cost: 6–9 ms more per run (median 62–86 ms, against 55–80 ms), mostly the
+  > directory scan. Size: 19,981 → 23,535 bytes. The spec gains E15, exit 3 and a
+  > "fails loudly" guarantee. The commands need no change, because "no `result:` line"
+  > already covers exit 3.
+  > **Done:** `locate-plan.sh` no longer takes an empty value from a failed read as an
+  > answer anywhere. The four paths found are fixed and covered by fixtures, along with
+  > the defect the side agent raised.

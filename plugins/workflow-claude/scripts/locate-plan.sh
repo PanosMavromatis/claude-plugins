@@ -19,9 +19,15 @@
 # READ-ONLY. Writes nothing, temporary files included; runs only
 # `git rev-parse --show-toplevel` and `git symbolic-ref`. Deterministic, Bash 3.2.
 #
+# FAILS LOUDLY. `set -e` does not apply inside a function used as a condition, nor to a
+# command substitution in a condition, a `case` word or `[ ]`, so nothing here relies on
+# it: every file is checked readable before it is read (E15), every tool's status is
+# checked where it runs, and a failure the rules cannot explain exits 3. An empty value
+# from a failed read is never taken as an answer.
+#
 # Usage: locate-plan.sh <TODO.md|DO.md> [--goal <line>] [--branch <name>] [--] [path]
 # Exit:  0 = report, result found/ask/none. 1 = report, result error.
-#        2 = usage error, no report.
+#        2 = usage error, no report. 3 = a tool failed; message on stderr, no report.
 
 set -euo pipefail
 set -f
@@ -38,6 +44,11 @@ usage() {
   [ $# -eq 0 ] || echo "error: $1" >&2
   echo "usage: $(basename "$0") <TODO.md|DO.md> [--goal <line>] [--branch <name>] [--] [path]" >&2
   exit 2
+}
+
+die() {  # a tool failed in a way the rules cannot explain; never read on as an answer
+  echo "locate-plan.sh: $1" >&2
+  exit 3
 }
 
 # --- arguments ----------------------------------------------------------------
@@ -127,30 +138,68 @@ if ! ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || [ -z "$ROOT" ]; then
   violation "the working directory is not inside a git repository" "run it from the repository"
   fail ""
 fi
-cd "$ROOT"
-ROOTP="$(pwd -P)"
+cd "$ROOT" || die "cannot enter the repository root $ROOT"
+ROOTP="$(pwd -P)" || die "pwd -P failed in $ROOT"
 if [ $HAVE_BRANCH -eq 0 ]; then
-  BRANCH="$(git symbolic-ref --short -q HEAD 2>/dev/null || true)"
+  # Status 1 with no output is a detached HEAD; any other failure is git's, not ours.
+  if BRANCH="$(git symbolic-ref --short -q HEAD 2>/dev/null)"; then :
+  else
+    st=$?
+    if [ "$st" -eq 1 ]; then BRANCH=""; else die "git symbolic-ref failed with status $st"; fi
+  fi
 fi
 
 # --- helpers --------------------------------------------------------------------
 
-list_named() {  # every file of that name under docs/plan/, sorted
-  if [ -d "$PD" ]; then find "$PD" -type f -name "$1" | sort; fi
+# E15: a file the rules need but cannot read. Checked before every read, because a failed
+# read would otherwise pass as an empty answer wherever `set -e` does not reach.
+need_file() {  # need_file <file> <rung>
+  if [ ! -r "$1" ]; then violation "$1 cannot be read" "chmod u+r $1"; fail "$2"; fi
+  return 0
+}
+
+# E15 for every directory under docs/plan/ that cannot be listed or entered: a plan inside
+# one would be missing from rung 2's duplicate check and from rung 4, without notice.
+scan_dirs() {
+  local all d st=0 IFS="$NL"
+  if [ ! -d "$PD" ]; then return 0; fi
+  # find fails exactly when it meets such a directory; the loop names each one.
+  if all="$(find "$PD" -type d 2>/dev/null)"; then :; else st=$?; fi
+  for d in $all; do
+    if [ ! -r "$d" ] || [ ! -x "$d" ]; then violation "$d/ cannot be entered or listed" "chmod u+rx $d"; fi
+  done
+  if [ "$VIOL" -gt 0 ]; then fail ""; fi
+  if [ "$st" -ne 0 ]; then die "find failed under $PD with status $st"; fi
+  return 0
+}
+
+list_named() {  # every file of that name under docs/plan/, sorted; scan_dirs runs first
+  local out
+  if [ ! -d "$PD" ]; then return 0; fi
+  out="$(find "$PD" -type f -name "$1")" || die "find failed listing $1 under $PD"
+  if [ -n "$out" ]; then printf '%s\n' "$out" | sort || die "sort failed"; fi
+  return 0
 }
 
 # A plan's status is the first **Status** line anywhere in it: the rule file-plans.sh
 # applies, and the two readers must agree.
 status_of() {
-  awk '/^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$1"
+  awk '/^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$1" \
+    || die "awk failed reading the status of $1"
 }
 
-count_items() { if [ -z "$1" ]; then echo 0; else printf '%s\n' "$1" | awk 'END { print NR }'; fi; }
+count_items() {
+  if [ -z "$1" ]; then echo 0; return 0; fi
+  printf '%s\n' "$1" | awk 'END { print NR }' || die "awk failed counting a list"
+}
 
-phys() {  # the physical absolute path of an existing file or directory
+phys() {  # the physical absolute path of an existing file or directory; 2 if it cannot be entered
   local d
-  if [ -d "$1" ]; then (cd "$1" && pwd -P)
-  else d="$(cd "$(dirname "$1")" && pwd -P)"; printf '%s/%s\n' "${d%/}" "$(basename "$1")"; fi
+  if [ -d "$1" ]; then (cd "$1" 2>/dev/null && pwd -P) || return 2
+  else
+    d="$(cd "$(dirname "$1")" 2>/dev/null && pwd -P)" || return 2
+    printf '%s/%s\n' "${d%/}" "$(basename "$1")"
+  fi
 }
 relpath() {  # repository-relative form of a physical path; fails if outside
   case "$1" in
@@ -162,13 +211,14 @@ relpath() {  # repository-relative form of a physical path; fails if outside
 
 # The **Layout** header, outside fenced code blocks. Sets LAYOUT_V; on a value that is
 # unknown, or in the wrong place, records E8 and returns 1.
-check_layout() {
+check_layout() {  # check_layout <file> <rung>; called as a condition, so check everything here
   local f="$1" out n v
   LAYOUT_V=legacy
+  need_file "$f" "$2"
   out="$(awk '
     /^[ \t]*```/ { fence = !fence; next }
     !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }
-  ' "$f")"
+  ' "$f")" || die "awk failed reading the **Layout** header of $f"
   if [ -z "$out" ]; then return 0; fi
   n="${out%%"$TAB"*}"; v="${out#*"$TAB"}"
   case "$v" in
@@ -186,6 +236,7 @@ check_layout() {
 index_open() {
   local idx="$1" rung="$2" out rec typ rest n val p IFS="$NL"
   OPEN_LIST=""; OPEN_N=0
+  need_file "$idx" "$rung"
   out="$(awk '
     /^[ \t]*```/ { fence = !fence; next }
     fence { next }
@@ -201,7 +252,7 @@ index_open() {
       print "BAD\t" NR "\t" $0
     }
     END { if (!sec) print "NOSEC" }
-  ' "$idx")"
+  ' "$idx")" || die "awk failed reading the revisions index $idx"
   for rec in $out; do
     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
     case "$typ" in
@@ -276,9 +327,9 @@ w6() {  # w6 <file> <line> <text>
 resolved() {  # resolved <file> <rung> <kind>
   local f="$1" rung="$2" out rec typ rest n nn="" nnm="" gdir matches gm="" IFS="$NL"
   R_RESULT=found; R_RUNG="$rung"; R_PLAN="$f"; R_KIND="$3"
-  if ! check_layout "$f"; then fail "$rung"; fi
+  if ! check_layout "$f" "$rung"; then fail "$rung"; fi
   R_LAYOUT="$LAYOUT_V"
-  R_STATUS="$(status_of "$f")"
+  R_STATUS="$(status_of "$f")" || exit 3
   case "$R_STATUS" in
     '')              if [ "$3" = branch ]; then warn "$f has no **Status** line, so it counts as active"; fi ;;
     active|open)     ;;
@@ -286,10 +337,10 @@ resolved() {  # resolved <file> <rung> <kind>
     closed*)         ;;
     *)               warn "$f has the status '$R_STATUS', which is none of active, merged, open or closed" ;;
   esac
-  R_LINES="$(awk 'END { print NR }' "$f")"
+  R_LINES="$(awk 'END { print NR }' "$f")" || die "awk failed counting the lines of $f"
 
   local pg=0; if [ "$R_LAYOUT" = per-goal ]; then pg=1; fi
-  out="$(awk -v todo="$TODO" -v goal="$GOAL" -v pergoal="$pg" "$SELECT_AWK" "$f")"
+  out="$(awk -v todo="$TODO" -v goal="$GOAL" -v pergoal="$pg" "$SELECT_AWK" "$f")" || die "awk failed reading the items of $f"
   for rec in $out; do
     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"
     case "$typ" in
@@ -317,14 +368,19 @@ resolved() {  # resolved <file> <rung> <kind>
       *) gdir="$(dirname "$f")/${MODEL%.md}" ;;
     esac
     matches=""
-    if [ -d "$gdir" ]; then matches="$(find "$gdir" -maxdepth 1 -type f -name "$nn-*.md" | sort)"; fi
-    case "$(count_items "$matches")" in
+    if [ -d "$gdir" ]; then
+      if [ ! -r "$gdir" ] || [ ! -x "$gdir" ]; then violation "$gdir/ cannot be entered or listed" "chmod u+rx $gdir"; fail "$rung"; fi
+      matches="$(find "$gdir" -maxdepth 1 -type f -name "$nn-*.md" | sort)" || die "find failed listing $gdir"
+    fi
+    n="$(count_items "$matches")" || exit 3
+    case "$n" in
       0) violation "goal $nn has no file matching $gdir/$nn-*.md" \
            "create it, or correct the number on ${R_NEXT%% *}"; fail "$rung" ;;
       1) R_GOALFILE="$matches" ;;
       *) violation "goal $nn matches several files:$NL$matches" "remove or renumber the stale copy"; fail "$rung" ;;
     esac
-    out="$(awk "$GOALFILE_AWK" "$R_GOALFILE")"
+    need_file "$R_GOALFILE" "$rung"
+    out="$(awk "$GOALFILE_AWK" "$R_GOALFILE")" || die "awk failed reading the goal file $R_GOALFILE"
     for rec in $out; do
       typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"
       case "$typ" in
@@ -350,16 +406,25 @@ resolved() {  # resolved <file> <rung> <kind>
 # --- rung 1: an explicit path -------------------------------------------------------
 
 rung1() {
-  local p="$ARG_PATH" r1="" r2="" ok1=0 ok2=0 out=0 rel f o kind
+  local p="$ARG_PATH" r1="" r2="" ok1=0 ok2=0 out=0 denied="" pp rel f o kind
+  # phys returns 2 for a directory it cannot enter: E15, never misread as "outside"
   if [ -n "$p" ] && [ -e "$p" ]; then
-    if r1="$(relpath "$(phys "$p")")"; then ok1=1; else out=1; fi
+    if pp="$(phys "$p")"; then
+      if r1="$(relpath "$pp")"; then ok1=1; else out=1; fi
+    else denied="$p"; fi
   fi
   case "$p" in
     /*) ;;
     *) if [ -n "$p" ] && [ -e "$PD/$p" ]; then
-         if r2="$(relpath "$(phys "$PD/$p")")"; then ok2=1; else out=1; fi
+         if pp="$(phys "$PD/$p")"; then
+           if r2="$(relpath "$pp")"; then ok2=1; else out=1; fi
+         else denied="${denied:-$PD/$p}"; fi
        fi ;;
   esac
+  if [ $ok1 -eq 0 ] && [ $ok2 -eq 0 ] && [ -n "$denied" ]; then
+    if [ -d "$denied" ]; then o="$denied"; else o="$(dirname "$denied")"; fi
+    violation "$o/ cannot be entered or listed" "chmod u+rx $o"; fail 1
+  fi
   if [ $ok1 -eq 1 ]; then
     rel="$r1"
     if [ $ok2 -eq 1 ] && [ "$r1" != "$r2" ]; then
@@ -394,7 +459,7 @@ rung1() {
   esac
 
   if [ "$f" = "$ROOT_PLAN" ]; then
-    if ! check_layout "$f"; then fail 1; fi
+    if ! check_layout "$f" 1; then fail 1; fi
     if [ "$LAYOUT_V" = revisions ]; then
       warn "$f is the revisions index, not a plan; it was followed as rung 3 would"
       index_open "$f" 1
@@ -419,31 +484,36 @@ rung1() {
 
 by_name() {  # entries of a list whose parent directory is named $NAME (never the root plan)
   printf '%s\n' "$1" | NAME="$NAME" ROOT_PLAN="$ROOT_PLAN" awk '
-    $0 != "" && $0 != ENVIRON["ROOT_PLAN"] { n = split($0, p, "/"); if (n >= 2 && p[n-1] == ENVIRON["NAME"]) print }'
+    $0 != "" && $0 != ENVIRON["ROOT_PLAN"] { n = split($0, p, "/"); if (n >= 2 && p[n-1] == ENVIRON["NAME"]) print }' \
+    || die "awk failed matching plans by name"
 }
 
-nostatus_warnings() {  # W1 for every listed branch plan with no **Status** line
-  local f IFS="$NL"
+nostatus_warnings() {  # nostatus_warnings <list> <rung>: W1 for each plan with no **Status** line
+  local f st IFS="$NL"
   for f in $1; do
-    if [ -z "$(status_of "$f")" ]; then warn "$f has no **Status** line, so it counts as active"; fi
+    need_file "$f" "$2"
+    st="$(status_of "$f")" || exit 3
+    if [ -z "$st" ]; then warn "$f has no **Status** line, so it counts as active"; fi
   done
 }
 
 rung2() {
-  local m o
+  local m o n
   if [ -z "$BRANCH" ]; then
     warn "no current branch (a detached HEAD: a rebase, a bisect or a CI checkout), so rung 2 was skipped"
     return 0
   fi
   NAME="${BRANCH//\//-}"
-  m="$(by_name "$ALL_F")"
-  case "$(count_items "$m")" in
+  m="$(by_name "$ALL_F")" || exit 3
+  n="$(count_items "$m")" || exit 3
+  case "$n" in
     0) ;;
     1) resolved "$m" 2 branch ;;
-    *) nostatus_warnings "$m"
+    *) nostatus_warnings "$m" 2
        ask 2 "$m" "The plan for $BRANCH exists in several places; one is a stale copy, so choose which to use." ;;
   esac
-  o="$(by_name "$(list_named "$OTHER")")"
+  o="$(list_named "$OTHER")" || exit 3
+  o="$(by_name "$o")" || exit 3
   if [ -n "$o" ]; then
     violation "the plan for $BRANCH exists only as $OTHER:$NL$o" "run $OTHER_CMD instead; $CMD drives $MODEL plans"
     fail 2
@@ -460,7 +530,7 @@ rung3() {
     fi
     return 0
   fi
-  if ! check_layout "$ROOT_PLAN"; then fail 3; fi
+  if ! check_layout "$ROOT_PLAN" 3; then fail 3; fi
   if [ "$LAYOUT_V" = revisions ]; then
     index_open "$ROOT_PLAN" 3
     case "$OPEN_N" in
@@ -475,18 +545,20 @@ rung3() {
 # --- rung 4: every plan, merged ones filtered out ------------------------------------------
 
 rung4() {
-  local f active="" merged="" na nm IFS="$NL"
+  local f st active="" merged="" na nm IFS="$NL"
   for f in $ALL_F; do
     if [ "$f" = "$ROOT_PLAN" ]; then continue; fi
-    case "$(status_of "$f")" in
+    need_file "$f" 4
+    st="$(status_of "$f")" || exit 3
+    case "$st" in
       merged*) merged="${merged:+$merged$NL}$f" ;;
       *)       active="${active:+$active$NL}$f" ;;
     esac
   done
-  na="$(count_items "$active")"; nm="$(count_items "$merged")"
+  na="$(count_items "$active")" || exit 3; nm="$(count_items "$merged")" || exit 3
   if [ "$na" -eq 1 ]; then resolved "$active" 4 branch; fi
   if [ "$na" -gt 1 ]; then
-    nostatus_warnings "$active"
+    nostatus_warnings "$active" 4
     if [ "$nm" -eq 0 ]; then ask 4 "$active" "Several active $MODEL plans exist; choose which to use."
     else ask 4 "$active" "Several active $MODEL plans exist; choose which to use ($nm merged plans not shown; name one explicitly to use it)."; fi
   fi
@@ -509,7 +581,8 @@ rung5() {
 # --- resolution ------------------------------------------------------------------------------
 
 if [ $NPOS -ge 2 ]; then rung1; fi
-ALL_F="$(list_named "$MODEL")"
+scan_dirs
+ALL_F="$(list_named "$MODEL")" || exit 3
 rung2
 rung3
 rung4

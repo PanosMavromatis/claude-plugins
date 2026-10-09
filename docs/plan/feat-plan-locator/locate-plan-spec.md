@@ -166,6 +166,12 @@ Each names the file and line where one exists. When a rung finds several violati
 | E12 | read | `--goal <line>` is past the end of `<plan>`, or not an item | pass the line of an item |
 | E13 | — | not inside a git repository | run from the repository |
 | E14 | 1 | `<path>` is the root index and no revision in it is `[~]` | name a plan file, or mark the open revision `[~]` |
+| E15 | any | `<file>` cannot be read, or `<dir>/` cannot be entered or listed | `chmod u+r <file>` / `chmod u+rx <dir>` |
+
+E15 is checked before every read, and also up front for every directory under
+`docs/plan/` once rung 1 has not answered. A plan inside an unreadable directory would
+otherwise be missing, without notice, from rung 2's duplicate check and from rung 4. At
+rung 1, a path whose directory cannot be entered is E15, never E3.
 
 A revision label in a revision line follows `open-revision.sh`'s rule: non-empty, no space
 or `/`, not starting with `#` or `-`.
@@ -195,10 +201,16 @@ The command shows them and carries on.
 | 0 | report printed; `result:` is `found`, `ask` or `none` | acts on `result:` |
 | 1 | report printed; `result: error` | relays `problem:` and `fix:`, and stops |
 | 2 | usage error; message on stderr, no report | relays stderr, and stops |
+| 3 | a tool (`awk`, `find`, `git`, `cd`) failed in a way the rules cannot explain; message on stderr, no report | relays stderr, and stops |
 | other, or no `result:` line | the script failed | relays stderr, and stops |
 
 ## Guarantees
 
+- **Fails loudly.** `set -e` does not apply inside a function used as a condition, nor
+  to a command substitution in a condition, a `case` word or `[ ]`, so nothing relies on
+  it. Every file is checked readable before it is read (E15), every tool's status is
+  checked where it runs, and an unexplained failure exits 3. An empty value from a failed
+  read is never taken as an answer: goal 11 found four places where one was.
 - **Read-only.** Writes nothing, temporary files included. Runs only
   `git rev-parse --show-toplevel` and `git symbolic-ref --short -q HEAD`, then `cd`s to the
   root, so it works from any subdirectory.
