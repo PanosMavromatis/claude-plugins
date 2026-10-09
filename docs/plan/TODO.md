@@ -25,11 +25,14 @@ ends with. Settled, and not to be reopened:
 - Every agent is written with plugin-dev's `agent-development` and checked by
   `plugin-validator` before the bump.
 
-- [ ] `scripts/locate-plan.sh` resolves the plan for `/step` and `/hitl-step`: Step 1 of
+- [x] `scripts/locate-plan.sh` resolves the plan for `/step` and `/hitl-step`: Step 1 of
       both runs it, the shared Step 1 text shrinks, and the lockstep `sed` check is
       updated to match. (Built first as the agent `agents/plan-locator.md`, which the
       branch's test suite replaced.)
   > **Branch:** feat/plan-locator
+  > **Done:** `locate-plan.sh` resolves the plan, and Step 1 of both commands runs it alone,
+  > relays its diagnostics and refuses a report cut short. A 246-session trial found a
+  > subagent wrapping the script adds cost but no correctness, so none ships — PR #5
 - [ ] Sharper diagnostics from `scripts/locate-plan.sh`. Its `fix:` lines say what the
       repository already shows:
       - create a file that was never committed, rather than restore it;
