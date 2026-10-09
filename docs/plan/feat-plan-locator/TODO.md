@@ -551,11 +551,78 @@
     > **Note:** `${CLAUDE_PLUGIN_ROOT}` does expand in an agent body: both agents issued
     > the absolute path. The `CANARY` in both replies came from the main session, which
     > loads the fixture's `CLAUDE.md`; it appears in no agent tool result, as in goal 2.
-  - [ ] Build `agents/plan-resolver.md` on a scratch plugin copy, not the shipped tree.
+  - [x] Build `agents/plan-resolver.md` on a scratch plugin copy, not the shipped tree.
         One body, in two copies that differ only in `model:` (haiku, sonnet), plus a
         Step 1 that spawns it. It runs the script and passes a clean report through
         verbatim. On `error` or a missing `result:` it troubleshoots, read-only. It
         returns the exact invocations it ran, with their raw output
+    > **Q:** When does the parent vet the wrapper by re-running its invocation: always,
+    > only on failure, or both, as separate arms? Vetting always means the parent runs
+    > the script anyway, so on the happy path the subagent adds a spawn and saves
+    > nothing.
+    > **A:** Always. That is the strictest reading of "the orchestrator vets all subagent
+    > work". The trial then measures the wrapper's pure cost on the happy path, and its
+    > value in failure mode only.
+    > **Note:** two rules in the drafted body keep over-reach measurable rather than
+    > silent. A corrected invocation the agent tests comes back as a `suggested:` line,
+    > never as the result, and only the user can adopt it. `also-ran:` lists every other
+    > command it ran, since `tools: Bash` cannot be scoped (subgoal 1).
+    > **Note:** built in the scratchpad by `build-resolver.py`, as `suite/wc-resolver-haiku`
+    > and `suite/wc-resolver-sonnet`. Each holds:
+    > - `agents/plan-resolver.md` (body 2,085 characters), the two copies differing only
+    >   in `model:`;
+    > - the variant Step 1 in `/hitl-step` and `/step`, lockstep diff empty;
+    > - `commands/probe-resolver.md`, which runs that Step 1 alone, so the resolution
+    >   cases do not go on to execute a fixture's goals.
+    >
+    > Both validators pass; `validate-agent.sh`'s one warning is the expected prose-trigger
+    > one. `resolver-run.sh` runs cases per arm. It leaves out e12/e12b, since a bad
+    > `--goal` line is the parent's own mistake.
+    > **Result:** smoke test, c03 and e07 on each arm. On all four sessions the spawn ran
+    > on the intended model, a clean report came back verbatim, the parent's re-run
+    > printed `vetting: match`, and both fixtures were clean afterwards. On e07:
+    > - Haiku found the evidence that is in the files (only `_DO.md`, index line 7), but
+    >   both its `git log` calls were denied, so it cited no commit. It said so honestly
+    >   and left the choice of fix to the user.
+    > - Sonnet ran plain `git log --stat`, found `_TODO.md` was never committed, and so
+    >   replaced the script's "restore it" (impossible here) with "create it". That is a
+    >   better fix than the script's own.
+    > - Neither noticed the likelier real fix, `git mv _DO.md _TODO.md`: the revision's
+    >   plan exists, written under the other model.
+    >
+    > Sessions took 21.6–31.4 s; cost is not compared (cache).
+    > **Note:** two launch problems came up, both in the body's instructions rather than
+    > in either model:
+    > - `Glob` was "not available in this session … find files with `find` via the Bash
+    >   tool", although the agent's `tools:` lists it. `plan-locator`, which had no Bash,
+    >   could use `Glob`, so having Bash in the list may withhold it. That is unverified.
+    > - Command form decides what is permitted: `git log …` ran, but `git -C <path> log …`
+    >   and `…; git status` were denied. The body's "alone" rule covers only the script
+    >   call.
+    > **Q:** Apply an arm-neutral fix to the body (`find` in place of `Glob`; every
+    > investigation command alone, no `git -C`, nothing chained), rebuild both copies,
+    > and re-run the smoke test? Or run the trial as it is?
+    > **A:** Fix and re-run the smoke test. The smoke test exists to fix launch problems
+    > before measuring, as goal 2 did with `plan-locator`.
+    > **Result:** `smoke2`, on the fixed body (2,254 characters; `tools: Bash, Read, Grep`).
+    > All four sessions show 0 denials, no "tool not available" errors, `vetting: match`,
+    > and clean fixtures, and c03 is unchanged. On e07 the arms now agree:
+    >
+    > | e07 | commands | denials | finding | fix |
+    > |---|---|---|---|---|
+    > | Haiku v1 | 5 | 2 | only `_DO.md`; history unknown | restore once found, or close |
+    > | Haiku v2 | 6 | 0 | `_TODO.md` never committed | create it, or close |
+    > | Sonnet v1 | 3 | 0 | never committed | create it, or close |
+    > | Sonnet v2 | 4 | 0 | never committed | create it, or close |
+    >
+    > The v1 gap between the models on e07 came from the environment, not the
+    > troubleshooting. That is one case, not a conclusion, and the trial tests it.
+    > **Note:** neither arm ran `Grep`, so whether it is delivered alongside `Bash` is
+    > still unknown. Neither proposed `git mv _DO.md _TODO.md` either. The grading in
+    > subgoal 4 must define each case's correct fix in advance, from the fixture, or an
+    > arm's plausible fix gets credited by default.
+    > **Note:** the first-version copies are kept as `suite/wc-resolver-{haiku,sonnet}.v1`,
+    > their runs as `out-r-*-smoke`.
   - [ ] Inputs:
         - the 20 suite cases (the script succeeds);
         - the 18 E-cases in `fx-diag` (the script reports `error`; no mocks);
