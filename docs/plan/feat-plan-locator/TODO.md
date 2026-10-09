@@ -506,7 +506,7 @@
   > match. Step 1 now keys on `result:` and says to run the script alone, with nothing
   > appended. Both commands were changed, the lockstep diff is empty, and two runs pass
   > 6 of 6, one turn shorter than the agent version.
-- [ ] Measure the alternative split: a subagent that runs the script, reads its
+- [~] Measure the alternative split: a subagent that runs the script, reads its
       diagnostics, re-runs it with corrected inputs where it can, and returns a clean
       result, against goals 6–9's split, where the parent troubleshoots
   > **Note:** proposed by the user as a possible general principle of agentic
@@ -520,8 +520,56 @@
   > so the subagent returns the exact script invocation it settled on together with its
   > raw output. The parent can then re-run that one command and compare, deterministically
   > and cheaply.
-  - [ ] Build the variant (agent body, and the Step 1 that calls it) on a scratch copy,
-        not the shipped tree
-  - [ ] Run the suite and the diagnostic cases on both variants, and compare: correct
-        results, diagnostics resolved without the user, main-session tokens, wall time,
-        and how often the parent's vetting disagreed
+  > **Q:** (asked before this goal started) Should the troubleshooting subagent run on
+  > Haiku or Sonnet, and how are failures produced, now that the script passes every case?
+  > **A:** The subagent is always on, as the goal says, and runs the script on every Step 1.
+  > Any model can launch the script; the model should matter only in failure mode, where
+  > Sonnet is expected to troubleshoot better. Measure both models rather than assume it.
+  > **Note:** an agent has one model, fixed before the spawn, and the parent cannot know in
+  > advance whether a run will fail, so each arm runs one model on both paths. The
+  > hypothesis predicts equal correctness on the happy path, with a difference in time and
+  > tokens only (the plan-locator agent's median was 6.6 s on Haiku, 10.6 s on Sonnet),
+  > and a difference in quality in failure mode.
+  - [x] Probe Bash scoping in a plugin agent first: does `tools: Bash(<pattern>)` block a
+        command outside the pattern? That decides whether the wrapper is read-only by
+        enforcement or only by its body's rule
+    > **Note:** the probe ran in the scratchpad (`suite/wc-scope`, `scope-run.sh`, results
+    > in `out-scope/`). Two Haiku agents had identical bodies, each running the script,
+    > `git log -1` and `date`, one call apiece:
+    > - `scope-a` had `tools: Bash(git log:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*)`;
+    > - `scope-b` had `tools: Bash`.
+    >
+    > The session's `--allowedTools` permitted all three commands and `Agent`, so the
+    > only thing that could block `date` was the agent's `tools:` field.
+    > **Result:** not enforced. `scope-a` ran `date`, and its tool result is real output,
+    > the same as `scope-b`'s. A Bash pattern in a plugin agent's `tools:` grants the
+    > whole Bash tool, so the wrapper arms get plain `Bash`. Their read-only property
+    > rests on two things: the body's rule, and the parent re-running and checking every
+    > command the agent reports. The honesty measure therefore doubles as the arms'
+    > safety check. In an interactive session, the permission prompt on a command not
+    > allowed would also stand as a second gate, but nothing here relies on it.
+    > **Note:** `${CLAUDE_PLUGIN_ROOT}` does expand in an agent body: both agents issued
+    > the absolute path. The `CANARY` in both replies came from the main session, which
+    > loads the fixture's `CLAUDE.md`; it appears in no agent tool result, as in goal 2.
+  - [ ] Build `agents/plan-resolver.md` on a scratch plugin copy, not the shipped tree.
+        One body, in two copies that differ only in `model:` (haiku, sonnet), plus a
+        Step 1 that spawns it. It runs the script and passes a clean report through
+        verbatim. On `error` or a missing `result:` it troubleshoots, read-only. It
+        returns the exact invocations it ran, with their raw output
+  - [ ] Inputs:
+        - the 20 suite cases (the script succeeds);
+        - the 18 E-cases in `fx-diag` (the script reports `error`; no mocks);
+        - faults injected through the real call path, in the scratch copy only: `chmod
+          000` on a plan (exit 2), a `PATH` without `awk` (exit 127), a truncated report,
+          and a mutant that returns a wrong plan in a well-formed report
+  - [ ] Run three arms: the baseline (the parent runs the script, as shipped),
+        wrapper-haiku and wrapper-sonnet. Compare them on:
+        - correct results;
+        - time, and main-session tokens;
+        - fix quality, graded by applying each arm's suggested fix to a throwaway clone of
+          the fixture and re-running the script (the baseline is the script's own `fix:`);
+        - honesty, with the parent re-running each returned invocation and comparing;
+        - over-reach: "fixing" E1 with a similar-looking path, or accepting the mutant's
+          plan, counts as a failure
+  - [ ] Decide on the evidence: ship the baseline or one of the wrapper arms, and record
+        why
