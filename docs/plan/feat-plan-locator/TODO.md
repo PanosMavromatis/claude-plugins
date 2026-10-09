@@ -355,10 +355,52 @@
   > `fix:`), the five rungs, reading rules (fences ignored, all subgoal markers listed,
   > per-goal goal files), diagnostics E1–E14, warnings W1–W11, exit codes 0/1/2, and the
   > read-only, deterministic, Bash 3.2 guarantees.
-- [ ] Implement `scripts/locate-plan.sh` and run the suite on it
-  - [ ] The 17 resolution cases, run directly, with no `claude -p`, and graded by the
+- [x] Implement `scripts/locate-plan.sh` and run the suite on it
+  > **Q:** Copy the script, which passes the suite from the scratchpad, into
+  > `plugins/workflow-claude/scripts/locate-plan.sh`? And where should its suite
+  > (`script-suite.py` and the `fx-diag` fixture it builds) live?
+  > **A:** Copy it and log the results. The suite stays in the session scratchpad, like
+  > `probe-run.sh`. The plugin keeps having no test suite, and this plan records the
+  > cases and the results.
+  - [x] The 17 resolution cases, run directly, with no `claude -p`, and graded by the
         same expectations
-  - [ ] A fixture case for every diagnostic and warning in the specification
+    > **Result:** all 20 cases of the agent suite pass: the 17 resolution cases plus the
+    > resolution step of the command cases c18–c20, graded by the agent suite's
+    > expectations. One expectation changed on purpose: c02 is now `error` (E1), not
+    > `stop` (D1).
+    > **Note:** 54–78 ms per run at the median on the fixtures, including the 2,498-line
+    > master plan (c06), against 6.4–6.6 s for the haiku agent. That is about 100×
+    > faster, with no model tokens.
+  - [x] A fixture case for every diagnostic and warning in the specification
+    > **Result:** 44 cases in a second fixture repository, all passing:
+    > - 18 for E1–E14 (E2, E7, E8 and E12 in two forms each, E13 outside any repository);
+    > - 11 for W1–W11 (W4 both as a real detached HEAD and as `--branch ''`; W5 is c13);
+    > - 8 for edges and reading rules: the rung-3 fall-through with no `docs/plan/F` (x01),
+    >   per-goal resolution (x02), fences (x03), `--goal` (x04), a branch with a comma
+    >   (x05), a subdirectory working directory (x07), and the DO model with `--` (x08);
+    > - 7 usage errors, each exiting 2 with no report.
+    > Every case runs twice under `/bin/bash` 3.2 and twice under Bash 5. The four
+    > outputs are byte-identical, and both fixtures are clean afterwards. A static check
+    > finds no heredoc, `mktemp`, redirect other than to `/dev/null` or a descriptor,
+    > Bash 4 feature, or `grep \|`.
+    > **Note:** x06 found a bug no rung list suggests. Branch `plan` flattens to `plan`,
+    > which is also the name of `docs/plan/TODO.md`'s parent directory, so rung 2 took
+    > the master plan as that branch's plan. Rung 2 now excludes `docs/plan/F`.
+    > **Note:** the suite itself was vetted by mutation. Ten copies of the script, each
+    > breaking one rule, were all caught, each by the cases written for its rule; the
+    > `plan`-branch mutant, for one, only by x06. The first mutation run reported all ten
+    > caught by every case, because none of the mutants ran: a relative `--script` path,
+    > resolved from inside the fixture. A check that fails on everything is as blind as
+    > one that passes on everything.
+    > **Note:** not tested on a GNU userland. No `gawk` or GNU `find` is installed here.
+    > The script uses POSIX `find -type f -name`, `-maxdepth` (in both BSD and GNU) and
+    > `sort` under `LC_ALL=C`, but the spec's "BSD or GNU" stays unverified until it
+    > runs on Linux (a container, or CI).
+  > **Done:** `plugins/workflow-claude/scripts/locate-plan.sh` (19,981 bytes, 755),
+  > identical to the scratch copy the suite graded, and the suite passes on the plugin
+  > copy too. Run read-only on this repository, it resolves this plan at rung 2
+  > (`next:` goal 7, both subgoals), and with `--branch main` the master plan at rung 3
+  > (line 25, revision subgoal 1). Nothing calls it yet; that is goal 8.
 - [ ] Switch Step 1 of `/step` and `/hitl-step` to the script
   - [ ] Run it through `Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*)`; on
         `error`, relay `problem:` and `fix:` to the user and stop; keep the `next:`
