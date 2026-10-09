@@ -190,7 +190,7 @@
   >   `plan-locator`, `/file-plans`) instead of counting them.
   > - The lockstep bullet says "edit the agent, not the commands".
   > The wider rewrite of the plan-convention sections is revision subgoal 5's.
-- [~] Test the agent outside this session (scratch session or `claude plugin eval`)
+- [x] Test the agent outside this session (scratch session or `claude plugin eval`)
       on each rung, including "explicit path does not resolve → stop" and "several
       matches → ask"; `plugin-validator` passes
   > **Q:** How should the matrix be run (16 agent cases across all five rungs, both
@@ -290,7 +290,35 @@
     > shows sit in fixed per-request overhead (tokenizer, system prompt or tool schemas,
     > which cannot be told apart from here), not in less work done. It says nothing about
     > accuracy, which was equal.
-  - [ ] `plugin-validator` agent pass on `plugins/workflow-claude`
+  - [x] `plugin-validator` agent pass on `plugins/workflow-claude`
+    > **Result:** pass, no critical issues. The validator confirmed that the agent and both
+    > commands agree: `Agent` in `allowed-tools`, the `workflow-claude:plan-locator`
+    > name, the four input lines and the twelve report keys. The lockstep diff is empty,
+    > and the only `validate-agent.sh` warning is the expected prose-trigger one.
+    > **Note:** every finding was checked against the files before acting on it (the
+    > orchestrator vets).
+    > - Fixed now: the agent's description claimed `/smart-merge` as a caller, and it has
+    >   none; the README's "What's in here" had no `agents/` entry; `plugin.json` and the
+    >   README said the plugin bundles "skills", and there is no `skills/` directory.
+    > - Real logic gaps: on a detached HEAD, `git branch --show-current` prints nothing
+    >   (confirmed on the fixture), so rung 2 would glob `docs/plan/**//F`; and rung 3 never
+    >   said what happens when `docs/plan/F` is missing.
+    > - Already tracked: nothing reads `layout:`. Revision subgoal 2 teaches the commands
+    >   goal files before 0.10.0 ships, and no per-goal plan can exist before then.
+    > - Dismissed: bump `version` now (the bump is the revision's last subgoal; per branch
+    >   it would ship a half-built R1 as 0.10.0); write `tools` as a YAML array (the
+    >   sub-agents docs accept a comma-separated string).
+    > **Q:** Fix the two logic gaps in the agent too, or only in goal 6's script spec?
+    > **A:** Fix the docs now and put both gaps in goal 6. The agent body is at 2,979 of
+    > 3,000 characters, and goal 8 may replace it.
+  > **Done:** the agent and both rewritten commands were tested outside this session.
+  > - 20 headless cases over all five rungs, both models, and the blocked and all-closed
+  >   edges, plus three runs of the real commands.
+  > - After three fixes, two Haiku runs and two Sonnet runs each passed 40 of 40. Sonnet
+  >   is ≈1.65× slower and no more accurate.
+  > - `plugin-validator` passed.
+  > It also showed that resolution is rule-shaped and that the command's check cannot see
+  > a wrong plan, which is why goals 6–10 exist.
 - [ ] Specify `scripts/locate-plan.sh`, a deterministic replacement for the agent's
       resolution, with the same five rungs and the same report keys, so Step 1's
       contract barely changes
@@ -305,6 +333,9 @@
         The command shows them and carries on
   - [ ] Exit codes, and the script's guarantees: read-only, deterministic, Bash 3.2-safe,
         the style of `open-revision.sh`
+  - [ ] Edge rules found by `plugin-validator`, each with a fixture case: an empty branch
+        (detached HEAD, as in a rebase, a bisect or a CI checkout) skips rung 2; no
+        `docs/plan/F` at rung 3 falls through to rung 4
 - [ ] Implement `scripts/locate-plan.sh` and run the suite on it
   - [ ] The 17 resolution cases, run directly, with no `claude -p`, and graded by the
         same expectations

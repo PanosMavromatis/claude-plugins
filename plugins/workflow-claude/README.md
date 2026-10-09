@@ -1,10 +1,11 @@
 # workflow-claude
 
-A collection of Claude Code commands, skills, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.
+A collection of Claude Code commands, an agent, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.
 
 ## What's in here
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
+- **`agents/`** — `plan-locator.md`, a read-only agent on haiku (`Read`, `Grep`, `Glob`, and no `CLAUDE.md`) that `/step` and `/hitl-step` spawn to resolve the plan file and find its next item. It returns a fixed report of repo-relative paths and line numbers, which the command checks against the file before acting on it.
 - **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to `CLAUDE.md`, `AGENTS.md`, and `AGENTS.override.md` (root and per-component) once the `docs/agents/` sources exist, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
 - **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). Three serve the plan workflow and are all **read-only** — they propose, and the command that calls them performs every write: `open-revision.sh`, `file-plans.sh` and `close-revision.sh`. Because they never write, they are safe to run directly, in a hook, or in CI.
 

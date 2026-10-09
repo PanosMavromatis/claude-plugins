@@ -1,6 +1,6 @@
 ---
 name: plan-locator
-description: Use this agent when a workflow-claude command needs to know which plan file it is working on and what is next in it — Steps 1–2 of /step and /hitl-step, and the plan lookups of /smart-merge. It resolves the plan, reports its layout and status, and returns the next open item as paths and line numbers; it never edits. See "When to invoke" in the agent body.
+description: Use this agent when a workflow-claude command needs to know which plan file it is working on and what is next in it — Steps 1–2 of /step and /hitl-step. It resolves the plan, reports its layout and status, and returns the next open item as paths and line numbers; it never edits. See "When to invoke" in the agent body.
 model: haiku
 color: cyan
 tools: Read, Grep, Glob
