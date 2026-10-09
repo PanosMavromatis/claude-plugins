@@ -60,8 +60,10 @@ resolve the plan yourself.
    - `error`: the repository breaks a convention resolution relies on. Relay
      each `problem:` line with its `fix:` line, and stop. The fix is the user's to make;
      do not work around it.
-   - no `result:` line (a usage error, or the script itself failed): show its output
-     and stop. There is no second resolution path in this command.
+   - no `result:` line (a usage error, or the script itself failed), or no `message:`
+     line (the report's last key, so the report was cut short): show the output and
+     stop. Never act on part of a report. There is no second resolution path in this
+     command.
 3. **Check before trusting.** Confirm the `next:` line matches the file verbatim, within
    the read Step 2 makes or with a one-line `Read`. A mismatch means the file changed
    after the script read it: run the script once more, and stop if it still disagrees.

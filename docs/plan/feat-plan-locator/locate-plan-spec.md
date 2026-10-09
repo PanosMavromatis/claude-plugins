@@ -202,7 +202,7 @@ The command shows them and carries on.
 | 1 | report printed; `result: error` | relays `problem:` and `fix:`, and stops |
 | 2 | usage error; message on stderr, no report | relays stderr, and stops |
 | 3 | a tool (`awk`, `find`, `git`, `cd`) failed in a way the rules cannot explain; message on stderr, no report | relays stderr, and stops |
-| other, or no `result:` line | the script failed | relays stderr, and stops |
+| other, no `result:` line, or no `message:` line | the script failed, or its report was cut short | relays the output, and stops |
 
 ## Guarantees
 

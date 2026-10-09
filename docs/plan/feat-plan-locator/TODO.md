@@ -893,11 +893,22 @@
   > **Done:** `locate-plan.sh` no longer takes an empty value from a failed read as an
   > answer anywhere. The four paths found are fixed and covered by fixtures, along with
   > the defect the side agent raised.
-- [ ] Make Step 1 of `/step` and `/hitl-step` refuse an incomplete report. The report's
+- [x] Make Step 1 of `/step` and `/hitl-step` refuse an incomplete report. The report's
       sixteen keys come in a fixed order, with `message:` last, so a report with
       `result:` but no `message:` line was cut short: show it and stop, as for a report
       with no `result:` line.
       - Both files change in lockstep, and the lockstep diff stays empty.
-      - Re-run f03 and c03 headless on a baseline copy rebuilt from the new tree: f03
-        stops, and c03 is unchanged.
+      - Re-run headless on a baseline copy rebuilt from the new tree, through the real
+        commands (the probe only paraphrases Step 1): `/hitl-step` and `/step` on a
+        truncated report stop without acting, and c18–c20 are unchanged.
   > **Note:** found by goal 10's f03, the one fault that defeated every arm.
+  > **Result:** five headless sessions (`out-r-baseline-g12`). On a truncated report,
+  > `/hitl-step` and `/step` (t-hitl, t-step) each made one tool call, the script, and
+  > stopped, naming the missing `message:` line. Neither read the plan nor edited
+  > anything. c18–c20 behave as in goal 9: rung 2, rung 3 with a windowed read, and
+  > rung 2; `next:` matched each time. No denials, and the fixtures are clean afterwards.
+  > **Note:** both truncated runs also noticed `-trunc` in the script's path. Each stop
+  > names the missing `message:` first, so the rule drove it, but the fixture leaks a
+  > hint. The R1 suite should name its fault wrappers neutrally.
+  > **Done:** Step 1 of both commands refuses a report with no `message:` line, the
+  > spec's exit-code table says so, and the lockstep diff is empty.
