@@ -16,8 +16,13 @@
 #   4. every docs/plan/**/F, merged plans filtered out;
 #   5. F at the repository root.
 #
-# READ-ONLY. Writes nothing, temporary files included; runs only
-# `git rev-parse --show-toplevel` and `git symbolic-ref`. Deterministic, Bash 3.2.
+# READ-ONLY. Writes nothing, temporary files included; of git it runs only
+# `rev-parse`, `symbolic-ref`, and, to tell a missing file that was never committed from
+# one that was deleted, `cat-file -e` and `rev-list`. Deterministic, Bash 3.2.
+#
+# A fix: line says what the repository shows, read from the evidence, and falls back to
+# a generic line where the evidence does not decide: "create it" only for a file git has
+# never seen, "remove the header" only when nothing in the plan justifies it.
 #
 # FAILS LOUDLY. `set -e` does not apply inside a function used as a condition, nor to a
 # command substitution in a condition, a `case` word or `[ ]`, so nothing here relies on
@@ -46,8 +51,22 @@ usage() {
   exit 2
 }
 
-die() {  # a tool failed in a way the rules cannot explain; never read on as an answer
+die() {  # die <message> [status]: a tool failed in a way the rules cannot explain
+  local st=$? tool path   # $? is the failed command's, as `cmd || die "…"` leaves it
+  if [ $# -ge 2 ]; then st="$2"; fi
   echo "locate-plan.sh: $1" >&2
+  tool="${1%% *}"
+  case "$tool" in
+    awk|find|sort|git)   # name the binary that failed, so a broken PATH shows itself
+      path="$(command -v "$tool" 2>/dev/null)" || path=""
+      if [ "$st" -eq 127 ]; then
+        echo "hint: $tool exited 127 (command not found)${path:+; the $tool first on PATH is $path}; check PATH" >&2
+      elif [ -n "$path" ]; then
+        echo "hint: the $tool first on PATH is $path, and it exited with status $st; check PATH, or that $tool" >&2
+      else
+        echo "hint: no $tool is on PATH; check PATH" >&2
+      fi ;;
+  esac
   exit 3
 }
 
@@ -134,9 +153,13 @@ ask() {  # ask <rung> <candidates> <message>
 
 # --- the repository -------------------------------------------------------------
 
-if ! ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || [ -z "$ROOT" ]; then
+# Only 128 means "not a repository"; any other failure (127: git not found) is the tool's.
+if ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then st=0; else st=$?; fi
+if [ "$st" -eq 128 ] || { [ "$st" -eq 0 ] && [ -z "$ROOT" ]; }; then
   violation "the working directory is not inside a git repository" "run it from the repository"
   fail ""
+elif [ "$st" -ne 0 ]; then
+  die "git rev-parse --show-toplevel failed with status $st" "$st"
 fi
 cd "$ROOT" || die "cannot enter the repository root $ROOT"
 ROOTP="$(pwd -P)" || die "pwd -P failed in $ROOT"
@@ -145,7 +168,7 @@ if [ $HAVE_BRANCH -eq 0 ]; then
   if BRANCH="$(git symbolic-ref --short -q HEAD 2>/dev/null)"; then :
   else
     st=$?
-    if [ "$st" -eq 1 ]; then BRANCH=""; else die "git symbolic-ref failed with status $st"; fi
+    if [ "$st" -eq 1 ]; then BRANCH=""; else die "git symbolic-ref failed with status $st" "$st"; fi
   fi
 fi
 
@@ -209,6 +232,44 @@ relpath() {  # repository-relative form of a physical path; fails if outside
   esac
 }
 
+# What git knows of a missing file: "head" if HEAD has it (deleted, not yet committed),
+# else the commit that deleted it (12 hex), else nothing: never committed, so a fix must
+# say create, not restore. HEAD's history only, since other branches are other work.
+history_of() {  # history_of <path>
+  local st sha
+  if git rev-parse -q --verify HEAD >/dev/null 2>&1; then :; else
+    st=$?; if [ "$st" -eq 1 ]; then return 0; fi   # no commits yet: nothing was committed
+    die "git rev-parse --verify HEAD failed with status $st" "$st"
+  fi
+  if git cat-file -e "HEAD:$1" 2>/dev/null; then echo head; return 0; else st=$?; fi
+  if [ "$st" -ne 128 ]; then die "git cat-file failed with status $st" "$st"; fi
+  sha="$(git rev-list -n1 HEAD -- "$1")" || die "git rev-list failed reading the history of $1"
+  if [ -n "$sha" ]; then printf '%s\n' "${sha:0:12}"; fi
+  return 0
+}
+
+goal_dir() {  # the goal-file directory of a per-goal plan: TODO/ (or DO/) beside it
+  case "$(dirname "$1")" in
+    .) printf '%s' "${MODEL%.md}" ;;
+    *) printf '%s/%s' "$(dirname "$1")" "${MODEL%.md}" ;;
+  esac
+}
+
+# Goal files name a goal by number and slug: lowercase, runs of anything else as one `-`,
+# at most 40 characters. A title is an index line's text after its marker and number.
+SLUG_AWK='
+  function slug(s) {
+    s = tolower(s); gsub(/[^a-z0-9]+/, "-", s); sub(/^-+/, "", s); sub(/-+$/, "", s)
+    if (40 < length(s)) { s = substr(s, 1, 40); sub(/-+$/, "", s) }
+    return s == "" ? "goal" : s
+  }
+  function title(s) {
+    sub(/^[ \t]*- \[.\][ \t]*/, "", s); sub(/^[0-9]+[a-z]?([ \t]+|$)/, "", s)
+    sub(/^(—|-|:)[ \t]*/, "", s); sub(/[ \t\r]+$/, "", s)
+    return s
+  }
+  function num(s) { sub(/^0+/, "", s); return s == "" || s ~ /^[a-z]/ ? "0" s : s }'
+
 # The **Layout** header, outside fenced code blocks. Sets LAYOUT_V; on a value that is
 # unknown, or in the wrong place, records E8 and returns 1.
 check_layout() {  # check_layout <file> <rung>; called as a condition, so check everything here
@@ -226,50 +287,143 @@ check_layout() {  # check_layout <file> <rung>; called as a condition, so check 
     revisions) if [ "$f" = "$ROOT_PLAN" ]; then LAYOUT_V=revisions; return 0; fi ;;
     per-goal)  if [ "$f" != "$ROOT_PLAN" ]; then LAYOUT_V=per-goal; return 0; fi ;;
   esac
-  violation "$f:$n has \`**Layout**: $v\`, which is not valid there" \
-    "use \`revisions\` on $ROOT_PLAN only, and \`per-goal\` or \`legacy\` elsewhere"
+  layout_fix "$f" "$n" "$v"
+  violation "$f:$n has \`**Layout**: $v\`, which is not valid there" "$LFIX"
   return 1
+}
+
+# E8's fix, from what the file shows. The root plan: a `## Revisions` heading means it is
+# an index with the header misspelt; otherwise nothing justifies a header there. A branch
+# plan: numbered items or goal files mean it is per-goal; otherwise it never was.
+layout_fix() {  # layout_fix <file> <line> <value>; sets LFIX
+  local f="$1" n="$2" v="$3" ev g gf=""
+  if [ "$f" = "$ROOT_PLAN" ]; then
+    ev="$(awk '/^[ \t]*```/ { fence = !fence; next } !fence && /^## Revisions[ \t\r]*$/ { print "y"; exit }' "$f")" \
+      || die "awk failed looking for a Revisions section in $f"
+    if [ -n "$ev" ]; then
+      LFIX="correct line $n to \`**Layout**: revisions\`: the file has a \`## Revisions\` section, so it is the revisions index"
+    else
+      LFIX="remove line $n: $f takes only \`revisions\`, for an index with a \`## Revisions\` section, and it has none"
+    fi
+    return 0
+  fi
+  ev="$(awk '
+    /^[ \t]*```/ { fence = !fence; next }
+    fence { next }
+    /^- \[[ ~x!-]\]( |$)/ { k++; if ($0 ~ /^- \[.\] [0-9]+[a-z]?( |$)/) m++ }
+    END { if (0 < k && m == k) print "y" }' "$f")" || die "awk failed reading the items of $f"
+  g="$(goal_dir "$f")"
+  if [ -d "$g" ] && [ -r "$g" ] && [ -x "$g" ]; then
+    gf="$(find "$g" -maxdepth 1 -type f -name '[0-9]*-*.md' | sort)" || die "find failed listing $g"
+  fi
+  if [ -n "$ev" ] && [ -n "$gf" ]; then
+    LFIX="correct line $n to \`**Layout**: per-goal\`: every item is numbered and $g/ holds goal files"
+  elif [ -n "$gf" ]; then
+    LFIX="correct line $n to \`**Layout**: per-goal\`: $g/ holds goal files"
+  elif [ -n "$ev" ]; then
+    LFIX="correct line $n to \`**Layout**: per-goal\`: every item is numbered (its goal files then go in $g/)"
+  else
+    LFIX="remove line $n: the items are unnumbered and there is no $g/, so the plan was never per-goal"
+  fi
 }
 
 # The open revisions of a root index. Sets OPEN_LIST and OPEN_N; records E5, E6 and E7
 # for every violation and fails at <rung> if there were any.
 index_open() {
-  local idx="$1" rung="$2" out rec typ rest n val p IFS="$NL"
+  local idx="$1" rung="$2" out rec typ rest n val p o mk canon hist close fx IFS="$NL"
   OPEN_LIST=""; OPEN_N=0
   need_file "$idx" "$rung"
+  # A revision line is `- [m] <label>`, then the end of the line or ` — <note>`; a label
+  # has no space, no `/`, no `—`, and does not start with `#` or `-`. A line that breaks
+  # this is printed with the canonical form it most likely meant, for E6's fix.
   out="$(awk '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t\r]+$/, "", s); return s }
+    function canon(s,   mk, p, lab, note) {
+      sub(/\r$/, "", s); sub(/^[-*+][ \t]*/, "", s)
+      if (s !~ /^\[.\]/) return "\t"
+      mk = substr(s, 2, 1); s = trim(substr(s, 4))
+      p = index(s, "—")
+      if (p) { lab = trim(substr(s, 1, p - 1)); note = trim(substr(s, p + length("—"))) } else { lab = s; note = "" }
+      gsub(/[ \t]+/, "-", lab); gsub(/\t/, " ", note)
+      if (lab == "" || lab ~ /\// || lab ~ /^[#-]/) return mk "\t"
+      return mk "\t- [" mk "] " lab (note != "" ? " — " note : "")
+    }
     /^[ \t]*```/ { fence = !fence; next }
     fence { next }
+    /^\*\*Layout\*\*:/ && !hl { hl = NR }
+    /^#/ {
+      t = $0; sub(/^#+[ \t]*/, "", t)
+      if ($0 !~ /^## Revisions[ \t\r]*$/ && tolower(t) ~ /^revisions?([^a-z]|$)/ && !near) near = NR "\t" $0
+    }
     /^## / { insec = ($0 ~ /^## Revisions[ \t\r]*$/); if (insec) sec = 1; next }
     insec && (/^[-*+][ \t]/ || /^[-*+]\[/ || /^[-*+]$/) {
       if ($0 ~ /^- \[[ ~x!-]\] /) {
         rest = substr($0, 7); split(rest, a, /[ \t]+/); lab = a[1]
-        if (lab != "" && lab !~ /\// && lab !~ /^[#-]/) {
+        after = trim(substr(rest, length(lab) + 1))
+        if (lab != "" && lab !~ /\// && lab !~ /^[#-]/ && index(lab, "—") == 0 && (after == "" || index(after, "—") == 1)) {
           if (substr($0, 4, 1) == "~") print "OPEN\t" NR "\t" lab
           next
         }
       }
-      print "BAD\t" NR "\t" $0
+      print "BAD\t" NR "\t" canon($0) "\t" $0
     }
-    END { if (!sec) print "NOSEC" }
+    END { if (!sec) print "NOSEC\t" hl "\t" near }
   ' "$idx")" || die "awk failed reading the revisions index $idx"
   for rec in $out; do
     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
     case "$typ" in
-      NOSEC) violation "$idx declares \`**Layout**: revisions\` but has no \`## Revisions\` section" \
-               "add the section, or remove the header" ;;
-      BAD)   violation "$idx:$n is not a revision line: \`$val\`" \
-               "write it as \`- [m] <label> — <note>\`, with m one of the five markers" ;;
+      NOSEC)
+        # val is "<near-miss line>\t<its text>", or empty
+        if [ -n "$val" ]; then
+          fx="rename line ${val%%"$TAB"*}, \`${val#*"$TAB"}\`, to \`## Revisions\`"
+        else
+          fx="remove line $n (\`**Layout**: revisions\`), or add a \`## Revisions\` section listing the revisions"
+        fi
+        violation "$idx declares \`**Layout**: revisions\` (line $n) but has no \`## Revisions\` section" "$fx" ;;
+      BAD)
+        # val is "<marker>\t<canonical form>\t<the line>"
+        mk="${val%%"$TAB"*}"; val="${val#*"$TAB"}"; canon="${val%%"$TAB"*}"; val="${val#*"$TAB"}"
+        case "$mk" in
+          ''|*[!\ ~x!-]*)
+            if [ -n "$canon" ]; then
+              fx="its marker [$mk] is not one of [ ] [~] [x] [!] [-]; choose one (your call) and write it as \`${canon/\[$mk\]/[m]}\`"
+            else
+              fx="write it as \`- [m] <label> — <note>\`, with m one of [ ] [~] [x] [!] [-]"
+            fi ;;
+          *)
+            if [ -n "$canon" ]; then
+              fx="write line $n as \`$canon\`"
+              p="${canon#- \[?\] }"; p="${p%% — *}"
+              if [ "$mk" = "~" ] && [ ! -f "$PD/$p/_$MODEL" ]; then
+                fx="$fx; revision $p is then open, so it also needs $PD/$p/_$MODEL"
+              fi
+              case "$val" in *"$p"*) ;; *) fx="$fx (a label has no spaces; the label is your call)" ;; esac
+            else
+              fx="write it as \`- [m] <label> — <note>\`: a label is non-empty, with no space or \`/\`, and does not start with \`#\` or \`-\`"
+            fi ;;
+        esac
+        violation "$idx:$n is not a revision line: \`$val\`" "$fx" ;;
       OPEN)
-        p="$PD/$val/_$MODEL"
+        p="$PD/$val/_$MODEL"; o="$PD/$val/_$OTHER"
         if [ -f "$p" ]; then
           OPEN_LIST="${OPEN_LIST:+$OPEN_LIST$NL}$p"; OPEN_N=$((OPEN_N + 1))
-        elif [ -f "$PD/$val/_$OTHER" ]; then
-          violation "revision $val is open at $idx:$n, but $p is missing ($PD/$val/_$OTHER exists)" \
-            "restore it (git log -- $PD/$val/), or mark line $n [x] if the revision has closed"
+          continue
+        fi
+        hist="$(history_of "$p")" || exit 3
+        close="or mark line $n [x] if the revision has closed"
+        case "$hist" in
+          head) fx="restore it: git checkout HEAD -- $p (it is deleted but the deletion is not committed); $close" ;;
+          '')   if [ -f "$o" ]; then
+                  fx="$p was never committed, so there is nothing to restore: git mv $o $p if that file is this revision's plan; $close"
+                else
+                  fx="$p was never committed, so there is nothing to restore: create it; $close"
+                fi ;;
+          *)    fx="restore it: git checkout $hist^ -- $p (it was deleted in $hist); $close" ;;
+        esac
+        if [ -f "$o" ]; then
+          violation "revision $val is open at $idx:$n, but $p is missing ($o exists)" "$fx"
         else
-          violation "revision $val is open at $idx:$n, but $p is missing" \
-            "restore it (git log -- $PD/$val/), or mark line $n [x] if the revision has closed"
+          violation "revision $val is open at $idx:$n, but $p is missing" "$fx"
         fi ;;
     esac
   done
@@ -286,8 +440,10 @@ SELECT_AWK='
   item($0) {
     k++; T[k] = "I"; L[k] = NR; X[k] = $0; I[k] = ($0 ~ /^[ \t]/) ? 1 : 0
     m = $0; sub(/^[ \t]*- \[/, "", m); M[k] = substr(m, 1, 1)
-    if (pergoal && !I[k] && $0 !~ /^- \[.\] [0-9]+[a-z]? / && $0 !~ /^- \[.\] [0-9]+[a-z]?$/)
-      print "BADIDX\t" NR "\t" $0
+    if (pergoal && !I[k]) {
+      if ($0 ~ /^- \[.\] [0-9]+[a-z]? / || $0 ~ /^- \[.\] [0-9]+[a-z]?$/) { nn = $0; sub(/^- \[.\] /, "", nn); sub(/[ \t].*$/, "", nn); print "NUM\t" NR "\t" nn }
+      else print "BADIDX\t" NR "\t" $0
+    }
     next
   }
   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
@@ -324,8 +480,78 @@ w6() {  # w6 <file> <line> <text>
 
 # --- reading the resolved plan ----------------------------------------------------
 
+goal_dir_ok() {  # goal_dir_ok <dir> <rung>: E15 for a goal directory that cannot be listed
+  if [ -d "$1" ] && { [ ! -r "$1" ] || [ ! -x "$1" ]; }; then
+    violation "$1/ cannot be entered or listed" "chmod u+rx $1"; fail "$2"
+  fi
+  return 0
+}
+goal_files() {  # goal_files <dir>: every file directly in it, sorted; run goal_dir_ok first
+  if [ -d "$1" ]; then find "$1" -maxdepth 1 -type f | sort || die "find failed listing $1"; fi
+  return 0
+}
+
+# E9's fixes, one per unnumbered index line: give it the number of an unclaimed goal file
+# whose slug matches its title, else the next free number and the goal file to create.
+e9_fixes() {  # e9_fixes <goal dir>; reads BAD ("<line>\t<text>" each), CLAIMED, FILES
+  BAD="$BAD" CLAIMED="$CLAIMED" FILES="$FILES" GDIR="$1" awk "$SLUG_AWK"'
+    function id_of(s) { return match(s, /^[0-9]+[a-z]?/) ? substr(s, 1, RLENGTH) : "" }
+    function see(id) { if (max < id + 0) max = id + 0; match(id, /^[0-9]+/); if (w < RLENGTH) w = RLENGTH }
+    BEGIN {
+      w = 2; g = ENVIRON["GDIR"]
+      n = split(ENVIRON["CLAIMED"], C, "\n"); for (i = 1; i <= n; i++) if (C[i] != "") { claimed[num(C[i])] = 1; see(C[i]) }
+      n = split(ENVIRON["FILES"], F, "\n")
+      for (i = 1; i <= n; i++) {
+        b = F[i]; sub(/.*\//, "", b); id = id_of(b)
+        if (id == "" || substr(b, length(id) + 1, 1) != "-" || b !~ /\.md$/) continue
+        see(id)
+        if (!(num(id) in claimed)) { u++; U[u] = b; US[u] = substr(b, length(id) + 2, length(b) - length(id) - 4) }
+      }
+      n = split(ENVIRON["BAD"], B, "\n")
+      for (i = 1; i <= n; i++) {
+        if (B[i] == "") continue
+        line = B[i]; sub(/\t.*/, "", line); text = substr(B[i], length(line) + 2)
+        mk = substr(text, 4, 1); t = title(text); s = slug(t); fix = ""
+        for (j = 1; j <= u; j++) if (!used[j] && US[j] == s) {
+          used[j] = 1; id = id_of(U[j])
+          fix = "number it " id " to match its goal file " g "/" U[j] ": `- [" mk "] " id " — " t "`"; break
+        }
+        if (fix == "") {
+          max++; id = sprintf("%0" w "d", max)
+          fix = "number it " id ", the next free number, and create " g "/" id "-" s ".md: `- [" mk "] " id " — " t "`"
+          left = ""; for (j = 1; j <= u; j++) if (!used[j]) left = left (left == "" ? "" : ", ") g "/" U[j]
+          if (left != "") fix = fix "; no index line claims " left ", which may be this goal'"'"'s file"
+        }
+        print line "\t" fix "\t" text
+      }
+    }' </dev/null || die "awk failed working out goal numbers for $1"
+}
+
+# E10's fix: a file carrying goal NN's number in another form is probably its goal file;
+# otherwise name the file to create, from the index line's title.
+e10_fix() {  # e10_fix <goal dir> <NN> <index line text>; reads FILES
+  FILES="$FILES" GDIR="$1" NN="$2" LINE="$3" awk "$SLUG_AWK"'
+    BEGIN {
+      g = ENVIRON["GDIR"]; nn = ENVIRON["NN"]; want = num(nn); s = slug(title(ENVIRON["LINE"]))
+      n = split(ENVIRON["FILES"], F, "\n")
+      for (i = 1; i <= n; i++) {
+        b = F[i]; sub(/.*\//, "", b)
+        if (!match(b, /^[0-9]+[a-z]?/)) continue
+        id = substr(b, 1, RLENGTH); after = substr(b, RLENGTH + 1)
+        if (num(id) != want || after ~ /^[a-z0-9]/) continue
+        rest = after; sub(/^[-_. \t]+/, "", rest); sub(/\.[A-Za-z0-9]+$/, "", rest)
+        k++; N[k] = b; T[k] = nn "-" (rest == "" ? s : slug(rest)) ".md"
+      }
+      if (k == 1) print "goal " nn "'"'"'s file is there under another name: git mv " g "/" N[1] " " g "/" T[1]
+      else if (1 < k) { l = ""; for (i = 1; i <= k; i++) l = l (1 < i ? ", " : "") g "/" N[i]
+        print "these carry goal " nn "'"'"'s number in another form: " l "; git mv the right one to " g "/" nn "-" s ".md" }
+      else print "create " g "/" nn "-" s ".md"
+    }' </dev/null || die "awk failed working out the goal file for $2"
+}
+
 resolved() {  # resolved <file> <rung> <kind>
-  local f="$1" rung="$2" out rec typ rest n nn="" nnm="" gdir matches gm="" IFS="$NL"
+  local f="$1" rung="$2" out rec typ rest n nn="" nnm="" gdir matches gm="" fx IFS="$NL"
+  local BAD="" CLAIMED="" FILES=""
   R_RESULT=found; R_RUNG="$rung"; R_PLAN="$f"; R_KIND="$3"
   if ! check_layout "$f" "$rung"; then fail "$rung"; fi
   R_LAYOUT="$LAYOUT_V"
@@ -349,7 +575,8 @@ resolved() {  # resolved <file> <rung> <kind>
       BLK)     R_BLOCKED="${R_BLOCKED:+$R_BLOCKED$NL}$f:$n" ;;
       W6)      w6 "$f" "$n" "${rest#*"$TAB"}" ;;
       NN)      nn="$n"; nnm="${rest#*"$TAB"}" ;;
-      BADIDX)  violation "$f:$n has no goal number: \`${rest#*"$TAB"}\`" "write it as \`- [ ] NN — <goal>\`" ;;
+      NUM)     CLAIMED="${CLAIMED:+$CLAIMED$NL}${rest#*"$TAB"}" ;;
+      BADIDX)  BAD="${BAD:+$BAD$NL}$n$TAB${rest#*"$TAB"}" ;;
       GOALERR)
         if [ "$GOAL" -gt "$R_LINES" ]; then
           violation "--goal $GOAL is past the end of $f ($R_LINES lines)" "pass the line of an item"
@@ -360,24 +587,30 @@ resolved() {  # resolved <file> <rung> <kind>
         fi ;;
     esac
   done
+  gdir="$(goal_dir "$f")"
+  if [ -n "$BAD" ]; then   # E9, every unnumbered line at once, numbered in order
+    goal_dir_ok "$gdir" "$rung"
+    FILES="$(goal_files "$gdir")" || exit 3
+    out="$(e9_fixes "$gdir")" || exit 3
+    for rec in $out; do   # "<line>\t<fix>\t<the line's text>"
+      n="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"
+      violation "$f:$n has no goal number: \`${rest#*"$TAB"}\`" "${rest%%"$TAB"*}"
+    done
+  fi
   if [ "$VIOL" -gt 0 ]; then fail "$rung"; fi
 
   if [ -n "$nn" ]; then
-    case "$(dirname "$f")" in
-      .) gdir="${MODEL%.md}" ;;
-      *) gdir="$(dirname "$f")/${MODEL%.md}" ;;
-    esac
-    matches=""
-    if [ -d "$gdir" ]; then
-      if [ ! -r "$gdir" ] || [ ! -x "$gdir" ]; then violation "$gdir/ cannot be entered or listed" "chmod u+rx $gdir"; fail "$rung"; fi
-      matches="$(find "$gdir" -maxdepth 1 -type f -name "$nn-*.md" | sort)" || die "find failed listing $gdir"
-    fi
+    goal_dir_ok "$gdir" "$rung"
+    FILES="$(goal_files "$gdir")" || exit 3
+    matches="$(printf '%s\n' "$FILES" | NN="$nn" awk '{ b = $0; sub(/.*\//, "", b) } index(b, ENVIRON["NN"] "-") == 1 && b ~ /\.md$/')" \
+      || die "awk failed matching goal $nn's file in $gdir"
     n="$(count_items "$matches")" || exit 3
     case "$n" in
-      0) violation "goal $nn has no file matching $gdir/$nn-*.md" \
-           "create it, or correct the number on ${R_NEXT%% *}"; fail "$rung" ;;
+      0) fx="$(e10_fix "$gdir" "$nn" "${R_NEXT#* }")" || exit 3
+         violation "goal $nn has no file matching $gdir/$nn-*.md" "$fx, or correct the number on ${R_NEXT%% *}"; fail "$rung" ;;
       1) R_GOALFILE="$matches" ;;
-      *) violation "goal $nn matches several files:$NL$matches" "remove or renumber the stale copy"; fail "$rung" ;;
+      *) violation "goal $nn matches several files:$NL$matches" \
+           "which copy is stale is your call: keep one, and git rm the others or give them unused goal numbers"; fail "$rung" ;;
     esac
     need_file "$R_GOALFILE" "$rung"
     out="$(awk "$GOALFILE_AWK" "$R_GOALFILE")" || die "awk failed reading the goal file $R_GOALFILE"
@@ -404,6 +637,57 @@ resolved() {  # resolved <file> <rung> <kind>
 }
 
 # --- rung 1: an explicit path -------------------------------------------------------
+
+# E14: the path named the index and no revision is open. Other plans are named if there
+# are any; reopening a closed revision is never suggested, since that only trades E14 for
+# E7 when its directory is gone, and closing was a decision.
+e14() {  # e14 <index>
+  local idx="$1" all f st active="" nm=0 IFS="$NL"
+  scan_dirs
+  all="$(list_named "$MODEL")" || exit 3
+  for f in $all; do
+    if [ "$f" = "$ROOT_PLAN" ]; then continue; fi
+    need_file "$f" 1
+    st="$(status_of "$f")" || exit 3
+    case "$st" in merged*) nm=$((nm + 1)) ;; *) active="${active:+$active$NL}$f" ;; esac
+  done
+  if [ -n "$active" ]; then
+    violation "$idx is the revisions index and no revision in it is [~]" \
+      "no revision is open, but these $MODEL plans are active: name one as the path, or omit the path to resolve by branch:$NL$active"
+  else
+    violation "$idx is the revisions index and no revision in it is [~]" \
+      "no revision is open and no other $MODEL plan is active$( [ "$nm" -eq 0 ] || printf ' (%s merged)' "$nm" ): open one by adding \`- [~] <label> — <note>\` under \`## Revisions\` and creating $PD/<label>/_$MODEL, or create a plan (/new-branch)"
+  fi
+}
+
+# E2 with neither F nor F′ in the directory: plans further down are listed, since that is
+# almost certainly what was meant; otherwise say what the directory does hold.
+e2() {  # e2 <dir>
+  local d="$1" below="" all names="" k=0 x IFS="$NL"
+  if [ "$d" != . ]; then
+    below="$(find "$d" -mindepth 2 -type f -name "$MODEL" | sort)" || die "find failed listing plans under $d"
+  fi
+  if [ -n "$below" ]; then
+    violation "$d/ holds no $MODEL itself, but these below it do:$NL$below" \
+      "name the one you mean (which is your call), as the path"
+    return 0
+  fi
+  all="$(find "$d" -mindepth 1 -maxdepth 1 | sort)" || die "find failed listing $d"
+  for x in $all; do
+    k=$((k + 1))
+    if [ "$k" -le 10 ]; then
+      if [ -d "$x" ]; then x="$(basename "$x")/"; else x="$(basename "$x")"; fi
+      names="${names:+$names, }$x"
+    fi
+  done
+  if [ "$k" -gt 10 ]; then names="$names, and $((k - 10)) more"; fi
+  if [ "$k" -eq 0 ]; then
+    violation "$d/ holds no $MODEL (and no $OTHER): it is empty" "name the plan file itself, or a directory holding $MODEL"
+  else
+    violation "$d/ holds no $MODEL (and no $OTHER), only: $names" \
+      "name the plan file itself, or a directory holding $MODEL; if one of these files is meant to be the plan, git mv it to $d/$MODEL (your call)"
+  fi
+}
 
 rung1() {
   local p="$ARG_PATH" r1="" r2="" ok1=0 ok2=0 out=0 denied="" pp rel f o kind
@@ -447,7 +731,7 @@ rung1() {
         violation "${rel:-.}/ holds no $MODEL, but $o exists" \
           "that plan is driven by $OTHER_CMD, so run it instead; or name a $MODEL plan"
       else
-        violation "${rel:-.}/ holds no $MODEL" "name the plan file itself, or a directory holding $MODEL"
+        e2 "${rel:-.}"
       fi
       fail 1
     fi
@@ -464,8 +748,7 @@ rung1() {
       warn "$f is the revisions index, not a plan; it was followed as rung 3 would"
       index_open "$f" 1
       case "$OPEN_N" in
-        0) violation "$f is the revisions index and no revision in it is [~]" \
-             "name a plan file, or mark the open revision [~]"; fail 1 ;;
+        0) e14 "$f"; fail 1 ;;
         1) resolved "$OPEN_LIST" 1 revision-master ;;
         *) ask 1 "$OPEN_LIST" "Several revisions are open in $f; choose which to work on." ;;
       esac

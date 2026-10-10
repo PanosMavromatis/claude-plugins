@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -195,7 +195,7 @@
+ 
+ phys() {  # the physical absolute path of an existing file or directory; 2 if it cannot be entered
+   local d
+-  if [ -d "$1" ]; then (cd "$1" 2>/dev/null && pwd -P) || return 2
++  if [ -d "$1" ]; then (cd "$1" 2>/dev/null && pwd -P) || true
+   else
+     d="$(cd "$(dirname "$1")" 2>/dev/null && pwd -P)" || return 2
+     printf '%s/%s\n' "${d%/}" "$(basename "$1")"

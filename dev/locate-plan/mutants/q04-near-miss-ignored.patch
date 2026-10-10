@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -538,7 +538,7 @@
+         b = F[i]; sub(/.*\//, "", b)
+         if (!match(b, /^[0-9]+[a-z]?/)) continue
+         id = substr(b, 1, RLENGTH); after = substr(b, RLENGTH + 1)
+-        if (num(id) != want || after ~ /^[a-z0-9]/) continue
++        continue
+         rest = after; sub(/^[-_. \t]+/, "", rest); sub(/\.[A-Za-z0-9]+$/, "", rest)
+         k++; N[k] = b; T[k] = nn "-" (rest == "" ? s : slug(rest)) ".md"
+       }

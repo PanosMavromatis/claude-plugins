@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -500,7 +500,7 @@
+ rung2() {
+   local m o n
+   if [ -z "$BRANCH" ]; then
+-    warn "no current branch (a detached HEAD: a rebase, a bisect or a CI checkout), so rung 2 was skipped"
++    : "no current branch (a detached HEAD: a rebase, a bisect or a CI checkout), so rung 2 was skipped"
+     return 0
+   fi
+   NAME="${BRANCH//\//-}"

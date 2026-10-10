@@ -1,0 +1,10 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -581,7 +581,6 @@
+ # --- resolution ------------------------------------------------------------------------------
+ 
+ if [ $NPOS -ge 2 ]; then rung1; fi
+-scan_dirs
+ ALL_F="$(list_named "$MODEL")" || exit 3
+ rung2
+ rung3

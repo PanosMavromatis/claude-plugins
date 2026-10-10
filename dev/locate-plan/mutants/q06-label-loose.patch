@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -360,7 +360,7 @@
+       if ($0 ~ /^- \[[ ~x!-]\] /) {
+         rest = substr($0, 7); split(rest, a, /[ \t]+/); lab = a[1]
+         after = trim(substr(rest, length(lab) + 1))
+-        if (lab != "" && lab !~ /\// && lab !~ /^[#-]/ && index(lab, "—") == 0 && (after == "" || index(after, "—") == 1)) {
++        if (lab != "" && lab !~ /\// && lab !~ /^[#-]/) {
+           if (substr($0, 4, 1) == "~") print "OPEN\t" NR "\t" lab
+           next
+         }

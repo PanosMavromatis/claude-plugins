@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -316,7 +316,7 @@
+   if [ -d "$g" ] && [ -r "$g" ] && [ -x "$g" ]; then
+     gf="$(find "$g" -maxdepth 1 -type f -name '[0-9]*-*.md' | sort)" || die "find failed listing $g"
+   fi
+-  if [ -n "$ev" ] && [ -n "$gf" ]; then
++  ev=""; gf=""; if [ -n "$ev" ] && [ -n "$gf" ]; then
+     LFIX="correct line $n to \`**Layout**: per-goal\`: every item is numbered and $g/ holds goal files"
+   elif [ -n "$gf" ]; then
+     LFIX="correct line $n to \`**Layout**: per-goal\`: $g/ holds goal files"

@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -405,7 +405,7 @@
+         violation "$idx:$n is not a revision line: \`$val\`" "$fx" ;;
+       OPEN)
+         p="$PD/$val/_$MODEL"; o="$PD/$val/_$OTHER"
+-        if [ -f "$p" ]; then
++        if true; then
+           OPEN_LIST="${OPEN_LIST:+$OPEN_LIST$NL}$p"; OPEN_N=$((OPEN_N + 1))
+           continue
+         fi

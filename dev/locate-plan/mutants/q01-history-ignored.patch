@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -241,7 +241,7 @@
+     st=$?; if [ "$st" -eq 1 ]; then return 0; fi   # no commits yet: nothing was committed
+     die "git rev-parse --verify HEAD failed with status $st" "$st"
+   fi
+-  if git cat-file -e "HEAD:$1" 2>/dev/null; then echo head; return 0; else st=$?; fi
++  return 0
+   if [ "$st" -ne 128 ]; then die "git cat-file failed with status $st" "$st"; fi
+   sha="$(git rev-list -n1 HEAD -- "$1")" || die "git rev-list failed reading the history of $1"
+   if [ -n "$sha" ]; then printf '%s\n' "${sha:0:12}"; fi

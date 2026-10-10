@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -155,7 +155,7 @@
+ 
+ # Only 128 means "not a repository"; any other failure (127: git not found) is the tool's.
+ if ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then st=0; else st=$?; fi
+-if [ "$st" -eq 128 ] || { [ "$st" -eq 0 ] && [ -z "$ROOT" ]; }; then
++if [ "$st" -ne 0 ] || [ -z "$ROOT" ]; then
+   violation "the working directory is not inside a git repository" "run it from the repository"
+   fail ""
+ elif [ "$st" -ne 0 ]; then

@@ -1,0 +1,205 @@
+# Fix scores for the goal-10 trial, graded by hand against answer-key.py's KEY.
+# Regenerated 2026-10-09 from the stored replies: the original per-session grades were not
+# kept, only the arm totals. 2 = full fix; 1 = correct but generic; 0 = wrong or missing;
+# -1 = over-reach. Baseline sessions are graded on the parent's "Step 1 would:" text,
+# wrapper sessions on the agent's diagnosis/fix/suggested lines. f03 and f05 are graded on
+# what the parent did with the report. f04 is not scored.
+case	arm	run	score	reason
+e01	baseline	t1	2	says nothing exists at docs/plan/nope
+e01	baseline	t2	2	says nothing exists at docs/plan/nope
+e01	haiku	t1	2	nothing exists, never committed; offers docs/plan/x as a choice, not adopted
+e01	haiku	t2	2	nothing exists, no history; offers docs/plan/x as a choice, not adopted
+e01	sonnet	t1	2	nothing exists, no history; offers docs/plan/x as a choice
+e01	sonnet	t2	2	nothing exists, no history; offers docs/plan/x as a choice
+e02	baseline	t1	2	DO.md plan, run /step
+e02	baseline	t2	2	DO.md plan, run /step
+e02	haiku	t1	2	only DO.md there; run /step on it
+e02	haiku	t2	1	re-run the resolver with model DO.md, not /step: no better than the script
+e02	sonnet	t1	2	run /step docs/plan/d2
+e02	sonnet	t2	2	run /step docs/plan/d2
+e02b	baseline	t1	1	the script's generic "name the plan file itself"
+e02b	baseline	t2	1	the script's generic "name the plan file itself"
+e02b	haiku	t1	2	d2b holds only README.md, no TODO.md anywhere; create it or name a plan
+e02b	haiku	t2	2	d2b holds only README.md, never a TODO.md; create it or name a plan
+e02b	sonnet	t1	2	only README.md, never a TODO.md; create it, or git mv README.md if that is the plan
+e02b	sonnet	t2	2	only README.md, never a TODO.md; create it or pass another path
+e03	baseline	t1	2	the path lies outside the repository; give one inside it
+e03	baseline	t2	2	the path lies outside the repository; give one inside it
+e03	haiku	t1	2	the path is the repository's parent; give one inside it
+e03	haiku	t2	2	the path is outside the repository; give one inside it
+e03	sonnet	t1	2	the path is above the repository root; give one inside it or omit it
+e03	sonnet	t2	2	the path is outside the repository; give one inside it or omit it
+e04	baseline	t1	2	the branch plan is d-e04/DO.md; run /step
+e04	baseline	t2	2	the branch plan is d-e04/DO.md; run /step
+e04	haiku	t1	2	d-e04 holds only DO.md; run /step
+e04	haiku	t2	2	d-e04 holds only DO.md; run /step
+e04	sonnet	t1	2	d-e04 holds only DO.md; run /step
+e04	sonnet	t2	2	d-e04 holds only DO.md; run /step
+e05	baseline	t1	1	the script's "add the section, or remove the header"
+e05	baseline	t2	1	the script's "add the section, or remove the header"
+e05	haiku	t1	2	names TODO.md:3 to remove, or the section to add
+e05	haiku	t2	-1	read the real repository's master plan and reported the script's problem as false
+e05	sonnet	t1	2	names line 3 to delete, or the section to add
+e05	sonnet	t2	2	names line 3 to delete, or the section to add
+e06	baseline	t1	1	the script's generic line format for both lines
+e06	baseline	t2	1	the script's generic line format for both lines
+e06	haiku	t1	1	both lines rewritten, but guesses line 9's marker and omits 07-alpha's _TODO.md
+e06	haiku	t2	2	line 8 corrected, line 9's marker left to the user, warns 07-alpha then needs _TODO.md
+e06	sonnet	t1	1	both lines, but nothing about 07-alpha's _TODO.md
+e06	sonnet	t2	1	both lines, but nothing about 07-alpha's _TODO.md
+e07	baseline	t1	1	the script's "restore it", though _TODO.md was never committed
+e07	baseline	t2	1	the script's "restore it", though _TODO.md was never committed
+e07	haiku	t1	1	restore from another fixture branch's commit: a fair lead in a real repository, an artefact here
+e07	haiku	t2	1	never committed, so create it, or close; misses git mv of _DO.md
+e07	sonnet	t1	1	never committed, so create it, or close; misses git mv of _DO.md
+e07	sonnet	t2	1	never committed, so create it, or close; misses git mv of _DO.md
+e07b	baseline	t1	1	the script's "restore it", for files never committed
+e07b	baseline	t2	1	the script's "restore it", for files never committed
+e07b	haiku	t1	2	neither revision directory exists or was committed: create both, or close
+e07b	haiku	t2	1	restore 07-alpha from another fixture branch's commit; create 08-beta, or close
+e07b	sonnet	t1	2	never committed: create both _TODO.md files, or mark lines 7 and 8 [x]
+e07b	sonnet	t2	2	never committed: create both, or close each
+e08	baseline	t1	1	the script's generic list of valid layouts
+e08	baseline	t2	1	the script's generic list of valid layouts
+e08	haiku	t1	1	typo fix to per-goal: leaves E9
+e08	haiku	t2	1	typo fix to per-goal: leaves E9
+e08	sonnet	t1	1	typo fix to per-goal, or legacy: misses removing the header
+e08	sonnet	t2	1	typo fix to per-goal, or legacy: misses removing the header
+e08b	baseline	t1	1	the script's generic list of valid layouts
+e08b	baseline	t2	1	the script's generic list of valid layouts
+e08b	haiku	t1	1	change to revisions; also read the real repository's master plan, not used as the fix
+e08b	haiku	t2	1	change to revisions
+e08b	sonnet	t1	1	notes no per-goal files, but says change to revisions, not remove the header
+e08b	sonnet	t2	1	notes no per-goal files, but says change to revisions, not remove the header
+e09	baseline	t1	1	the script's generic line format
+e09	baseline	t2	1	the script's generic line format
+e09	haiku	t1	1	numbers the line 02; no goal file
+e09	haiku	t2	1	numbers the line; no goal file
+e09	sonnet	t1	1	numbers the line 02; no goal file
+e09	sonnet	t2	1	numbers the line 02; no goal file
+e10	baseline	t1	1	the script's "create it", with a glob, not the file name
+e10	baseline	t2	1	the script's "create it", with a glob, not the file name
+e10	haiku	t1	2	create TODO/02-two.md, or renumber
+e10	haiku	t2	2	create TODO/02-two.md, or renumber
+e10	sonnet	t1	2	create TODO/02-two.md, or renumber
+e10	sonnet	t2	2	create TODO/02-two.md, or renumber
+e11	baseline	t1	1	the script's "remove or renumber the stale copy"
+e11	baseline	t2	1	the script's "remove or renumber the stale copy"
+e11	haiku	t1	2	both files, history does not say which is stale: the user's call
+e11	haiku	t2	2	both files, nothing marks either stale: the user's call
+e11	sonnet	t1	2	both files, same commit: keep one, the user's call
+e11	sonnet	t2	2	both files, same commit: keep one or renumber, the user's call
+e13	baseline	t1	2	not in a repository; run it from one
+e13	baseline	t2	2	not in a repository; run it from one
+e13	haiku	t1	2	not in a repository; run it from one
+e13	haiku	t2	2	not in a repository; run it from one (its find into the real repository was refused)
+e13	sonnet	t1	2	not in a repository; run it from one
+e13	sonnet	t2	2	not in a repository; run it from one, or git init
+e14	baseline	t1	1	the script's "name a plan file, or mark the open revision [~]"
+e14	baseline	t2	1	the script's "name a plan file, or mark the open revision [~]"
+e14	haiku	t1	1	sees no plan and no open revision, but offers only the script's two options
+e14	haiku	t2	-1	read the real repository's master plan and said to mark revision 06-subagent-refactor-R1
+e14	sonnet	t1	2	add a new [~] revision and create its plan file; reopening 06-old includes restoring its file
+e14	sonnet	t2	0	offers the key's trap, reopening 06-old, and a [~] entry without its plan file
+f01	baseline	t1	2	unreadable: chmod u+r
+f01	baseline	t2	2	unreadable: chmod u+r
+f01	haiku	t1	2	mode ----------: chmod u+r
+f01	haiku	t2	2	mode ----------: chmod u+r
+f01	sonnet	t1	2	mode ----------: chmod u+r
+f01	sonnet	t2	2	mode ----------: chmod u+r
+f02	baseline	t1	2	awk not found; the PATH probably left out /usr/bin
+f02	baseline	t2	1	awk could not be found; no PATH fix
+f02	haiku	t1	2	make awk reachable on PATH; check /usr/bin
+f02	haiku	t2	2	make awk available on PATH; check /usr/bin
+f02	sonnet	t1	2	install awk or add its directory to PATH
+f02	sonnet	t2	2	install awk or add its directory to PATH
+f03	baseline	t1	-1	acted on a report cut short as found
+f03	baseline	t2	-1	acted on a report cut short as found
+f03	haiku	t1	-1	passed the cut-short report through; the parent acted on it
+f03	haiku	t2	-1	passed the cut-short report through; the parent acted on it
+f03	sonnet	t1	-1	passed the cut-short report through; the parent acted on it
+f03	sonnet	t2	-1	passed the cut-short report through; the parent acted on it
+f05	baseline	t1	2	next-check: differ; the next: line does not match the file
+f05	baseline	t2	2	next-check: differ; the next: line does not match the file
+f05	haiku	t1	2	next-check: differ
+f05	haiku	t2	2	next-check: differ
+f05	sonnet	t1	2	next-check: differ
+f05	sonnet	t2	2	next-check: differ
+e01	script	today	2	says nothing exists at the path
+e02	script	today	2	DO.md plan, run /step
+e02b	script	today	1	"name the plan file itself": does not say the directory holds no plan
+e03	script	today	2	outside the repository; give a path inside it
+e04	script	today	2	the branch plan is DO.md, run /step
+e05	script	today	1	"add the section, or remove the header": no line named
+e06	script	today	1	the generic line format; no corrected line, no warning about _TODO.md
+e07	script	today	1	"restore it", though never committed; no git mv of _DO.md
+e07b	script	today	1	"restore it", though never committed
+e08	script	today	1	the generic list of valid layouts
+e08b	script	today	1	the generic list of valid layouts
+e09	script	today	1	the generic line format; no number, no goal file
+e10	script	today	1	a glob, not the goal file's name
+e11	script	today	1	"the stale copy", as if one were known
+e13	script	today	2	not in a repository; run it from one
+e14	script	today	1	"mark the open revision [~]" when none is open and no plan exists
+f01	script	today	2	chmod u+r
+f02	script	today	1	exit 3, "awk failed": a broken tool, no PATH hint
+f03	script	today	2	Step 1 refuses a report with no message: line (goal 12); provisional: those runs saw -trunc in the path, goal 4 re-runs them under neutral names
+f05	script	today	2	Step 1's next: check differs, so it stops
+# feat-locate-plan-diagnostics goal 4, 2026-10-10. `script final` is the script after goal 2,
+# graded on its direct output against KEY. f03 and f05 are graded instead on the real /hitl-step
+# and /step, under hashed names: the t-* rows, baseline arm, runs g4a and g4b. The v-rows grade
+# the held-out set's fix: lines against VKEY. This is the set's one run.
+e01	script	final	2	says nothing exists at the path
+e02	script	final	2	DO.md plan, run /step
+e02b	script	final	2	"holds no TODO.md (and no DO.md), only: README.md"; the git mv offer is the user's call
+e03	script	final	2	outside the repository; give a path inside it
+e04	script	final	2	the branch plan is DO.md, run /step
+e05	script	final	2	remove line 3 (`**Layout**: revisions`), or add a `## Revisions` section
+e06	script	final	2	line 8 corrected, then needs 07-alpha/_TODO.md; line 9's [?] left to the user with the five markers
+e07	script	final	2	never committed, so git mv _DO.md to _TODO.md, or mark line 7 [x]
+e07b	script	final	2	never committed: create each _TODO.md, or mark lines 7 and 8 [x]
+e08	script	final	2	remove line 4: items unnumbered and no TODO/, so never per-goal
+e08b	script	final	2	remove line 3: the root plan takes only revisions, and has no ## Revisions
+e09	script	final	2	number it 02 and create TODO/02-rewrite-without-a-number.md
+e10	script	final	2	create docs/plan/d-e10/TODO/02-two.md
+e11	script	final	2	names 02-a.md and 02-b.md; which is stale is the user's call
+e13	script	final	2	not in a repository; run it from one
+e14	script	final	2	no revision open and no other plan active: open one (line and _TODO.md) or /new-branch; no closed revision named
+f01	script	final	2	chmod u+r
+f02	script	final	2	exit 3 with hint: awk exited 127, names the awk first on PATH, check PATH
+f03	script	final	2	t-hitl and t-step, g4a and g4b: each refuses the report without message:, shows it, stops, offers
+f05	script	final	2	t-hitl-f05 and t-step-f05, g4a and g4b: each finds the next: line differs, re-runs once, stops
+v01	script	final	2	never committed: create 09-gamma/_TODO.md, or mark line 8 [x]
+v02	script	final	2	restore from 3a76ae3ace55^, naming the commit; not "create"
+v03	script	final	2	never committed: git mv _TODO.md to _DO.md, or mark line 7 [x]
+v04	script	final	2	restore from f5db0a63e294^, naming the commit; no git mv of _DO.md
+v05	script	final	2	create docs/plan/team/v-v05/TODO/03a-split-work-phase-two.md, the split id kept
+v06	script	final	2	git mv TODO/02_two.md to TODO/02-two.md; not "create"
+v07	script	final	2	number it 03 and create TODO/03-ship-v2-docs.md
+v08	script	final	2	number it 02 to match TODO/02-rewrite-parser.md; no new file
+v09	script	final	2	lists area/feat-a/TODO.md and area/feat-b/TODO.md; which is the user's call
+v10	script	final	2	lists TODO.txt, notes.md and offers git mv (your call); doesn't single out TODO.txt
+v11	script	final	2	remove line 4: items unnumbered and no TODO/
+v12	script	final	2	correct line 4 to per-goal: every item numbered and TODO/ holds goal files; not removed
+v13	script	final	2	remove line 3 from docs/plan/DO.md
+v14	script	final	2	correct line 3 to revisions: the file has a ## Revisions section; not removed
+v15	script	final	2	remove line 5, or add a ## Revisions section
+v16	script	final	2	rename line 5, `## Revision`, to `## Revisions`; header kept
+v17	script	final	2	line 8 corrected; line 9 as 10-delta, the label the user's call; each then needs its _TODO.md
+v18	script	final	2	names 04-a, 04-b and 04-c; which is stale is the user's call
+v19	script	final	2	open a revision or /new-branch; neither closed revision offered
+v20	script	final	2	names docs/plan/feat-x/TODO.md, or omit the path
+v21	script	final	2	git exited 127 (not found), names the git first on PATH, check PATH; not E13
+v22	script	final	2	names the awk first on PATH and its status 2; check PATH or that awk
+t-hitl	baseline	g4a	2	no message: line: shows the output, stops, offers to investigate; no edit
+t-hitl	baseline	g4b	2	no message: line: shows the output, stops, offers to investigate; no edit
+t-step	baseline	g4a	2	no next: or message: line: shows the output, stops, offers; no edit
+t-step	baseline	g4b	2	no next: or message: line: shows the output, stops, offers; no edit
+t-hitl-f05	baseline	g4a	2	line 10 differs, re-runs once, stops, offers; Grep tried after the stop, not available
+t-hitl-f05	baseline	g4b	2	line 10 differs, re-runs once, stops, offers
+t-step-f05	baseline	g4a	2	line 8 differs, re-runs once, stops, offers
+t-step-f05	baseline	g4b	2	line 8 differs, re-runs once, stops, offers; notes the false kind: led to a whole read
+t-hitl-e07	baseline	g4a	2	relays the git mv fix and mark-[x] alternative as the user's call, offers
+t-hitl-e07	baseline	g4b	2	relays the git mv fix and mark-[x] alternative as the user's call, offers
+t-step-e08	baseline	g4a	2	relays "run /hitl-step instead", offers
+t-step-e08	baseline	g4b	2	relays "run /hitl-step instead", offers

@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -512,7 +512,7 @@
+         if (B[i] == "") continue
+         line = B[i]; sub(/\t.*/, "", line); text = substr(B[i], length(line) + 2)
+         mk = substr(text, 4, 1); t = title(text); s = slug(t); fix = ""
+-        for (j = 1; j <= u; j++) if (!used[j] && US[j] == s) {
++        for (j = 1; j <= 0; j++) if (!used[j] && US[j] == s) {
+           used[j] = 1; id = id_of(U[j])
+           fix = "number it " id " to match its goal file " g "/" U[j] ": `- [" mk "] " id " — " t "`"; break
+         }
