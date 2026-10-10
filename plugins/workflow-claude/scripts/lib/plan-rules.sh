@@ -1,5 +1,5 @@
-# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-plan-index.sh
-# and propose-branch-plan.sh. Sourced, never run. A rule that more than one of them
+# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-plan-index.sh,
+# propose-branch-plan.sh and propose-merge-record.sh. Sourced, never run. A rule that more than one of them
 # applies is defined here once, because copies drift: a slug computed one way by the
 # writer and another by the reader names a goal file the reader cannot find (E10).
 #
@@ -390,6 +390,38 @@ SUBGOALS_AWK='
   }
   { flush() }
   END { flush() }'
+
+# The master files a subgoal can sit in, by the root plan's layout: the root plan itself
+# when it is legacy, or every open revision's _<model> under a revisions index. Sets
+# MASTERS (one per line; empty when there are none) and MLAYOUT (legacy, revisions, or
+# none when there is no root plan); records E5-E8 and fails at <rung> like index_open.
+# /new-branch writes a backlink into one of these files (propose-branch-plan.sh), and
+# /smart-merge closes it there (propose-merge-record.sh): one rule, so they cannot differ.
+master_files() {  # master_files <rung>
+  MASTERS=""; MLAYOUT=none
+  if [ ! -f "$ROOT_PLAN" ]; then return 0; fi
+  need_file "$ROOT_PLAN" "$1"
+  if ! check_layout "$ROOT_PLAN" "$1"; then fail "$1"; fi
+  if [ "$LAYOUT_V" = revisions ]; then
+    MLAYOUT=revisions
+    index_open "$ROOT_PLAN" "$1"
+    MASTERS="$OPEN_LIST"
+  else
+    MLAYOUT=legacy; MASTERS="$ROOT_PLAN"
+  fi
+}
+
+# Every subgoal of every master file, one per line:
+# <file>\t<line>\t<marker>\t<last>\t<branches>\t<heading>\t<text>. Reads MASTERS; sets ITEMS.
+master_items() {  # master_items <rung>
+  local m out rec IFS="$NL"
+  ITEMS=""
+  for m in $MASTERS; do
+    need_file "$m" "$1"
+    out="$(awk "$SUBGOALS_AWK" "$m")" || die "awk failed reading the subgoals of $m"
+    for rec in $out; do ITEMS="${ITEMS:+$ITEMS$NL}$m$TAB${rec#ITEM"$TAB"}"; done
+  done
+}
 
 w6() {  # w6 <file> <line> <text>
   warn "$1:$2 looks like an item but its marker is not one of [ ] [~] [x] [!] [-], so it was ignored: \`$3\`"

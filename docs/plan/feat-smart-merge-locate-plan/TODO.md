@@ -49,8 +49,30 @@
   > **Done:** Step 2 runs `locate-plan.sh`, accepting only a rung-2 (or rung-1-after-ask)
   > result as the branch plan, reads a per-goal plan's goal files, and takes the unfinished
   > items from `check-plan-index.sh`.
-- [ ] Write `scripts/propose-merge-record.sh`, with the master-file selection moved into
+- [x] Write `scripts/propose-merge-record.sh`, with the master-file selection moved into
       `lib/plan-rules.sh`
+  > **Q:** The report contract: `propose-merge-record.sh <model> <branch> [--item f:l] --
+  > [plan]`, eleven keys (`result layout masters stamp item after subgoal candidates
+  > warnings problem fix message`), `result:` one of `propose`, `ask` (duplicate
+  > backlinks), `none` (no plan, no backlink) or `error`. A missing backlink is a warning
+  > unless the plan says `standalone`. And a plan with no `**Status**:` line: (A) `error`,
+  > fix "add `**Status**: active` under the title"; (B) a warning and `stamp: —`; or (C)
+  > propose inserting one?
+  > **A:** The contract as proposed, and A: a plan with no stamp counts as active forever,
+  > which is the silent failure the stamp exists to prevent.
+  > **Note:** Smoke-checked in 14 throwaway repositories plus this one, and under
+  > `/bin/bash` 3.2. Review caught two bugs before any run (the message's "and close" join,
+  > and the candidates' text cut at an item's last tab), and the run caught a third: with
+  > no master file to search, the script claimed the backlink was "lost or misspelled";
+  > it now gives only the real reason. `feat/locate-plan` gets `result: none`, where the
+  > `grep -F` workaround found `feat/locate-plan-diagnostics`'s item.
+  > **Note:** Mutants `b02` and `b18` of `propose-branch-plan` patched the moved lines, so
+  > they were regenerated against `master_files` and the new `none)` branch, with the same
+  > change. `b02` now lives in the library. All three suites then passed with 0 failing;
+  > every mutant was killed but `locate-plan`'s known-equivalent `n05`.
+  > **Done:** `propose-merge-record.sh` reports the stamp line, the backlinked item and the
+  > line its Done goes after, or `ask`/`none`/`error`; `master_files` and `master_items`
+  > in the library serve it and `propose-branch-plan.sh`.
 - [ ] Step 7 stamps the resolved index and edits the backlinked item in the right master file
   - [ ] Zero or several backlinks are reported, never guessed
 - [ ] The four `dev/` suites and their mutant passes pass, `propose-merge-record`'s new

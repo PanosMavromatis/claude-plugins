@@ -142,33 +142,16 @@ fi
 
 # --- the layout, and the master files a subgoal can come from ----------------------
 
-MASTERS=""
-if [ -f "$ROOT_PLAN" ]; then
-  need_file "$ROOT_PLAN" ""
-  if ! check_layout "$ROOT_PLAN" ""; then fail ""; fi
-  if [ "$LAYOUT_V" = revisions ]; then
-    R_LAYOUT=per-goal
-    index_open "$ROOT_PLAN" ""
-    MASTERS="$OPEN_LIST"
-  else
-    R_LAYOUT=legacy; MASTERS="$ROOT_PLAN"
-  fi
-else
-  R_LAYOUT=legacy
-  if [ -f "$PD/$OTHER" ]; then
-    warn "there is no $ROOT_PLAN, but $PD/$OTHER exists: the master plan uses the other model, so this plan will not be backlinked to it"
-  fi
-fi
-
-# Every subgoal of every master file: "<file>\t<line>\t<marker>\t<last>\t<branches>\t<heading>\t<text>"
-ITEMS=""
-IFS="$NL"
-for m in $MASTERS; do
-  need_file "$m" ""
-  out="$(awk "$SUBGOALS_AWK" "$m")" || die "awk failed reading the subgoals of $m"
-  for rec in $out; do ITEMS="${ITEMS:+$ITEMS$NL}$m$TAB${rec#ITEM"$TAB"}"; done
-done
-unset IFS
+master_files ""
+case "$MLAYOUT" in
+  revisions) R_LAYOUT=per-goal ;;
+  legacy)    R_LAYOUT=legacy ;;
+  none)      R_LAYOUT=legacy
+             if [ -f "$PD/$OTHER" ]; then
+               warn "there is no $ROOT_PLAN, but $PD/$OTHER exists: the master plan uses the other model, so this plan will not be backlinked to it"
+             fi ;;
+esac
+master_items ""
 
 # --- the subgoal ----------------------------------------------------------------------
 
