@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Builds the fx fixture (one branch per c-case, plus the fault cases' r2-flat) and the
-# three tool shims under $LOCATE_PLAN_WORK. suite.py builds the second fixture, fx-diag.
+# tool shims under $LOCATE_PLAN_WORK. suite.py builds the other two fixtures, fx-diag and
+# the validation set's fx-val.
 #
 #   LOCATE_PLAN_WORK=<dir> build-fixtures.sh            build; refuse if fx already exists
 #   LOCATE_PLAN_WORK=<dir> build-fixtures.sh --rebuild  delete fx and the shims first
@@ -34,6 +35,13 @@ exec /usr/bin/awk "$@"'
 mkshim git-symref git '#!/bin/sh
 case "$1" in symbolic-ref) echo "fatal: simulated failure" >&2; exit 128 ;; esac
 exec /usr/bin/git "$@"'
+# validation set (v21, v22): git missing, and an awk that runs but fails every call
+mkshim git-127 git '#!/bin/sh
+echo "git: command not found" >&2
+exit 127'
+mkshim awk-2 awk '#!/bin/sh
+echo "awk: syntax error at source line 1" >&2
+exit 2'
 
 # --- the fx fixture --------------------------------------------------------------------
 plan() {  # plan <path> <status> <body...>: a small branch plan

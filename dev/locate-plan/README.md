@@ -27,10 +27,30 @@ python3 -I dev/locate-plan/suite.py --mutants    # 16 mutants: 15 must be caught
 python3 -I dev/locate-plan/answer-key.py         # each mechanical full fix clears its case
 ```
 
-- **`build-fixtures.sh`** builds `fx`, with one branch per c-case. It also builds three
+**The validation set** (`v01`–`v22`) is held out: it was written and committed before any
+`fix:` line was sharpened, so the fixes are not written to fit it.
+- **Variants and counter-cases.** For each training problem there is a variant in another
+  form, and where a sharper rule could fire without its evidence, a counter-case that
+  needs a different fix. One example: a `_TODO.md` committed and then deleted is
+  restored, not created.
+- **Run on its own.** `suite.py --validation` runs these cases alone, checking what holds
+  today; `answer-key.py --validation` checks `VKEY`'s mechanical fixes.
+- **Graded once.** The fix lines are graded against `VKEY` at the final re-grade of
+  `feat/locate-plan-diagnostics`. The gate there is no wrong advice: every case scores 1
+  or 2.
+- **Two cases are no longer held out:** v17 and v21 failed when the set was built, and
+  exposed two defects, so their mechanical checks have been seen.
+
+```bash
+python3 -I dev/locate-plan/suite.py --validation          # builds fx-val on first use
+python3 -I dev/locate-plan/answer-key.py --validation
+```
+
+- **`build-fixtures.sh`** builds `fx`, with one branch per c-case. It also builds the
   tool shims in `bin/<hash>/`: an `awk` that exits 127, an `awk` that fails only on the
-  `**Layout**` read, and a `git` whose `symbolic-ref` fails. `suite.py` runs it if `fx`
-  is missing.
+  `**Layout**` read, a `git` whose `symbolic-ref` fails, and for the validation set a
+  missing `git` (127) and an `awk` that fails every call. `suite.py` runs it if `fx` is
+  missing; rerun it with `--rebuild` after adding a shim.
 - **`suite.py`** builds `fx-diag`, the error, warning and edge cases, on first use. It
   runs every case directly and grades each report: key order, exit code, `problem:` and
   `fix:` text, determinism across runs and shells, no absolute paths, and that the

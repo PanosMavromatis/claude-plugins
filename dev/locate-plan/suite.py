@@ -4,6 +4,10 @@ report. Writes only under $LOCATE_PLAN_WORK, which must lie outside the reposito
 
   LOCATE_PLAN_WORK=<dir> python3 -I suite.py [-v] [--once] [--script PATH] [ids...]
   LOCATE_PLAN_WORK=<dir> python3 -I suite.py --mutants
+  LOCATE_PLAN_WORK=<dir> python3 -I suite.py --validation [-v] [ids...]
+
+--validation runs the held-out set (v-cases) alone, and never as part of a training run:
+its fix: lines are graded against answer-key.py's VKEY at the final re-grade, not here.
 
 By default every case runs twice under each shell found, and must print the same thing each
 time. --once runs each case once, under the first shell. --mutants applies each patch in
@@ -212,6 +216,102 @@ X11 = [
  ("x15", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err="git symbolic-ref failed with status 128", path=SHIM_GIT)),
 ]
 
+# --- the validation set (feat-locate-plan-diagnostics) --------------------------------------
+# Held out: written and committed before any fix: line was sharpened, and run only with
+# --validation. Each case is a variant of a problem the training cases (e-cases) cover, in a
+# different form, or a counter-case where a sharper rule could fire without its evidence.
+# The expectations here are only what holds today (result, rung, exit, which problem); the
+# quality of each fix: line is judged against VKEY in answer-key.py. Each case's history is
+# a list of commits, path -> text, with None deleting the file.
+FV = P + "/fx-val"
+SHIM_GIT127, SHIM_AWK2 = (f"{P}/bin/{h(x)}" for x in ("git-127", "awk-2"))
+MASTER_DO = "docs/plan/DO.md"
+def pergoal_raw(layout, *lines):
+    return f"# idx\n\n**Status**: active\n**Layout**: {layout}\n\n## Goals\n\n" + "".join(l + "\n" for l in lines)
+V = [
+ ("v01", "v/v01", [{MASTER: index("- [x] 06-old — closed", "- [~] 09-gamma — open", "- [x] 07-beta — closed")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", nprob=1, prob=["revision 09-gamma is open at docs/plan/TODO.md:8", "docs/plan/09-gamma/_TODO.md is missing"])),
+ ("v02", "v/v02", [{MASTER: index("- [~] 09-gamma — open"), "docs/plan/09-gamma/_TODO.md": REV},
+                   {"docs/plan/09-gamma/_TODO.md": None}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/09-gamma/_TODO.md is missing"])),
+ ("v03", "v/v03", [{MASTER_DO: index("- [~] 11-delta — open"), "docs/plan/11-delta/_TODO.md": REV}], ["DO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/11-delta/_DO.md is missing (docs/plan/11-delta/_TODO.md exists)"])),
+ ("v04", "v/v04", [{MASTER: index("- [~] 09-gamma — open"), "docs/plan/09-gamma/_TODO.md": REV, "docs/plan/09-gamma/_DO.md": REV},
+                   {"docs/plan/09-gamma/_TODO.md": None}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/09-gamma/_TODO.md is missing (docs/plan/09-gamma/_DO.md exists)"])),
+ ("v05", "v/v05", [{"docs/plan/team/v-v05/TODO.md": pergoal_index("- [x] 01 — one", "- [~] 03a — Split work: phase two"),
+                    "docs/plan/team/v-v05/TODO/01-one.md": goalfile("x", "- [x] a")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["goal 03a has no file matching docs/plan/team/v-v05/TODO/03a-*.md"])),
+ ("v06", "v/v06", [{"docs/plan/v-v06/TODO.md": pergoal_index("- [~] 02 — two"),
+                    "docs/plan/v-v06/TODO/02_two.md": goalfile("~", "- [ ] a")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/v-v06/TODO/02-*.md"])),
+ ("v07", "v/v07", [{"docs/plan/v-v07/TODO.md": pergoal_index("- [x] 01 — one", "- [x] 02 — two", "- [ ] Ship `v2` docs"),
+                    "docs/plan/v-v07/TODO/01-one.md": goalfile("x", "- [x] a"),
+                    "docs/plan/v-v07/TODO/02-two.md": goalfile("x", "- [x] a")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["v-v07/TODO.md:10 has no goal number"])),
+ ("v08", "v/v08", [{"docs/plan/v-v08/TODO.md": pergoal_index("- [x] 01 — one", "- [ ] Rewrite parser"),
+                    "docs/plan/v-v08/TODO/01-one.md": goalfile("x", "- [x] a"),
+                    "docs/plan/v-v08/TODO/02-rewrite-parser.md": goalfile(" ", "- [ ] a")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["v-v08/TODO.md:9 has no goal number"])),
+ ("v09", "v/v09", [{"docs/plan/area/feat-a/TODO.md": plan("active", "- [ ] a"),
+                    "docs/plan/area/feat-b/TODO.md": plan("active", "- [ ] b")}], ["TODO.md", "docs/plan/area"],
+  dict(exit=1, result="error", rung="1", prob=["docs/plan/area/ holds no TODO.md"])),
+ ("v10", "v/v10", [{"docs/plan/v10dir/notes.md": "notes\n", "docs/plan/v10dir/TODO.txt": "- [ ] maybe a plan\n"}], ["TODO.md", "docs/plan/v10dir/"],
+  dict(exit=1, result="error", rung="1", prob=["holds no TODO.md"])),
+ ("v11", "v/v11", [{"docs/plan/v-v11/TODO.md": plan("active", "- [ ] a", "- [ ] b", extra="**Layout**: Per-Goal\n")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["v-v11/TODO.md:4 has `**Layout**: Per-Goal`"])),
+ ("v12", "v/v12", [{"docs/plan/v-v12/TODO.md": pergoal_raw("pergoal", "- [x] 01 — one", "- [~] 02 — two"),
+                    "docs/plan/v-v12/TODO/01-one.md": goalfile("x", "- [x] a"),
+                    "docs/plan/v-v12/TODO/02-two.md": goalfile("~", "- [ ] a")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["v-v12/TODO.md:4 has `**Layout**: pergoal`"])),
+ ("v13", "v/v13", [{MASTER_DO: "# M\n\n**Layout**: per-goal\n\n- [ ] x\n"}], ["DO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/DO.md:3 has `**Layout**: per-goal`"])),
+ ("v14", "v/v14", [{MASTER: "# Plans\n\n**Layout**: revision\n\n## Revisions\n\n- [~] 09-gamma — open\n", "docs/plan/09-gamma/_TODO.md": REV}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/TODO.md:3 has `**Layout**: revision`"])),
+ ("v15", "v/v15", [{MASTER: "# Plans\n\n**Status**: active\n\n**Layout**: revisions\n\n## Plans\n\n- [ ] something\n"}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["has no `## Revisions` section"])),
+ ("v16", "v/v16", [{MASTER: "# Plans\n\n**Layout**: revisions\n\n## Revision\n\n- [~] 09-gamma — open\n- [x] 06-old — closed\n",
+                    "docs/plan/09-gamma/_TODO.md": REV}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["has no `## Revisions` section"])),
+ # v17 and v21 fail today, found while building this set: a label with a space is read as
+ # its first word (so line 9 opens revision "10"), and git missing (127) is reported as
+ # "not inside a git repository". Their mechanical checks are therefore not held out.
+ ("v17", "v/v17", [{MASTER: index("- [x] 06-old — closed", "-  [~] 09-gamma — x", "- [~] 10 delta — y")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", nprob=2, prob=["TODO.md:8 is not a revision line", "TODO.md:9 is not a revision line"])),
+ ("v18", "v/v18", [{"docs/plan/team/v-v18/TODO.md": pergoal_index("- [~] 04 — four"),
+                    "docs/plan/team/v-v18/TODO/04-a.md": goalfile("~", "- [ ] a"),
+                    "docs/plan/team/v-v18/TODO/04-b.md": goalfile("~", "- [ ] b"),
+                    "docs/plan/team/v-v18/TODO/04-c.md": goalfile("~", "- [ ] c")}], ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["goal 04 matches several files", "04-a.md", "04-b.md", "04-c.md"])),
+ ("v19", "v/v19", [{MASTER: index("- [x] 06-old — closed", "- [x] 07-beta — closed"),
+                    "docs/plan/06-old/_TODO.md": REV.replace("**Status**: open", "**Status**: closed")}], ["TODO.md", "docs/plan/TODO.md"],
+  dict(exit=1, result="error", rung="1", prob=["no revision in it is [~]"])),
+ ("v20", "v/v20", [{MASTER: index("- [x] 06-old — closed", "- [x] 07-beta — closed"),
+                    "docs/plan/06-old/_TODO.md": REV.replace("**Status**: open", "**Status**: closed"),
+                    "docs/plan/feat-x/TODO.md": plan("active", "- [ ] the live plan")}], ["TODO.md", "docs/plan/TODO.md"],
+  dict(exit=1, result="error", rung="1", prob=["no revision in it is [~]"])),
+ ("v21", "v/v21", [{"docs/plan/v-v21/TODO.md": plan("active", "- [ ] x")}], ["TODO.md"],
+  dict(raw=True, exit=3, err="git", path=SHIM_GIT127)),
+ ("v22", "v/v22", [{"docs/plan/v-v22/TODO.md": plan("active", "- [ ] x")}], ["TODO.md"],
+  dict(raw=True, exit=3, path=SHIM_AWK2)),
+]
+
+def build_val():
+    os.makedirs(FV)
+    git("init", "-q", "-b", "main", cwd=FV)
+    open(FV + "/README.md", "w").write("validation fixture\n")
+    commit = lambda m: git("-c", "user.name=suite", "-c", "user.email=suite@example.invalid", "commit", "-q", "--allow-empty", "-m", m, cwd=FV)
+    git("add", "-A", cwd=FV); commit("Base")
+    for cid, br, commits, *_ in V:
+        git("checkout", "-q", "main", cwd=FV); git("checkout", "-q", "-b", br, cwd=FV)
+        for n, files in enumerate(commits):
+            for path, text in files.items():
+                if text is None: git("rm", "-q", path, cwd=FV); continue
+                os.makedirs(os.path.dirname(FV + "/" + path), exist_ok=True)
+                open(FV + "/" + path, "w").write(text)
+            git("add", "-A", cwd=FV); commit(cid if n == 0 else f"{cid}: remove")
+    git("checkout", "-q", "main", cwd=FV)
+
 # --- running and grading ---------------------------------------------------------------------
 
 def parse(out):
@@ -325,18 +425,26 @@ def mutants():
 
 def main():
     if "--mutants" in sys.argv: mutants()
-    want = [a for a in sys.argv[1:] if re.match(r"^[cewxu]\d", a)]
+    want = [a for a in sys.argv[1:] if re.match(r"^[cewxuv]\d", a)]
     if not os.path.isdir(FX):
         r = subprocess.run([HERE + "/build-fixtures.sh"], env=dict(os.environ, LOCATE_PLAN_WORK=P))
         if r.returncode: sys.exit("build-fixtures.sh failed")
     if not os.path.isdir(FD): build_diag()
+    val = "--validation" in sys.argv
+    if val:
+        if not (os.path.isdir(SHIM_GIT127) and os.path.isdir(SHIM_AWK2)):
+            sys.exit(f"the validation shims are missing: LOCATE_PLAN_WORK={P} build-fixtures.sh --rebuild")
+        if not os.path.isdir(FV): build_val()
     if SKIPPED: print("shells not found, skipped:", ", ".join(SKIPPED))
     fails = 0
     st = static_checks()
     print("static:", "; ".join(st) or "ok"); fails += bool(st)
-    cases = [(cid, FX, br, args, exp) for cid, br, args, exp in FXC] + \
-            [(cid, FD, br, args, exp) for cid, br, _f, args, exp in D] + \
-            [(cid, FX, br, args, exp) for cid, br, args, exp in X11]
+    if val:   # the held-out set alone: never mixed into a training run
+        cases = [(cid, FV, br, args, exp) for cid, br, _c, args, exp in V]
+    else:
+        cases = [(cid, FX, br, args, exp) for cid, br, args, exp in FXC] + \
+                [(cid, FD, br, args, exp) for cid, br, _f, args, exp in D] + \
+                [(cid, FX, br, args, exp) for cid, br, args, exp in X11]
     for cid, repo, br, args, exp in cases:
         if want and cid not in want: continue
         outs = []
@@ -349,7 +457,7 @@ def main():
         fails += bool(probs)
         print(f"{'PASS' if not probs else 'FAIL'} {cid:<5} {(br or '(no repo)'):<22} " + "; ".join(probs))
         if "-v" in sys.argv: print("      " + out.replace("\n", "\n      ") + err)
-    for repo in (FX, FD):
+    for repo in (FX, FD) + ((FV,) if val else ()):
         git("checkout", "-q", "main", cwd=repo)
         dirty = sh(["git", "status", "--porcelain", "--ignored"], repo).stdout.strip()
         if dirty: fails += 1; print(f"FAIL read-only: {repo} changed:\n{dirty}")

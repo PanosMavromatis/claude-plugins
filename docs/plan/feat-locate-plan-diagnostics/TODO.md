@@ -70,7 +70,7 @@
     > Three arm-run totals land one point from the recorded ones: baseline t2 25 against
     > 26 (f02), Haiku t1 31 against 30 (e14), and Haiku t2 25 against 26 (e02). Each is a
     > borderline call, explained in `hand-grades.tsv`, and none moves the bar.
-- [ ] Write a held-out validation set before any fix is written
+- [x] Write a held-out validation set before any fix is written
   > **Note:** a side agent pointed out that goal 2 writes each sharper line from the
   > answer key's own cases, and the same author grades them. 40/40 could then mean "fits
   > these 20 repositories" rather than "works". Grading by another agent was set aside as
@@ -90,16 +90,48 @@
   > different form: other names, depth, rung or goal numbers. Where a rule could fire
   > without its evidence, add a counter-case that needs a different fix. About 15–20
   > cases.
-  - [ ] A variant for each of goal 2's twelve items
-  - [ ] Counter-cases for every rule that reads evidence, for example:
+  - [x] A variant for each of goal 2's twelve items
+  - [x] Counter-cases for every rule that reads evidence, for example:
         - a `_TODO.md` that was committed and then deleted: restore it, not create it;
         - a misspelt `**Layout**` on a plan that really is per-goal (numbered items and
           a `TODO/` directory): correct it, not remove it
-  - [ ] An answer key in `KEY`'s form (full fix, weaker fix, over-reach). Each mechanical
+    > **Done:** 22 cases, v01–v22, in their own fixture, `fx-val`; the user approved the
+    > list as proposed.
+    > - **Variants (13):** v01, v03, v05, v07, v10, v11, v13, v15, v17, v18, v19, v21,
+    >   v22.
+    > - **Counter-cases (9):** v02 and v04 (deleted in history: restore, not create or
+    >   `git mv`), v06 (a near-miss file name: rename), v08 (an existing unclaimed goal
+    >   file: number to match), v09 (plans one level down: list them), v12 and v14 (a
+    >   misspelt header on a real per-goal plan or revisions index: correct, not remove),
+    >   v16 (`## Revision` singular: rename), v20 (an active plan exists: name it).
+  - [x] An answer key in `KEY`'s form (full fix, weaker fix, over-reach). Each mechanical
         full fix is verified on a clone, and the cases live apart from the training cases
         in the suite
-  - [ ] Committed before goal 2 changes `locate-plan.sh`. Until goal 4, the suite skips
+    > **Done:** `VKEY` in `answer-key.py`. Its third field names the answer that scores 0
+    > or −1. 19 cases have a mechanical full fix, and all 19 clear their case on a clone
+    > (`answer-key.py --validation`). v10, v21 and v22 have none, because their fixes are
+    > a judgement or an environment change. Some full fixes are a different invocation
+    > (v03, v09, v13, v19, v20), so `verify()` gained an optional model and arguments.
+  - [x] Committed before goal 2 changes `locate-plan.sh`. Until goal 4, the suite skips
         the validation cases by default
+    > **Done:** `suite.py --validation` runs the v-cases alone, and a training run never
+    > includes them. The training suite is unchanged: 71/71, identical output. The commit
+    > that carries this line is the one that registers the set. It changes nothing in
+    > `plugins/`, and goal 2 starts after it.
+    > **Note:** building the set exposed two defects in today's script, which goal 2 now
+    > covers through new training cases:
+    > - **v17:** `- [~] 10 delta — y` is read as revision `10`. `index_open` takes the
+    >   first word after the marker as the label and never checks that ` — ` or the end
+    >   of the line follows, so the script asks for `docs/plan/10/_TODO.md`. The spec says
+    >   a label has no space, so this is E6.
+    > - **v21:** with `git` missing (127), line 137 reports "not inside a git
+    >   repository". Any failure of `git rev-parse` reads as E13, though only 128 means
+    >   that. This is a failed command taken as an answer, which goal 11's
+    >   fail-loudly rule forbids. It should exit 3.
+    >
+    > Both cases now expect the correct behaviour, so `--validation` fails on them today
+    > (2 of 22). Their mechanical checks have been seen and are no longer held out; their
+    > `fix:` text still is.
 - [ ] Sharpen the `fix:` lines in `scripts/locate-plan.sh`, so that every case in the
       goal-10 answer key scores 2. Each item names its cases; today's script scores 1 on
       all twelve listed here.
@@ -128,6 +160,12 @@
         directory (e14)
   - [ ] When a tool fails (exit 3), add a hint to the stderr message: for `awk` or
         `git` not found (127), check `PATH` and say which binary was found first (f02)
+  - [ ] A revision line whose label has a space (`- [~] 10 delta — y`) is E6, not
+        revision `10`: after the label, require ` — ` or the end of the line. Add a new
+        training case for it, not v17 (found while building the validation set)
+  - [ ] `git` failing other than with 128 (missing: 127) exits 3 naming `git`, not E13
+        "not inside a git repository". Add a new training shim case for it, not v21
+        (found while building the validation set)
   - [ ] The suite and mutants still pass, with new cases asserting each sharper line, and
         the spec is updated to match
 - [ ] `/step` and `/hitl-step` offer a read-only investigation in the main session on an
