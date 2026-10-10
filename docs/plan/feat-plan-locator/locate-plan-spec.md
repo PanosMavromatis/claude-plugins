@@ -153,19 +153,26 @@ Each names the file and line where one exists. When a rung finds several violati
 | # | Rung | `problem:` | `fix:` |
 |---|---|---|---|
 | E1 | 1 | nothing exists at `<path>`; both readings named | check the path, or omit it to resolve by branch |
-| E2 | 1 | `<dir>/` holds no F | name the file; if `<dir>/F′` exists, say it belongs to the other command |
+| E2 | 1 | `<dir>/` holds no F: with `<dir>/F′`, say so; with F files further down, list them; otherwise name what it does hold (up to 10 entries) | `<dir>/F′` → it belongs to the other command. Plans below → name the one you mean. Otherwise → name the plan file, or `git mv` one of the entries to `<dir>/F` if it is the plan (the user's call) |
 | E3 | 1 | `<path>` lies outside the repository | give a path inside it, relative to its root |
 | E4 | 2 | the branch plan exists only as `<…>/<name>/F′` | run the other command (`/step` ↔ `/hitl-step`) |
-| E5 | 3 | `docs/plan/F` declares `**Layout**: revisions` but has no `## Revisions` | add the section, or remove the header |
-| E6 | 3 | `docs/plan/F:<n>` is not a revision line: `<line>` | write it as `- [~] <label> — <note>` |
-| E7 | 3 | revision `<label>` is open at `docs/plan/F:<n>` but `docs/plan/<label>/_F` is missing (and `_F′` exists, if it does) | restore it (`git log -- docs/plan/<label>/`), or mark line `<n>` `[x]` if it has closed |
-| E8 | any | `<file>:<n>` has `**Layout**: <v>`, which is unknown here | use `revisions` on `docs/plan/F` only, `per-goal` or `legacy` elsewhere |
-| E9 | read | `<index>:<n>` has no goal number: `<line>` | write it as `- [m] NN — <goal>` |
-| E10 | read | goal `NN` has no file matching `<dir>/NN-*.md` | create it, or correct the number on `<index>:<n>` |
-| E11 | read | goal `NN` matches several files (listed) | remove or renumber the stale copy |
+| E5 | 3 | `docs/plan/F` declares `**Layout**: revisions` (line `<n>`) but has no `## Revisions` | a near-miss heading (`## revisions`, `## Revision`, `### Revisions`, `## Revisions …`) → rename that line; otherwise → remove line `<n>`, or add the section |
+| E6 | 3 | `docs/plan/F:<n>` is not a revision line: `<line>` | the line rewritten canonically (`- ` bullet, one space after `]`, spaces in the label as `-`): known marker → write it so, and if it is `[~]` and its `_F` is missing, say it then needs that file; unknown marker → choose one of the five (the user's call) |
+| E7 | 3 | revision `<label>` is open at `docs/plan/F:<n>` but `docs/plan/<label>/_F` is missing (and `_F′` exists, if it does) | from HEAD's history: in HEAD → `git checkout HEAD -- <p>`; deleted in a commit → `git checkout <sha>^ -- <p>`; never committed with `_F′` → `git mv <_F′> <p>`; never committed → create it. Each adds: or mark line `<n>` `[x]` if it has closed |
+| E8 | any | `<file>:<n>` has `**Layout**: <v>`, which is not valid there | root plan: a `## Revisions` section → correct it to `revisions`; else remove the line. Branch plan: every item numbered, or goal files in `<dir>/F-without-.md/` → correct it to `per-goal`; else remove the line (it was never per-goal) |
+| E9 | read | `<index>:<n>` has no goal number: `<line>` | an unclaimed goal file whose slug equals the line's title → number it to match; else the next free number, and the goal file to create (`<gdir>/NN-<slug>.md`), naming any unclaimed goal files |
+| E10 | read | goal `NN` has no file matching `<dir>/NN-*.md` | a file with NN's number in another form (`2-two.md`, `02_two.md`) → `git mv` it to `NN-<rest>.md`; else create `<dir>/NN-<slug>.md`. Either way: or correct the number on `<index>:<n>` |
+| E11 | read | goal `NN` matches several files (listed) | which copy is stale is the user's call: keep one, `git rm` or renumber the others |
 | E12 | read | `--goal <line>` is past the end of `<plan>`, or not an item | pass the line of an item |
-| E13 | — | not inside a git repository | run from the repository |
-| E14 | 1 | `<path>` is the root index and no revision in it is `[~]` | name a plan file, or mark the open revision `[~]` |
+| E13 | — | not inside a git repository (`git rev-parse` exit 128 only) | run from the repository |
+| E14 | 1 | `<path>` is the root index and no revision in it is `[~]` | other active F plans → name one (listed), or omit the path; none → open a revision (its line and its `_F`), or create a plan (`/new-branch`). Never reopen a closed revision |
+
+**How a `fix:` line is chosen.** It says what the repository shows: the evidence named
+in each row above, read the same way every time. Where the evidence does not decide, the
+fix falls back to the generic line, never to a guess. "Create" is said only of a file git
+has never seen, and "remove the header" only when nothing in the plan justifies one. A
+goal file's slug is its title lowercased, with each run of other characters as one `-`,
+at most 40 characters.
 | E15 | any | `<file>` cannot be read, or `<dir>/` cannot be entered or listed | `chmod u+r <file>` / `chmod u+rx <dir>` |
 
 E15 is checked before every read, and also up front for every directory under
@@ -173,8 +180,9 @@ E15 is checked before every read, and also up front for every directory under
 otherwise be missing, without notice, from rung 2's duplicate check and from rung 4. At
 rung 1, a path whose directory cannot be entered is E15, never E3.
 
-A revision label in a revision line follows `open-revision.sh`'s rule: non-empty, no space
-or `/`, not starting with `#` or `-`.
+A revision line is `- [m] <label>`, then the end of the line or ` — <note>`. Its label
+follows `open-revision.sh`'s rule: non-empty, no space, `/` or `—`, not starting with `#`
+or `-`. So `- [~] 10 delta — y` is E6, not revision `10`.
 
 ## Warnings — valid but suspicious
 
@@ -201,7 +209,7 @@ The command shows them and carries on.
 | 0 | report printed; `result:` is `found`, `ask` or `none` | acts on `result:` |
 | 1 | report printed; `result: error` | relays `problem:` and `fix:`, and stops |
 | 2 | usage error; message on stderr, no report | relays stderr, and stops |
-| 3 | a tool (`awk`, `find`, `git`, `cd`) failed in a way the rules cannot explain; message on stderr, no report | relays stderr, and stops |
+| 3 | a tool (`awk`, `find`, `sort`, `git`, `cd`) failed in a way the rules cannot explain, `git` included when it fails other than with 128; message on stderr, plus for `awk`, `find`, `sort` and `git` a `hint:` line naming the binary first on `PATH` and its status (127: not found), no report | relays stderr, and stops |
 | other, no `result:` line, or no `message:` line | the script failed, or its report was cut short | relays the output, and stops |
 
 ## Guarantees
@@ -211,12 +219,13 @@ The command shows them and carries on.
   it. Every file is checked readable before it is read (E15), every tool's status is
   checked where it runs, and an unexplained failure exits 3. An empty value from a failed
   read is never taken as an answer: goal 11 found four places where one was.
-- **Read-only.** Writes nothing, temporary files included. Runs only
-  `git rev-parse --show-toplevel` and `git symbolic-ref --short -q HEAD`, then `cd`s to the
-  root, so it works from any subdirectory.
-- **Deterministic.** The same tree and arguments give byte-identical output: every listing
-  sorted with `LC_ALL=C`, no clock, no randomness, no environment beyond the arguments and
-  the working tree.
+- **Read-only.** Writes nothing, temporary files included. Of git it runs only
+  `rev-parse --show-toplevel` and `symbolic-ref --short -q HEAD`, then `cd`s to the root,
+  so it works from any subdirectory. For E7 alone it also reads HEAD's history:
+  `rev-parse -q --verify HEAD`, `cat-file -e HEAD:<path>` and `rev-list -n1 HEAD -- <path>`.
+- **Deterministic.** The same tree, history and arguments give byte-identical output:
+  every listing sorted with `LC_ALL=C`, no clock, no randomness. The only environment it
+  reads is `PATH`, for an exit-3 hint on stderr; the report never depends on it.
 - **Portable.** Bash 3.2 and BSD or GNU userlands: no `globstar`, associative arrays,
   `mapfile` or `${v,,}`; matching in `awk`, never `grep` with `\|`; `wc` output trimmed;
   `set -euo pipefail`. The style is `open-revision.sh`'s.

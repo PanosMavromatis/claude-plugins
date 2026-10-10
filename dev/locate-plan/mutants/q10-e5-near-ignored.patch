@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -374,7 +374,7 @@
+     case "$typ" in
+       NOSEC)
+         # val is "<near-miss line>\t<its text>", or empty
+-        if [ -n "$val" ]; then
++        if false; then
+           fx="rename line ${val%%"$TAB"*}, \`${val#*"$TAB"}\`, to \`## Revisions\`"
+         else
+           fx="remove line $n (\`**Layout**: revisions\`), or add a \`## Revisions\` section listing the revisions"

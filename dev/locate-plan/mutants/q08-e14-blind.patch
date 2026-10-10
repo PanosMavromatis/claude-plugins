@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -651,7 +651,7 @@
+     st="$(status_of "$f")" || exit 3
+     case "$st" in merged*) nm=$((nm + 1)) ;; *) active="${active:+$active$NL}$f" ;; esac
+   done
+-  if [ -n "$active" ]; then
++  if false; then
+     violation "$idx is the revisions index and no revision in it is [~]" \
+       "no revision is open, but these $MODEL plans are active: name one as the path, or omit the path to resolve by branch:$NL$active"
+   else

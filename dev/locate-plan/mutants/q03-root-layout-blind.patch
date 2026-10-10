@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -300,7 +300,7 @@
+   if [ "$f" = "$ROOT_PLAN" ]; then
+     ev="$(awk '/^[ \t]*```/ { fence = !fence; next } !fence && /^## Revisions[ \t\r]*$/ { print "y"; exit }' "$f")" \
+       || die "awk failed looking for a Revisions section in $f"
+-    if [ -n "$ev" ]; then
++    if false; then
+       LFIX="correct line $n to \`**Layout**: revisions\`: the file has a \`## Revisions\` section, so it is the revisions index"
+     else
+       LFIX="remove line $n: $f takes only \`revisions\`, for an index with a \`## Revisions\` section, and it has none"

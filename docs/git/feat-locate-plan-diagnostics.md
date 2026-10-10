@@ -23,6 +23,8 @@ scratchpad into the repository.
   restore a file that was never committed; `git mv` a plan written under the other model;
   name the exact goal file; say a directory holds no plan; remove a header that no file
   justifies. The full list, case by case, is in the branch plan.
+- Two defects the validation set exposed: a revision label with a space was read as its
+  first word, and `git` missing was reported as "not inside a git repository".
 - `/step` and `/hitl-step` offer a read-only investigation on an `error` or a failed run,
   and only run it when the user asks.
 - Re-grade against the goal-10 answer key. Acceptance is 40/40, and no validation case

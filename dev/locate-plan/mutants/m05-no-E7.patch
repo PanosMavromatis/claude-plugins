@@ -1,11 +1,11 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -262,7 +262,7 @@
-                "write it as \`- [m] <label> — <note>\`, with m one of the five markers" ;;
+@@ -405,7 +405,7 @@
+         violation "$idx:$n is not a revision line: \`$val\`" "$fx" ;;
        OPEN)
-         p="$PD/$val/_$MODEL"
+         p="$PD/$val/_$MODEL"; o="$PD/$val/_$OTHER"
 -        if [ -f "$p" ]; then
 +        if true; then
            OPEN_LIST="${OPEN_LIST:+$OPEN_LIST$NL}$p"; OPEN_N=$((OPEN_N + 1))
-         elif [ -f "$PD/$val/_$OTHER" ]; then
-           violation "revision $val is open at $idx:$n, but $p is missing ($PD/$val/_$OTHER exists)" \
+           continue
+         fi

@@ -54,6 +54,8 @@ def index(*lines): return "# Plans\n\n**Layout**: revisions\n\n## Revisions\n\n"
 REV = "# Revision\n\n**Status**: open\n\n## Subgoals\n\n- [ ] 1. open in the revision\n"
 def pergoal_index(*lines, status="active"):
     return f"# idx\n\n**Status**: {status}\n**Layout**: per-goal\n\n## Goals\n\n" + "".join(l + "\n" for l in lines)
+def pergoal_raw(layout, *lines):   # a per-goal index with any **Layout** value
+    return f"# idx\n\n**Status**: active\n**Layout**: {layout}\n\n## Goals\n\n" + "".join(l + "\n" for l in lines)
 def goalfile(marker, *items):
     return f"# goal\n\n**Goal**: [{marker}]\n\n```\n- [ ] fenced example, never an item\n```\n\n" + "".join(i + "\n" for i in items)
 
@@ -66,33 +68,76 @@ D = [
  ("e02", "d/e02", {"docs/plan/d2/DO.md": plan("active", "- [ ] x")}, ["TODO.md", "docs/plan/d2"],
   dict(exit=1, result="error", rung="1", prob=["holds no TODO.md, but docs/plan/d2/DO.md exists"], fix=["/step"])),
  ("e02b", "d/e02b", {"docs/plan/d2b/README.md": "not a plan\n"}, ["TODO.md", "d2b"],
-  dict(exit=1, result="error", rung="1", prob=["docs/plan/d2b/ holds no TODO.md"])),
+  dict(exit=1, result="error", rung="1", prob=["docs/plan/d2b/ holds no TODO.md (and no DO.md), only: README.md"],
+       fix=["git mv it to docs/plan/d2b/TODO.md (your call)"])),
+ ("e02c", "d/e02c", {"docs/plan/grp/x/y/TODO.md": plan("active", "- [ ] deep")}, ["TODO.md", "docs/plan/grp"],
+  dict(exit=1, result="error", rung="1", prob=["docs/plan/grp/ holds no TODO.md itself, but these below it do:", "docs/plan/grp/x/y/TODO.md"],
+       fix=["name the one you mean"], noprob=["only:"])),
  ("e03", "d/e03", {}, ["TODO.md", P],
   dict(exit=1, result="error", rung="1", prob=["lies outside the repository"])),
  ("e04", "d/e04", {"docs/plan/d-e04/DO.md": plan("active", "- [ ] x"), MASTER: LEGACY}, ["TODO.md"],
   dict(exit=1, result="error", rung="2", prob=["exists only as DO.md", "docs/plan/d-e04/DO.md"], fix=["/step"])),
  ("e05", "d/e05", {MASTER: "# Plans\n\n**Layout**: revisions\n\n## Other\n"}, ["TODO.md"],
-  dict(exit=1, result="error", rung="3", prob=["has no `## Revisions` section"])),
+  dict(exit=1, result="error", rung="3", prob=["has no `## Revisions` section"],
+       fix=["remove line 3 (`**Layout**: revisions`), or add a `## Revisions` section"])),
+ ("e05b", "d/e05b", {MASTER: "# Plans\n\n**Layout**: revisions\n\n## revisions\n\n- [~] 07-alpha — open\n", "docs/plan/07-alpha/_TODO.md": REV}, ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["has no `## Revisions` section"], fix=["rename line 5, `## revisions`, to `## Revisions`"],
+       nofix=["remove line"])),
  ("e06", "d/e06", {MASTER: index("- [x] 06-old — closed", "- [~]07-alpha — x", "- [?] 08-beta — y")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="3", nprob=2, prob=["TODO.md:8 is not a revision line", "TODO.md:9 is not"])),
+  dict(exit=1, result="error", rung="3", nprob=2, prob=["TODO.md:8 is not a revision line", "TODO.md:9 is not"],
+       fix=["write line 8 as `- [~] 07-alpha — x`; revision 07-alpha is then open, so it also needs docs/plan/07-alpha/_TODO.md",
+            "its marker [?] is not one of [ ] [~] [x] [!] [-]; choose one (your call) and write it as `- [m] 08-beta — y`"])),
+ ("e06b", "d/e06b", {MASTER: index("- [x] 06 old — closed", "- [~] 07-alpha — open"), "docs/plan/07-alpha/_TODO.md": REV}, ["TODO.md"],
+  dict(exit=1, result="error", rung="3", nprob=1, prob=["TODO.md:7 is not a revision line: `- [x] 06 old — closed`"],
+       fix=["write line 7 as `- [x] 06-old — closed` (a label has no spaces; the label is your call)"], nofix=["also needs"])),
  ("e07", "d/e07", {MASTER: index("- [~] 07-alpha — open"), "docs/plan/07-alpha/_DO.md": REV}, ["TODO.md"],
-  dict(exit=1, result="error", rung="3", prob=["docs/plan/07-alpha/_TODO.md is missing (docs/plan/07-alpha/_DO.md exists)"], fix=["mark line 7 [x]"])),
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/07-alpha/_TODO.md is missing (docs/plan/07-alpha/_DO.md exists)"],
+       fix=["never committed", "git mv docs/plan/07-alpha/_DO.md docs/plan/07-alpha/_TODO.md", "mark line 7 [x]"])),
  ("e07b", "d/e07b", {MASTER: index("- [~] 07-alpha", "- [~] 08-beta")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="3", nprob=2, prob=["revision 07-alpha", "revision 08-beta"])),
+  dict(exit=1, result="error", rung="3", nprob=2, prob=["revision 07-alpha", "revision 08-beta"],
+       fix=["docs/plan/07-alpha/_TODO.md was never committed, so there is nothing to restore: create it",
+            "docs/plan/08-beta/_TODO.md was never committed"], nofix=["git checkout"])),
+ ("e07c", "d/e07c", [{MASTER: index("- [x] 06-old — closed", "- [~] 07-alpha — open"), "docs/plan/07-alpha/_TODO.md": REV},
+                     {"docs/plan/07-alpha/_TODO.md": None}], ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/07-alpha/_TODO.md is missing"],
+       fix=["restore it: git checkout ", "^ -- docs/plan/07-alpha/_TODO.md (it was deleted in "], nofix=["never committed", "create it"])),
  ("e08", "d/e08", {"docs/plan/d-e08/TODO.md": plan("active", "- [ ] x", extra="**Layout**: pergoal\n")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="2", prob=["d-e08/TODO.md:4 has `**Layout**: pergoal`"])),
+  dict(exit=1, result="error", rung="2", prob=["d-e08/TODO.md:4 has `**Layout**: pergoal`"],
+       fix=["remove line 4: the items are unnumbered and there is no docs/plan/d-e08/TODO/, so the plan was never per-goal"])),
+ ("e08c", "d/e08c", {"docs/plan/d-e08c/TODO.md": pergoal_raw("per goal", "- [x] 01 — one", "- [~] 02 — two"),
+                     "docs/plan/d-e08c/TODO/01-one.md": goalfile("x", "- [x] a"),
+                     "docs/plan/d-e08c/TODO/02-two.md": goalfile("~", "- [ ] a")}, ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["d-e08c/TODO.md:4 has `**Layout**: per goal`"],
+       fix=["correct line 4 to `**Layout**: per-goal`: every item is numbered and docs/plan/d-e08c/TODO/ holds goal files"],
+       nofix=["remove line"])),
  ("e08b", "d/e08b", {MASTER: "# M\n\n**Layout**: per-goal\n\n- [ ] x\n"}, ["TODO.md"],
-  dict(exit=1, result="error", rung="3", prob=["docs/plan/TODO.md:3 has `**Layout**: per-goal`"])),
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/TODO.md:3 has `**Layout**: per-goal`"], fix=["remove line 3"])),
+ ("e08d", "d/e08d", {MASTER: "# Plans\n\n**Layout**: Revisions\n\n## Revisions\n\n- [~] 07-alpha — open\n", "docs/plan/07-alpha/_TODO.md": REV}, ["TODO.md"],
+  dict(exit=1, result="error", rung="3", prob=["docs/plan/TODO.md:3 has `**Layout**: Revisions`"],
+       fix=["correct line 3 to `**Layout**: revisions`"], nofix=["remove line"])),
  ("e09", "d/e09", {"docs/plan/d-e09/TODO.md": pergoal_index("- [x] 01 — one", "- [ ] Rewrite without a number"),
                    "docs/plan/d-e09/TODO/01-one.md": goalfile("x", "- [x] a")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="2", prob=["d-e09/TODO.md:9 has no goal number"])),
+  dict(exit=1, result="error", rung="2", prob=["d-e09/TODO.md:9 has no goal number"],
+       fix=["number it 02, the next free number, and create docs/plan/d-e09/TODO/02-rewrite-without-a-number.md: `- [ ] 02 — Rewrite without a number`"])),
+ ("e09b", "d/e09b", {"docs/plan/d-e09b/TODO.md": pergoal_index("- [x] 01 — one", "- [~] 02 — two", "- [ ] Add tests"),
+                     "docs/plan/d-e09b/TODO/01-one.md": goalfile("x", "- [x] a"),
+                     "docs/plan/d-e09b/TODO/02-two.md": goalfile("~", "- [ ] a"),
+                     "docs/plan/d-e09b/TODO/03-add-tests.md": goalfile(" ", "- [ ] a")}, ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["d-e09b/TODO.md:10 has no goal number"],
+       fix=["number it 03 to match its goal file docs/plan/d-e09b/TODO/03-add-tests.md"], nofix=["create"])),
  ("e10", "d/e10", {"docs/plan/d-e10/TODO.md": pergoal_index("- [x] 01 — one", "- [~] 02 — two"),
                    "docs/plan/d-e10/TODO/01-one.md": goalfile("x", "- [x] a")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/d-e10/TODO/02-*.md"], fix=["d-e10/TODO.md:9"])),
+  dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/d-e10/TODO/02-*.md"],
+       fix=["create docs/plan/d-e10/TODO/02-two.md, or correct the number on docs/plan/d-e10/TODO.md:9"])),
+ ("e10b", "d/e10b", {"docs/plan/d-e10b/TODO.md": pergoal_index("- [~] 02 — two"),
+                     "docs/plan/d-e10b/TODO/2-two.md": goalfile("~", "- [ ] a")}, ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/d-e10b/TODO/02-*.md"],
+       fix=["git mv docs/plan/d-e10b/TODO/2-two.md docs/plan/d-e10b/TODO/02-two.md"], nofix=["create"])),
  ("e11", "d/e11", {"docs/plan/d-e11/TODO.md": pergoal_index("- [~] 02 — two"),
                    "docs/plan/d-e11/TODO/02-a.md": goalfile("~", "- [ ] a"),
                    "docs/plan/d-e11/TODO/02-b.md": goalfile("~", "- [ ] b")}, ["TODO.md"],
-  dict(exit=1, result="error", rung="2", prob=["goal 02 matches several files", "TODO/02-a.md", "TODO/02-b.md"])),
+  dict(exit=1, result="error", rung="2", prob=["goal 02 matches several files", "TODO/02-a.md", "TODO/02-b.md"],
+       fix=["which copy is stale is your call"])),
  ("e12", "d/e12", {"docs/plan/d-e12/TODO.md": plan("active", "- [ ] x")}, ["TODO.md", "--goal", "999"],
   dict(exit=1, result="error", rung="2", prob=["--goal 999 is past the end"])),
  ("e12b", "d/e12b", {"docs/plan/d-e12b/TODO.md": plan("active", "- [ ] x", "  - [ ] sub")}, ["TODO.md", "--goal", "8"],
@@ -100,7 +145,14 @@ D = [
  ("e13", None, {}, ["TODO.md"],
   dict(exit=1, result="error", rung="—", prob=["not inside a git repository"], cwd=NOGIT, env={"GIT_CEILING_DIRECTORIES": P})),
  ("e14", "d/e14", {MASTER: index("- [x] 06-old — closed")}, ["TODO.md", "docs/plan/TODO.md"],
-  dict(exit=1, result="error", rung="1", prob=["is the revisions index and no revision in it is [~]"])),
+  dict(exit=1, result="error", rung="1", prob=["is the revisions index and no revision in it is [~]"],
+       fix=["no revision is open and no other TODO.md plan is active", "or create a plan (/new-branch)"],
+       nofix=["mark the open revision", "06-old"])),
+ ("e14b", "d/e14b", {MASTER: index("- [x] 06-old — closed"), "docs/plan/team/feat-y/TODO.md": plan("active", "- [ ] live")},
+  ["TODO.md", "docs/plan/TODO.md"],
+  dict(exit=1, result="error", rung="1", prob=["no revision in it is [~]"],
+       fix=["these TODO.md plans are active: name one as the path, or omit the path", "docs/plan/team/feat-y/TODO.md"],
+       nofix=["create a plan"])),
  ("w01", "d/w01", {"docs/plan/d-w01/TODO.md": plan("", "- [ ] x")}, ["TODO.md"],
   dict(exit=0, result="found", rung="2", warn=["has no **Status** line"])),
  ("w02", "d/w02", {"docs/plan/d-w02/TODO.md": plan("wip", "- [ ] x")}, ["TODO.md"],
@@ -168,10 +220,13 @@ def build_diag():
         if not br or br in done: continue
         done.add(br)
         git("checkout", "-q", "main"); git("checkout", "-q", "-b", br)
-        for path, text in files.items():
-            os.makedirs(os.path.dirname(FD + "/" + path), exist_ok=True)
-            open(FD + "/" + path, "w").write(text)
-        git("add", "-A"); git("-c", "user.name=suite", "-c", "user.email=suite@example.invalid", "commit", "-q", "--allow-empty", "-m", cid)
+        # a dict is one commit; a list is several, in order, with None deleting a file
+        for n, step in enumerate(files if isinstance(files, list) else [files]):
+            for path, text in step.items():
+                if text is None: git("rm", "-q", path); continue
+                os.makedirs(os.path.dirname(FD + "/" + path), exist_ok=True)
+                open(FD + "/" + path, "w").write(text)
+            git("add", "-A"); git("-c", "user.name=suite", "-c", "user.email=suite@example.invalid", "commit", "-q", "--allow-empty", "-m", cid if n == 0 else f"{cid}: remove")
     git("checkout", "-q", "main")
 
 # --- the plan-locator fixture's cases, graded by the same expectations ---------------------------
@@ -211,9 +266,18 @@ X11 = [
         setup="chmod 000 docs/plan/some-plan", teardown="chmod 755 docs/plan/some-plan")),
  ("x12", "case/r2-moved", ["TODO.md"], dict(exit=1, result="error", rung="—", prob=["docs/plan/group/ cannot be entered or listed"],
         setup="chmod 000 docs/plan/group", teardown="chmod 755 docs/plan/group")),
- ("x13", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err="awk failed reading the **Layout** header of docs/plan/case-r2-flat/TODO.md", path=SHIM_LAYOUT)),
- ("x14", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err="locate-plan.sh: awk failed", path=SHIM)),
- ("x15", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err="git symbolic-ref failed with status 128", path=SHIM_GIT)),
+ ("x13", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err=["awk failed reading the **Layout** header of docs/plan/case-r2-flat/TODO.md",
+        f"hint: the awk first on PATH is {SHIM_LAYOUT}/awk, and it exited with status 2"], path=SHIM_LAYOUT)),
+ ("x14", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err=["locate-plan.sh: awk failed",
+        f"hint: awk exited 127 (command not found); the awk first on PATH is {SHIM}/awk; check PATH"], path=SHIM)),
+ ("x15", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err=["git symbolic-ref failed with status 128", "hint: the git first on PATH is"], path=SHIM_GIT)),
+ # E7 on a file deleted but not committed: restore it from HEAD
+ ("x16", "case/r3-rev-one", ["TODO.md"], dict(exit=1, result="error", rung="3", prob=["docs/plan/07-alpha/_TODO.md is missing"],
+        fix=["restore it: git checkout HEAD -- docs/plan/07-alpha/_TODO.md"], nofix=["create it"],
+        setup="rm docs/plan/07-alpha/_TODO.md", teardown="git checkout -q -- docs/plan/07-alpha/_TODO.md")),
+ # git failing other than with 128 is the tool's failure, never "not inside a git repository"
+ ("x17", "case/r2-flat", ["TODO.md"], dict(raw=True, exit=3, err=["git rev-parse --show-toplevel failed with status 126", "hint: the git first on PATH is"],
+        path=f"{P}/bin/{h('git-126')}")),
 ]
 
 # --- the validation set (feat-locate-plan-diagnostics) --------------------------------------
@@ -226,8 +290,6 @@ X11 = [
 FV = P + "/fx-val"
 SHIM_GIT127, SHIM_AWK2 = (f"{P}/bin/{h(x)}" for x in ("git-127", "awk-2"))
 MASTER_DO = "docs/plan/DO.md"
-def pergoal_raw(layout, *lines):
-    return f"# idx\n\n**Status**: active\n**Layout**: {layout}\n\n## Goals\n\n" + "".join(l + "\n" for l in lines)
 V = [
  ("v01", "v/v01", [{MASTER: index("- [x] 06-old — closed", "- [~] 09-gamma — open", "- [x] 07-beta — closed")}], ["TODO.md"],
   dict(exit=1, result="error", rung="3", nprob=1, prob=["revision 09-gamma is open at docs/plan/TODO.md:8", "docs/plan/09-gamma/_TODO.md is missing"])),
@@ -347,7 +409,8 @@ def grade(cid, exp, code, out, err):
     if exp.get("raw"):
         if out: probs.append("usage error printed a report")
         if not err.strip(): probs.append("printed nothing on stderr")
-        if exp.get("err") and exp["err"] not in err: probs.append(f"stderr lacks {exp['err']!r}: {err.strip()[:160]!r}")
+        for e in ([exp["err"]] if isinstance(exp.get("err"), str) else exp.get("err", [])):
+            if e not in err: probs.append(f"stderr lacks {e!r}: {err.strip()[:200]!r}")
         return probs
     if err.strip(): probs.append(f"stderr not empty: {err.strip()[:160]!r}")
     rep, order, perr = parse(out)
@@ -364,6 +427,10 @@ def grade(cid, exp, code, out, err):
                 if w not in allv("warnings"): probs.append(f"warnings lack {w!r}: {allv('warnings')!r}")
         elif k == "nowarn":
             if one("warnings") != "—": probs.append(f"unexpected warnings {allv('warnings')!r}")
+        elif k in ("noprob", "nofix"):   # a counter-case's trap: text that must not appear
+            key = "problem" if k == "noprob" else "fix"
+            for w in want:
+                if w in allv(key): probs.append(f"{key} has {w!r}, which it must not: {allv(key)!r}")
         elif k in ("prob", "fix"):
             key = "problem" if k == "prob" else "fix"
             for w in want:

@@ -35,6 +35,10 @@ exec /usr/bin/awk "$@"'
 mkshim git-symref git '#!/bin/sh
 case "$1" in symbolic-ref) echo "fatal: simulated failure" >&2; exit 128 ;; esac
 exec /usr/bin/git "$@"'
+# x17: git present but failing other than with 128 (126: found, not executable)
+mkshim git-126 git '#!/bin/sh
+echo "git: permission denied" >&2
+exit 126'
 # validation set (v21, v22): git missing, and an awk that runs but fails every call
 mkshim git-127 git '#!/bin/sh
 echo "git: command not found" >&2

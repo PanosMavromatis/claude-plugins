@@ -132,42 +132,101 @@
     > Both cases now expect the correct behaviour, so `--validation` fails on them today
     > (2 of 22). Their mechanical checks have been seen and are no longer held out; their
     > `fix:` text still is.
-- [ ] Sharpen the `fix:` lines in `scripts/locate-plan.sh`, so that every case in the
+- [x] Sharpen the `fix:` lines in `scripts/locate-plan.sh`, so that every case in the
       goal-10 answer key scores 2. Each item names its cases; today's script scores 1 on
       all twelve listed here.
   > **Note:** the first draft listed five items and covered only seven of the twelve
   > cases. A side agent checked it against the re-grade and found e05, e06, e11, e14
   > and f02 missing. The user added them: "Now is the time to do a thorough job, before
   > we hit production."
-  - [ ] Create, not restore, a file that was never committed (e07b, both revisions)
-  - [ ] `git mv` a plan written under the other model (e07: `_DO.md` beside a missing
+  > **Q:** The design, item by item: each sharper line fires only on evidence the script
+  > reads, and otherwise falls back to a generic line that is still correct. Implement it
+  > this way?
+  > **A:** Yes.
+  > **Note:** `open-revision.sh` still writes the old layout (`## Subgoals — revision
+  > <label>`); nothing writes `- [m] <label> — <note>` revision lines yet. So the label
+  > rule can be tightened without breaking any index a tool wrote. And E14 must not point
+  > at `/open-revision`, which today would write the wrong format into a revisions index.
+  - [x] Create, not restore, a file that was never committed (e07b, both revisions)
+  - [x] `git mv` a plan written under the other model (e07: `_DO.md` beside a missing
         `_TODO.md`)
-  - [ ] Name the exact goal file: `TODO/02-two.md` from the index line's title (e10)
-  - [ ] An unnumbered goal line: give it the next free number (`02`) and name the goal
+    > **Done:** E7 now reads HEAD's history (`history_of`):
+    > - in HEAD but deleted in the working tree → `git checkout HEAD -- <p>` (new case x16);
+    > - deleted in a commit → `git checkout <sha>^ -- <p>`, naming the commit (new case
+    >   e07c);
+    > - never committed, with `_F′` beside it → `git mv` (e07);
+    > - never committed → create it (e07b).
+    >
+    > Every branch keeps "or mark line n `[x]`". History is HEAD's alone, so a commit on
+    > another fixture branch is never offered, which was Haiku's artefact in the trial.
+  - [x] Name the exact goal file: `TODO/02-two.md` from the index line's title (e10)
+    > **Done:** the slug is the title lowercased, with each run of other characters as `-`,
+    > at most 40 characters. A file with the goal's number in another form is offered as a
+    > `git mv` rather than a create (new case e10b, `2-two.md`).
+  - [x] An unnumbered goal line: give it the next free number (`02`) and name the goal
         file to create, `TODO/02-<slug>.md` (e09)
-  - [ ] Say that the directory holds no plan at all, naming what it does hold (e02b)
-  - [ ] Remove a `**Layout**` header that no file justifies: no `TODO/` directory and
+    > **Done:** the next free number is one past the highest claimed or on file, padded
+    > like the widest. An unclaimed goal file whose slug matches the title takes
+    > precedence: "number it 03 to match its goal file" (new case e09b). Several
+    > unnumbered lines are numbered in order.
+  - [x] Say that the directory holds no plan at all, naming what it does hold (e02b)
+    > **Done:** "holds no TODO.md (and no DO.md), only: README.md", with up to 10 entries.
+    > If plans sit further down, they are listed instead (new case e02c).
+  - [x] Remove a `**Layout**` header that no file justifies: no `TODO/` directory and
         unnumbered items (e08); `per-goal` on the root plan (e08b)
-  - [ ] Name the exact header line to remove, or the section to add, for a revisions
+    > **Done:** `layout_fix` decides by evidence. On a branch plan, every item numbered or
+    > goal files present → correct it to `per-goal` (new case e08c, `per goal`). On the
+    > root plan, a `## Revisions` section → correct it to `revisions` (new case e08d,
+    > `Revisions`). Otherwise remove the line, saying why.
+  - [x] Name the exact header line to remove, or the section to add, for a revisions
         index without `## Revisions` (e05)
-  - [ ] Give each malformed revision line corrected (line 8's missing space). Leave a
+    > **Done:** the problem names the header's line. A near-miss heading is offered as a
+    > rename (new case e05b, `## revisions`).
+  - [x] Give each malformed revision line corrected (line 8's missing space). Leave a
         line's unknown marker to the user, listing the five. Warn that a revision made
         valid as `[~]` then needs its `_TODO.md` (e06)
-  - [ ] Name both duplicate goal files, and say that which is stale is the user's call
+  - [x] Name both duplicate goal files, and say that which is stale is the user's call
         (e11)
-  - [ ] When no revision is open and no plan file exists, say so, and offer to open a
+  - [x] When no revision is open and no plan file exists, say so, and offer to open a
         revision or create a plan. Never suggest reopening a closed revision that has no
         directory (e14)
-  - [ ] When a tool fails (exit 3), add a hint to the stderr message: for `awk` or
+    > **Done:** the fix says how to open a revision (its line and its `_F`), or points to
+    > `/new-branch`, and never names a closed revision. If other active plans exist, it
+    > lists them instead (new case e14b).
+  - [x] When a tool fails (exit 3), add a hint to the stderr message: for `awk` or
         `git` not found (127), check `PATH` and say which binary was found first (f02)
-  - [ ] A revision line whose label has a space (`- [~] 10 delta — y`) is E6, not
+    > **Done:** `die()` captures the failed command's status. For `awk`, `find`, `sort` and
+    > `git` it adds a `hint:` line naming `command -v`'s binary and the status, with 127
+    > read as not found. x13, x14 and x15 now assert the hint.
+  - [x] A revision line whose label has a space (`- [~] 10 delta — y`) is E6, not
         revision `10`: after the label, require ` — ` or the end of the line. Add a new
         training case for it, not v17 (found while building the validation set)
-  - [ ] `git` failing other than with 128 (missing: 127) exits 3 naming `git`, not E13
+    > **Done:** new case e06b, `- [x] 06 old — closed`: a closed revision, so the fix
+    > rewrites the line and does not ask for a `_TODO.md`.
+  - [x] `git` failing other than with 128 (missing: 127) exits 3 naming `git`, not E13
         "not inside a git repository". Add a new training shim case for it, not v21
         (found while building the validation set)
-  - [ ] The suite and mutants still pass, with new cases asserting each sharper line, and
+    > **Done:** new case x17, a `git` that exits 126. Only 128 is E13.
+  - [x] The suite and mutants still pass, with new cases asserting each sharper line, and
         the spec is updated to match
+    > **Result:**
+    > - **Suite:** 82/82 (71 plus 11 new), twice under Bash 3.2 and 5, byte-identical, in
+    >   about 30 s. It gains `nofix` and `noprob`, which assert that a counter-case's trap
+    >   text is absent.
+    > - **Training answer key:** 10/10.
+    > - **Mutants:** 26. The three whose lines moved (m02, m05, n06) were reported stale,
+    >   as designed, and re-anchored to the same rule; m02 now strips fences from all six
+    >   readers. The ten new ones (q01–q10) each revert one new rule to the old blind line.
+    >   25 are killed, each by the case built for its rule, and n05 is still equivalent.
+    >   The run takes about 3 min.
+    > - **Validation set:** not run, as the plan holds it back until goal 4.
+    > - **Spec:** the E-table states each fix's evidence, alongside the label rule, the
+    >   exit-3 hint, and the read-only and deterministic guarantees (which now name the
+    >   history read).
+    > **Note:** cost. The happy path went from 64 to 75 ms median, from parsing a larger
+    > file; the E7 path from 68 to 121 ms, from the three `git` calls only it makes. Size
+    > went from 23.5 KB to 38.1 KB. None of this reaches the model's context: Step 1 runs
+    > the script and reads only its report.
 - [ ] `/step` and `/hitl-step` offer a read-only investigation in the main session on an
       `error` or a failed run, and run it only when the user asks. The lockstep `sed`
       diff stays empty.

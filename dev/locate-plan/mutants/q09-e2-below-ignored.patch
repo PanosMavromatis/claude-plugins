@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -667,7 +667,7 @@
+   if [ "$d" != . ]; then
+     below="$(find "$d" -mindepth 2 -type f -name "$MODEL" | sort)" || die "find failed listing plans under $d"
+   fi
+-  if [ -n "$below" ]; then
++  if false; then
+     violation "$d/ holds no $MODEL itself, but these below it do:$NL$below" \
+       "name the one you mean (which is your call), as the path"
+     return 0

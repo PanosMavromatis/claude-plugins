@@ -22,8 +22,8 @@ it nothing to decode.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite
-python3 -I dev/locate-plan/suite.py              # 71 cases, twice under each Bash found (~20 s)
-python3 -I dev/locate-plan/suite.py --mutants    # 16 mutants: 15 must be caught, n05 is equivalent (~90 s)
+python3 -I dev/locate-plan/suite.py              # 82 cases, twice under each Bash found (~30 s)
+python3 -I dev/locate-plan/suite.py --mutants    # 26 mutants: 25 must be caught, n05 is equivalent (~3 min)
 python3 -I dev/locate-plan/answer-key.py         # each mechanical full fix clears its case
 ```
 

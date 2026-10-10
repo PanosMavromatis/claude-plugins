@@ -108,8 +108,8 @@ Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any chan
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite   # outside this repository; fixtures are built here
-python3 -I dev/locate-plan/suite.py              # 71 cases, no model, ~20 s
-python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~90 s
+python3 -I dev/locate-plan/suite.py              # 82 cases, no model, ~30 s
+python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~3 min
 ```
 
 `dev/locate-plan/README.md` covers the answer key and the headless trial that compares
