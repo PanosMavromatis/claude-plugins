@@ -66,13 +66,19 @@ def common(sid):
     for c in shg[:5]: print(f"        shell search: {c[:140]}")
     return calls
 
-def one_line_backlink(repo, master, branch, after):
-    d = git(repo, "diff", "-U0", f"main..{branch}", "--", master)
-    added = [l for l in d.splitlines() if l.startswith("+") and not l.startswith("+++")]
-    removed = [l for l in d.splitlines() if l.startswith("-") and not l.startswith("---")]
-    hunk = re.search(r"^@@ -(\d+),?0? \+(\d+)", d, re.M)
-    check(f"{repo}: the backlink is the only change to {master}, after line {after}",
-          added == [f"+  > **Branch:** {branch}"] and not removed and bool(hunk) and int(hunk.group(1)) == after, d.strip()[:300])
+def master_plan_change(repo, master, branch, item, after):
+    """The subgoal starts on line `item` and its block ends on line `after`, where the backlink
+    goes. A TODO.md master plan also has the subgoal flipped [ ] -> [~]; a DO.md one has no [~]
+    and keeps its marker. Compared whole against the branch's copy, so nothing else may change."""
+    lines = git(repo, "show", f"main:{master}").split("\n")
+    flip = master.endswith("TODO.md")
+    ok = lines[item - 1].startswith("- [ ] ")
+    if flip: lines[item - 1] = lines[item - 1].replace("- [ ] ", "- [~] ", 1)
+    lines.insert(after, f"  > **Branch:** {branch}")
+    what = f"the subgoal on line {item} flipped to [~] and" if flip else "only"
+    check(f"{repo}: {master} changed by {what} the backlink after line {after}",
+          ok and git(repo, "show", f"{branch}:{master}") == "\n".join(lines),
+          git(repo, "diff", "-U0", f"main..{branch}", "--", master).strip()[:300])
 
 def goal_file_order(sid, calls, index):
     """Every index edit that changes goal NN's marker follows an edit to NN's goal file."""
@@ -118,7 +124,7 @@ def per_goal(scen, repo, branch, model, files):
     want = {f"docs/git/{branch}.md", idx, master, *gfs}   # as /new-branch says: the branch name, unflattened
     check(f"{repo}: /new-branch committed the doc, index, {len(gfs)} goal files and the backlink", got == want and len(gfs) == 2,
           f"committed {sorted(got)}; want {sorted(want)}")
-    one_line_backlink(repo, master, branch, 10)
+    master_plan_change(repo, master, branch, 9, 10)
     head = open(f"{E}/{repo}/{idx}").read() if os.path.exists(f"{E}/{repo}/{idx}") else ""
     for line in ("**Status**: active", "**Revision**: 07-rev", "**Layout**: per-goal", "**Subgoal**: 2. Plan directory structure"):
         check(f"{repo}: the index has `{line}`", line in head)
@@ -156,7 +162,7 @@ def e4():
     txt = open(f"{E}/r4/{plan}").read() if os.path.exists(f"{E}/r4/{plan}") else ""
     check("r4: a flat single-file plan, as before", bool(txt) and "**Layout**" not in txt and not os.path.exists(f"{E}/r4/docs/plan/feat-legacy-notes/TODO"), txt[:200])
     check("r4: the plan has `**Status**: active`", "**Status**: active" in txt)
-    one_line_backlink("r4", "docs/plan/TODO.md", "feat/legacy-notes", 10)
+    master_plan_change("r4", "docs/plan/TODO.md", "feat/legacy-notes", 9, 10)
     common("e4-step")
     check("r4: the first goal is [x]", bool(re.search(r"^- \[x\] ", txt, re.M)), txt[:300])
     p = f"{E}/r4/notes/legacy.txt"; check("r4: notes/legacy.txt holds `legacy`", os.path.exists(p) and "legacy" in open(p).read())

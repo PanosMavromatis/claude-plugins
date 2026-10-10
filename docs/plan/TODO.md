@@ -63,7 +63,7 @@ ends with. Settled, and not to be reopened:
   > `propose-branch-plan.sh`; `/step` and `/hitl-step` work goal files, goal file first;
   > `check-plan-index.sh` reports drift. The shared rules live in `lib/plan-rules.sh`,
   > tested by three suites and a headless end-to-end run — PR #7
-- [ ] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
+- [~] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
       On Claude Code 2.1.296, both the interactive driver session and the headless trial
       runs lacked them, and the model fell back to shell `grep`, which `allowed-tools`
       doesn't cover, so the user gets a prompt. Measure when they are missing, then rewrite

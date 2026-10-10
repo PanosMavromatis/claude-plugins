@@ -30,6 +30,8 @@ expected.
 - `SlashCommand` becomes `Skill(workflow-claude:<name>)` in `/smart-commit`,
   `/agents-docs-update` and `/agents-docs-codex-init`.
 - `/agents-docs-init`'s `CLAUDE.md` heredoc is documented as a deliberate gate.
+- `/new-branch` marks the master-plan subgoal it executes `[~]` (with a `TODO.md` master
+  plan), and the e2e grader expects it. Raised by the user mid-branch.
 - Verify: the three script suites pass, and the user re-runs per-goal-e2e `e4`.
 - In the setup commit, the master plan's R1 release item gains the
   `workflow-claude` → `workflow-coding` rename (D-N8).

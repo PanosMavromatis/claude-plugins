@@ -46,6 +46,32 @@
     > because they are deliberate and documented: `/clean-gone`'s `git branch -D` and
     > `git worktree remove`, and `/file-plans`' `git mv`. The 4 `dp-compile` commands
     > declare no `allowed-tools`.
+    > **Note:** Correction, 2026-10-10: the plugin's `CLAUDE.md` ("Scoped `allowed-tools`:
+    > additive yes, destructive no") documents `git rm`, `git branch -d`, `gh pr merge` and
+    > `git push origin --delete` as deliberate gates. It also explains that `/smart-merge`
+    > cannot allow `git push`, because that prefix also covers `--delete`. Only
+    > `git pull --prune` is undocumented. The first Q&A above was answered on the opposite
+    > premise, so it is asked again when that subgoal is worked.
+- [x] `/new-branch` marks the master-plan subgoal it executes `[~]`
+  > **Note:** Raised by the user, 2026-10-10: no R1 master-plan item went `[~]` when its
+  > branch started. It is unrelated to `Grep`. Neither the installed 0.9.0 nor the working
+  > tree told `/new-branch` to flip the item, and none of the four R1 setup commits did.
+  > The one `[~]` in the master plan's history came from `/hitl-step` working it directly
+  > in R0. `/hitl-step` does flip its goal to `[~]` at the start (this branch's goal 1 did),
+  > but the goal reaches `[x]` before the checkpoint commit, so `[~]` never lands in a
+  > commit. That is the design, not a defect. `/step`'s `DO.md` model has no `[~]`.
+  - [x] `/new-branch` flips the `subgoal:` line from `[ ]` to `[~]` when the model is
+        `TODO.md`. `propose-branch-plan.sh` already reports that line, so no script changes.
+  - [x] The e2e grader expects the flip on a `TODO.md` master plan and forbids it on a
+        `DO.md` one
+    > **Note:** The first draft took the backlink's line (the block end, 10) for the item's
+    > (9). A scratchpad test on fresh fixtures caught it. The check now compares the branch's
+    > master plan whole against `main`'s with the expected edits applied, and 6 of 6 cases
+    > grade right: correct edits pass, while a backlink-only `TODO.md` edit and a flipped
+    > `DO.md` fail.
+  - [x] This repository's master plan marks the `fix/disallowed-tool-steps` subgoal `[~]`
+  - [-] Re-run e2e `e1`, `e3` and `e4`
+    > **Deferred:** to the Verify goal, where the user runs them.
 - [ ] `check-plan-index.sh` reports a legacy plan's open items, and Step 6 runs it for both layouts
 - [ ] Rewrite the remaining steps onto tools their command allows
   - [ ] `/close-revision`'s pointer check
@@ -58,4 +84,4 @@
   - [ ] `/agents-docs-init`'s heredoc is documented as a deliberate gate
   - [-] `/smart-merge` step 7
     > **Deferred:** rewritten once, through `scripts/locate-plan.sh`, by the next R1 subgoal.
-- [ ] Verify: the three script suites pass, and per-goal-e2e `e4` passes Step 6 (the user runs it)
+- [ ] Verify: the three script suites pass, per-goal-e2e `e4` passes Step 6, and `e1`, `e3` and `e4` pass the master-plan `[~]` check (the user runs them)
