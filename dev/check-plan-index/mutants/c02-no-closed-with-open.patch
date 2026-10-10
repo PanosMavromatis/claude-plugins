@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -220,7 +220,7 @@
+     violation "$IDX:$n has [$mk] but $gf says **Goal**: [$gm]" \
+       "the goal file is the source of truth: write $IDX:$n as \`- [$gm]${text#- \[?\]}\`"
+   fi
+-  if [ "$gm" = x ] && [ -n "$opn" ]; then
++  if [ "$gm" = z ] && [ -n "$opn" ]; then
+     case "$opn" in *,*) opn="lines $opn" ;; *) opn="line $opn" ;; esac
+     violation "$gf says **Goal**: [x] but has open items, on $opn" \
+       "close each item, or reopen the goal (\`**Goal**: [~]\` in $gf, then $IDX:$n); which is your call"

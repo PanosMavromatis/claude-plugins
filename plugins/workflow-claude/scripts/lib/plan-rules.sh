@@ -310,7 +310,10 @@ SELECT_AWK='
     k++; T[k] = "I"; L[k] = NR; X[k] = $0; I[k] = ($0 ~ /^[ \t]/) ? 1 : 0
     m = $0; sub(/^[ \t]*- \[/, "", m); M[k] = substr(m, 1, 1)
     if (pergoal && !I[k]) {
-      if ($0 ~ /^- \[.\] [0-9]+[a-z]? / || $0 ~ /^- \[.\] [0-9]+[a-z]?$/) { nn = $0; sub(/^- \[.\] /, "", nn); sub(/[ \t].*$/, "", nn); print "NUM\t" NR "\t" nn }
+      if ($0 ~ /^- \[.\] [0-9]+[a-z]? / || $0 ~ /^- \[.\] [0-9]+[a-z]?$/) {
+        nn = $0; sub(/^- \[.\] /, "", nn); sub(/[ \t].*$/, "", nn); print "NUM\t" NR "\t" nn
+        print "IDX\t" NR "\t" M[k] "\t" nn "\t" $0   # the whole index, for check-plan-index.sh
+      }
       else print "BADIDX\t" NR "\t" $0
     }
     next
@@ -335,11 +338,11 @@ SELECT_AWK='
     for (j = 1; j <= k; j++) if (T[j] == "I" && !I[j] && M[j] == "!") print "BLK\t" L[j]
   }'
 
-# Every item line of a goal file, at any indent.
+# Every item line of a goal file, at any indent: SUB <line> <marker> <the line>.
 GOALFILE_AWK='
   /^[ \t]*```/ { fence = !fence; next }
   fence { next }
-  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { print "SUB\t" NR; next }
+  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { m = $0; sub(/^[ \t]*- \[/, "", m); print "SUB\t" NR "\t" substr(m, 1, 1) "\t" $0; next }
   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
   /^\*\*Goal\*\*:/ && !g { g = 1; v = $0; sub(/^\*\*Goal\*\*:[ \t]*/, "", v); print "GOAL\t" substr(v, 2, 1) }'
 

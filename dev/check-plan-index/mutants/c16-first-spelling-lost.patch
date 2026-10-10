@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -166,7 +166,7 @@
+       n = split(ENVIRON["IL"], R, "\n")
+       for (i = 1; i <= n; i++) {
+         split(R[i], f, "\t"); id = f[3]; k = num(id); see(id)
+-        L[k] = L[k] (L[k] == "" ? "" : " and ") f[1]; C[k]++; if (!(k in ID)) ID[k] = id
++        L[k] = L[k] (L[k] == "" ? "" : " and ") f[1]; C[k]++; ID[k] = id
+         if (C[k] == 2) order[++m] = k
+       }
+       max += ENVIRON["NBAD"]

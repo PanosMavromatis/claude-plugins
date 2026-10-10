@@ -169,25 +169,81 @@ unless a line below says otherwise.
   re-reading or `Grep`ping. A per-goal plan's index is a few lines and the script takes
   about 60 ms. Moving the legacy path to the same mechanism belongs to the next subgoal
   (`Grep` and `Glob` can be missing).
-- **Step 6.** The completion check runs `check-plan-index.sh`. It reads the index and
-  every goal file, and reports open items and drift. A per-goal plan has no `##` sections
-  inside its goals, so "section complete" becomes "plan complete".
+- **Step 6.** The completion check runs `check-plan-index.sh` on Step 1's `plan:`. It
+  reads the index and every goal file, and reports open items and drift. A per-goal plan
+  has no `##` sections inside its goals, so "section complete" becomes "plan complete".
 - **DO model (`/step`).** The unit is one task: the first `[ ]` in `subgoals:`, or the
   goal itself if its file has no tasks. When the last task is ticked, the command sets
   `**Goal**: [x]`, then the index line.
 
 ## `scripts/check-plan-index.sh`
 
-A read-only drift report for a per-goal plan, given the index (or nothing, resolving as
-`locate-plan.sh` does). Per goal it reports:
-- the index marker against `**Goal**:`;
-- a missing goal file, a duplicate, or an orphan (a file no index line claims);
-- numbering;
-- open items.
+A read-only drift report for a per-goal plan. It is built in goal 3, on the shared
+library.
 
-Each finding comes with a `fix:` line read from the evidence, as `locate-plan.sh`'s are.
-Its callers: Step 6 of both step commands; later, `/smart-merge` step 2's
-unfinished-items warning (the merge subgoal). The details are goal 3's.
+```
+check-plan-index.sh <TODO.md|DO.md> [--] <index>
+```
+
+**The index is required.** It is the index file, or its directory, relative to the
+repository root: the `plan:` that `locate-plan.sh` reports. Every caller already holds a
+resolved plan, and resolving again would mean a second resolver to keep in step. An
+absolute path is an error, since the report never carries one.
+
+**Report.** Always these keys, in this order, `—` when empty, with continuation lines
+indented two spaces:
+
+```
+result:   clean | drift | error
+plan:     the index checked
+goals:    the number of index lines
+open:     path:line <the line>, every [ ] [~] [!] item in the index and its goal files
+warnings: W6, as locate-plan.sh words it
+problem:  one line per finding (drift), or why the plan could not be checked (error)
+fix:      one line per problem, in the same order, read from the evidence
+message:  one sentence
+```
+
+`problem:` and `fix:` pair line for line, because a command relays them in pairs. So a
+finding never takes a continuation line: it lists line numbers, not paths. A branch name,
+and so a path, may contain a comma.
+
+**Exit.** 0 clean. 1 drift or error, which `result:` tells apart, so a hook or CI fails
+on drift as `check-agents-md.sh` does. 2 usage. 3 a tool failed (stderr, with
+`locate-plan.sh`'s `hint:` line).
+
+**Findings**, goal by goal, in index order:
+
+| # | When | Fix |
+|---|---|---|
+| D1 | an index marker differs from its goal file's `**Goal**:` | the goal file is the source of truth: the index line rewritten with its marker |
+| D2 | a goal has no `NN-*.md` (E10) | E10's: `git mv` a near-miss name, else create `NN-<slug>.md`; or correct the number |
+| D3 | a goal matches several files (E11) | which copy is stale is the user's call |
+| D4 | a goal file no index line claims | the index line, from its heading and `**Goal**:`, or `git rm` it (the user's call) |
+| D5 | an index line has no goal number (E9) | E9's, from `e9_fixes` |
+| D6 | a goal number is on several index lines, compared as numbers (`02` is `2`) | which line keeps it is the user's call; the others get free numbers, past every goal file and past E9's |
+| D7 | a goal file has no `**Goal**:` line | add one, with the index line's marker |
+| D8 | `**Goal**: [x]` while the file still has open items | close the items, or reopen the goal; the user's call |
+
+- **One report per file.** Only the first index line carrying a number is checked
+  against its file. Any other line with that number belongs to D6, so a file is never
+  read or reported twice.
+- **Near misses and E9 come first.** A near-miss file name (`2-two.md` for goal `02`) is
+  claimed by number and reported under D2, not D4. A file whose slug is an unnumbered
+  line's title is E9's to place, not D4's.
+- **`[-]` is not D8.** A descoped goal may keep open items: that is what descoping
+  without doing means.
+- **Errors, not drift:**
+  - a plan without `**Layout**: per-goal`, since a legacy plan has nothing to drift;
+  - E8, a `**Layout**:` value that is not valid;
+  - E15, a file or directory that cannot be read;
+  - a missing index;
+  - an absolute path;
+  - not being in a repository.
+
+**Its callers.** Step 6 of both step commands (goal 5), and later `/smart-merge`
+step 2's unfinished-items warning (the merge subgoal). Its suite is
+`dev/check-plan-index/`.
 
 ## Not on this branch
 

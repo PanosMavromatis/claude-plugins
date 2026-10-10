@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -264,7 +264,7 @@
+ for rec in $out; do   # "<NN>\t<file>"
+   nn="${rec%%"$TAB"*}"; gf="${rec#*"$TAB"}"
+   need_file "$gf" ""
+-  # its own heading and marker say what its index line would be
++  continue
+   ev="$(awk "$SLUG_AWK"'
+     /^\*\*Goal\*\*:/ && !g { g = 1; v = $0; sub(/^\*\*Goal\*\*:[ \t]*/, "", v); m = substr(v, 2, 1) }
+     /^# / && !h { h = 1; t = $0; sub(/^#[ \t]*/, "", t); t = title("- [ ] " t) }

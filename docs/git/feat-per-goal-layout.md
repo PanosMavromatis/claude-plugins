@@ -49,3 +49,8 @@ repository's own plans stay legacy until R2 step 0.
   The suite now has 83 cases (`e10c` is new, for the slug cap), and the mutants were
   re-anchored to the two-file tree. A new `q11-slug-cap` mutant survived until `e10c`
   existed. The final count is 27 mutants: 26 killed, n05 equivalent.
+- 2026-10-10: goal 3 added `scripts/check-plan-index.sh`, a read-only drift report (D1–D8)
+  on the shared library. Its suite, `dev/check-plan-index/`, has 33 cases and 18
+  mutants. Vetting found that findings interact: problems must pair one-to-one with
+  fixes, and E9, D4 and D6 must not give conflicting advice. Nothing calls it yet; Step
+  6 does, from goal 5.

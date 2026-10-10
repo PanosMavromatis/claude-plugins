@@ -1,0 +1,10 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -256,7 +256,6 @@
+       if (!match(b, /^[0-9]+[a-z]?/)) continue
+       id = substr(b, 1, RLENGTH)
+       if (substr(b, RLENGTH + 1, 1) != "-" || b !~ /\.md$/) continue
+-      if (substr(b, length(id) + 2, length(b) - length(id) - 4) in bad) continue
+       if (!(num(id) in claimed)) print id "\t" F[i]
+     }
+   }' </dev/null)" || die "awk failed looking for goal files no index line claims in $GDIR"

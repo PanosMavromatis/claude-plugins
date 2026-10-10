@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -194,7 +194,7 @@
+     1) gf="$matches" ;;
+     *) names="$(printf '%s\n' "$matches" | awk '{ sub(/.*\//, ""); s = s (NR == 1 ? "" : ", ") $0 } END { print s }')" \
+          || die "awk failed listing goal $nn's files"
+-       violation "goal $nn matches several files in $GDIR/: $names" \
++       violation "goal $nn matches several files in $GDIR/:$NL$matches" \
+          "which copy is stale is your call: keep one, and git rm the others or give them unused goal numbers"
+        return 0 ;;
+   esac

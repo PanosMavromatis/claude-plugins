@@ -116,6 +116,14 @@ python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mut
 `dev/locate-plan/README.md` covers the answer key and the headless trial that compares
 Step 1 with a subagent wrapping the script.
 
+Test its drift report for per-goal plans, `scripts/check-plan-index.sh`, the same way, and
+run both suites after a change to `scripts/lib/plan-rules.sh`:
+
+```bash
+python3 -I dev/check-plan-index/suite.py              # 33 cases, no model, ~10 s
+python3 -I dev/check-plan-index/suite.py --mutants    # the suite must catch each mutant, ~1 min
+```
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one

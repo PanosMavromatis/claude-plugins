@@ -1,0 +1,10 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -198,7 +198,6 @@
+          "which copy is stale is your call: keep one, and git rm the others or give them unused goal numbers"
+        return 0 ;;
+   esac
+-  need_file "$gf" ""
+   out="$(awk "$GOALFILE_AWK" "$gf")" || die "awk failed reading the goal file $gf"
+   local IFS="$NL"
+   for rec in $out; do

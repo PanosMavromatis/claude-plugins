@@ -45,12 +45,12 @@
    fence { next }
    /^## / { k++; T[k] = "H"; L[k] = NR; next }
    item($0) {
-@@ -337,7 +337,7 @@
+@@ -340,7 +340,7 @@
  
- # Every item line of a goal file, at any indent.
+ # Every item line of a goal file, at any indent: SUB <line> <marker> <the line>.
  GOALFILE_AWK='
 -  /^[ \t]*```/ { fence = !fence; next }
 +  /^NEVER$/ { }
    fence { next }
-   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { print "SUB\t" NR; next }
+   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { m = $0; sub(/^[ \t]*- \[/, "", m); print "SUB\t" NR "\t" substr(m, 1, 1) "\t" $0; next }
    /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }

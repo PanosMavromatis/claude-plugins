@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -106,7 +106,7 @@
+ 
+ IDX="${ARG_PATH%/}"
+ case "$IDX" in
+-  /*) violation "the index was given as an absolute path" "pass it relative to the repository root, as locate-plan.sh's plan: names it"; fail "" ;;
++  /no-such-prefix/*) violation "the index was given as an absolute path" "pass it relative to the repository root, as locate-plan.sh's plan: names it"; fail "" ;;
+ esac
+ if [ -d "$IDX" ]; then IDX="$IDX/$MODEL"; fi
+ R_PLAN="$IDX"

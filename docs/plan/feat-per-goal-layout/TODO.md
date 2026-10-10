@@ -80,11 +80,64 @@
     > `message:`, f04 lands on the legacy root at rung 3, and f05 swaps the path. None
     > exits 3, and lockstep is empty in every arm. No headless sessions were run,
     > since the goal changes no behaviour.
-- [ ] `scripts/check-plan-index.sh`: a read-only drift report, on the shared rules
-  - [ ] Index marker against `**Goal**:`, a missing, duplicate or orphan goal file,
+- [x] `scripts/check-plan-index.sh`: a read-only drift report, on the shared rules
+  > **Q:** What does `check-plan-index.sh` take as input?
+  > **A:** The index, required. Every caller already holds a resolved plan: Step 6 has
+  > Step 1's `plan:`, and `/smart-merge` step 2 has its resolved path. Resolving again
+  > would make a second resolver to keep in step with `locate-plan.sh`. This narrows the
+  > spec's "or nothing, resolving as `locate-plan.sh` does", and the spec is updated to
+  > match.
+  > **Q:** Is the rest of the design right? The report is `result: clean | drift |
+  > error`, `plan`, `goals`, `open`, `warnings`, `problem`, `fix` and `message`. The
+  > exit codes are 0 clean, 1 drift or error, 2 usage, 3 tool failure. The findings are:
+  > D1 marker mismatch; D2, D3 and D5 as E10, E11 and E9 over every goal; D4 orphan goal
+  > file; D6 duplicate number; D7 no `**Goal**:` line; D8 `[x]` with open items. The
+  > suite goes in `dev/check-plan-index/`, beside `dev/locate-plan/` rather than renaming
+  > it, since records point at that name.
+  > **A:** Approve as proposed.
+  > **Done:** `scripts/check-plan-index.sh`, read-only, on the shared library. Its
+  > contract is the spec's `check-plan-index.sh` section: report keys, exit codes,
+  > D1–D8 with their fixes, and which overlaps go to whom. It was smoke-tested on one
+  > plan holding every fault at once, then by its suite.
+  - [x] Index marker against `**Goal**:`, a missing, duplicate or orphan goal file,
         numbering, open items; each finding with a `fix:` line read from the evidence
-  - [ ] A suite under `dev/`, with mutants, as `dev/locate-plan/` has
-  - [ ] Its callers: Step 6 of both step commands now; `/smart-merge` step 2 later
+    > **Note:** the library gained two additive fields for it. `SELECT_AWK` prints an
+    > `IDX` record (line, marker, number, text) for each numbered index line, and
+    > `GOALFILE_AWK`'s `SUB` record gains the marker and the line after the line number.
+    > `locate-plan.sh` reads only the first field of `SUB` and has no case for `IDX`, so
+    > its output is unchanged, as its suite confirms.
+    > **Note:** vetting the first smoke run found four defects of mine, each of which
+    > would have misled a caller:
+    > - D8 listed its open items on continuation lines, so `problem:` had more lines
+    >   than `fix:`, and every later fix sat beside the wrong problem. Findings are now
+    >   one line each, naming line numbers. Paths can carry commas, line numbers cannot.
+    > - A duplicated number was checked against its file twice, giving a double D7 and
+    >   double open items. Only the first line with a number is checked now.
+    > - D6's free numbers ignored goal files and E9's assignments, so the two
+    >   suggestions could collide (E9 said 10, D6 said 06). D6 now starts past both.
+    > - D4 also offered a new index line for a file E9 was already numbering a line
+    >   to match: two conflicting fixes for one fact. D4 now leaves E9's files alone.
+    >
+    > The suite then found three more: the problem line echoed an absolute path; D6
+    > named a number by its last spelling (`2`) rather than its first (`02`); and an
+    > awk `NR > 1` tripped the static check's redirect rule. That third one was rewritten
+    > as `NR == 1 ? … : …` rather than loosening the check.
+  - [x] A suite under `dev/`, with mutants, as `dev/locate-plan/` has
+    > **Note:** `dev/check-plan-index/` has 33 cases on one fixture repository, one plan
+    > directory per case, and passes under both shells. Each report is graded for key
+    > order, exit code, text, one fix per problem, the exact `open:` list, no absolute
+    > paths, an untouched fixture and determinism. 18 mutants, all killed, each checked
+    > to die for the rule it breaks. The first `c03` died of a crash it caused (an empty
+    > loop record), not of missing orphan logic, so it was rewritten. It now fails k07,
+    > k08 and k27.
+    > **Note:** the library change made `locate-plan`'s `m02-no-fences` stale, since it
+    > disables fences in `GOALFILE_AWK`, whose `SUB` line changed. It was rebuilt with
+    > all six hunks, and an assertion shows no fence handling survives. Afterwards the
+    > locate-plan suite, validation set and answer key all pass, with 26 mutants killed
+    > and n05 equivalent.
+  - [x] Its callers: Step 6 of both step commands now; `/smart-merge` step 2 later
+    > **Note:** decided and recorded in the spec. The wiring itself is goal 5's Step 6
+    > subgoal and the merge subgoal's step 2; nothing calls the script yet.
 - [ ] `scripts/propose-branch-plan.sh` and `/new-branch`: per-goal inside the open
       revision, the legacy path kept
   - [ ] The script, to the spec's report and rules, with a suite and mutants
