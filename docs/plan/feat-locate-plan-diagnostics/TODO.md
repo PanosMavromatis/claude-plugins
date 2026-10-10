@@ -247,10 +247,52 @@
   > **Note:** no headless test was run for this goal. The offer appears only after an
   > `error` or a failed run, and goal 4's re-grade runs the real commands on such cases,
   > so it will show the offer line in practice.
-- [ ] Re-grade against the goal-10 answer key: 40/40. On every case, at least the best
+- [x] Re-grade against the goal-10 answer key: 40/40. On every case, at least the best
       wrapper run; the full fix on e07, e08, e08b and e09; no case lower than today. The
       user runs the headless sessions. f03 is scored through the real `/hitl-step` and
       `/step`, whose Step 1 refuses a cut-short report (goal 12), and not through a probe
       that paraphrases Step 1. Then run the validation set once: every case must score 1
       or 2, and the number at 2 is recorded. If a case fails and is then fixed, both
       results are recorded and the set is marked spent.
+  > **Result:** the direct output on the 18 scored cases that need no session (all but f03
+  > and f05) scores 2 on every one, against today's 26 of 36. That includes the full fix
+  > on e07, e08, e08b and e09. e02b also offers to `git mv` one of the listed files to
+  > `TODO.md` "(your call)". That is a choice left to the user, not an over-reach.
+  > **Q:** f05's "today = 2" came from the goal-10 probe, which paraphrases Step 1's
+  > `next:` check: the flaw that made f03 provisional. Step 1 also changed in e556a4d, and
+  > goal 3 left the investigation offer to be seen here. Which headless runs?
+  > **A:** f03, f05 and two error cases through the real commands, twice each: t-hitl and
+  > t-step (f03), t-hitl-f05 and t-step-f05, t-hitl-e07 (E7) and t-step-e08 (E4 under
+  > `DO.md`).
+  > **Note:** f05's wrapper swapped only `case-r2-flat/TODO.md`, and the command fixtures
+  > have no second plan, so a swap there would fail on a missing file rather than a
+  > mismatched line. Two fixture branches, `case/cmd-hitl-swap` and `case/cmd-step-swap`,
+  > add `case/r2-flat`'s master plan, and the wrapper now swaps any case plan. On
+  > `case/r2-flat` its output is byte-identical to the old wrapper's.
+  > **Result:** 12 of 12 sessions score 2, run as baseline g4a and g4b under hashed names.
+  > - f03: each refuses the report that has no `message:`, shows it, and stops.
+  > - f05: each finds that the `next:` line differs, re-runs the script once, and stops.
+  > - t-hitl-e07 and t-step-e08 relay the fix and leave it to the user.
+  >
+  > Every session ends with the one-line investigation offer, and none investigates
+  > unasked, so goal 3's offer is now seen in practice. f03's score of 2 is no longer
+  > provisional. Training total: 40/40 (`grade.py scores`: `final_below` is empty).
+  > **Result:** the validation set's one run. `suite.py --validation` passed 22/22, and so did
+  > `answer-key.py --validation`, v17 and v21 included. Graded against `VKEY`, all 22
+  > score 2, so no 0 and no −1, and the gate passes. Every counter-case got the other fix:
+  > restore rather than create (v02, v04), rename (v06, v16), match the existing file
+  > (v08), list the plans below (v09), and correct rather than remove (v12, v14). v10 is
+  > the borderline call. Its fix offers `git mv` on "one of these files" without singling
+  > out `TODO.txt`, but every part of the full fix is there. No case failed, so nothing was
+  > fixed after the look, and the set is not spent.
+  > **Note:** `Grep` was not available in these sessions, though `allowed-tools` grants it.
+  > t-hitl-f05 (g4a) tried it after stopping and got "No such tool available: Grep". The
+  > driver session on 2.1.296 has neither `Grep` nor `Glob` either. The investigation
+  > paragraph this branch wrote names both.
+  > **Q:** Where should the `Grep`/`Glob` gap be handled? It isn't yet known when they are
+  > missing.
+  > **A:** In a new R1 subgoal, before `/smart-merge` step 7: measure when they are missing,
+  > then rewrite every step that relies on them. This branch closes at 40/40 as scoped.
+  > **Done:** script final 40/40 against today's 28, with f03 and f05 through the real
+  > commands. The validation set scored 22/22 at 2, so the gate passes. The grades are in
+  > `trial/hand-grades.tsv`, and `scores.json` is regenerated.

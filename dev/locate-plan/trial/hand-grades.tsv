@@ -145,3 +145,61 @@ f01	script	today	2	chmod u+r
 f02	script	today	1	exit 3, "awk failed": a broken tool, no PATH hint
 f03	script	today	2	Step 1 refuses a report with no message: line (goal 12); provisional: those runs saw -trunc in the path, goal 4 re-runs them under neutral names
 f05	script	today	2	Step 1's next: check differs, so it stops
+# feat-locate-plan-diagnostics goal 4, 2026-10-10. `script final` is the script after goal 2,
+# graded on its direct output against KEY. f03 and f05 are graded instead on the real /hitl-step
+# and /step, under hashed names: the t-* rows, baseline arm, runs g4a and g4b. The v-rows grade
+# the held-out set's fix: lines against VKEY. This is the set's one run.
+e01	script	final	2	says nothing exists at the path
+e02	script	final	2	DO.md plan, run /step
+e02b	script	final	2	"holds no TODO.md (and no DO.md), only: README.md"; the git mv offer is the user's call
+e03	script	final	2	outside the repository; give a path inside it
+e04	script	final	2	the branch plan is DO.md, run /step
+e05	script	final	2	remove line 3 (`**Layout**: revisions`), or add a `## Revisions` section
+e06	script	final	2	line 8 corrected, then needs 07-alpha/_TODO.md; line 9's [?] left to the user with the five markers
+e07	script	final	2	never committed, so git mv _DO.md to _TODO.md, or mark line 7 [x]
+e07b	script	final	2	never committed: create each _TODO.md, or mark lines 7 and 8 [x]
+e08	script	final	2	remove line 4: items unnumbered and no TODO/, so never per-goal
+e08b	script	final	2	remove line 3: the root plan takes only revisions, and has no ## Revisions
+e09	script	final	2	number it 02 and create TODO/02-rewrite-without-a-number.md
+e10	script	final	2	create docs/plan/d-e10/TODO/02-two.md
+e11	script	final	2	names 02-a.md and 02-b.md; which is stale is the user's call
+e13	script	final	2	not in a repository; run it from one
+e14	script	final	2	no revision open and no other plan active: open one (line and _TODO.md) or /new-branch; no closed revision named
+f01	script	final	2	chmod u+r
+f02	script	final	2	exit 3 with hint: awk exited 127, names the awk first on PATH, check PATH
+f03	script	final	2	t-hitl and t-step, g4a and g4b: each refuses the report without message:, shows it, stops, offers
+f05	script	final	2	t-hitl-f05 and t-step-f05, g4a and g4b: each finds the next: line differs, re-runs once, stops
+v01	script	final	2	never committed: create 09-gamma/_TODO.md, or mark line 8 [x]
+v02	script	final	2	restore from 3a76ae3ace55^, naming the commit; not "create"
+v03	script	final	2	never committed: git mv _TODO.md to _DO.md, or mark line 7 [x]
+v04	script	final	2	restore from f5db0a63e294^, naming the commit; no git mv of _DO.md
+v05	script	final	2	create docs/plan/team/v-v05/TODO/03a-split-work-phase-two.md, the split id kept
+v06	script	final	2	git mv TODO/02_two.md to TODO/02-two.md; not "create"
+v07	script	final	2	number it 03 and create TODO/03-ship-v2-docs.md
+v08	script	final	2	number it 02 to match TODO/02-rewrite-parser.md; no new file
+v09	script	final	2	lists area/feat-a/TODO.md and area/feat-b/TODO.md; which is the user's call
+v10	script	final	2	lists TODO.txt, notes.md and offers git mv (your call); doesn't single out TODO.txt
+v11	script	final	2	remove line 4: items unnumbered and no TODO/
+v12	script	final	2	correct line 4 to per-goal: every item numbered and TODO/ holds goal files; not removed
+v13	script	final	2	remove line 3 from docs/plan/DO.md
+v14	script	final	2	correct line 3 to revisions: the file has a ## Revisions section; not removed
+v15	script	final	2	remove line 5, or add a ## Revisions section
+v16	script	final	2	rename line 5, `## Revision`, to `## Revisions`; header kept
+v17	script	final	2	line 8 corrected; line 9 as 10-delta, the label the user's call; each then needs its _TODO.md
+v18	script	final	2	names 04-a, 04-b and 04-c; which is stale is the user's call
+v19	script	final	2	open a revision or /new-branch; neither closed revision offered
+v20	script	final	2	names docs/plan/feat-x/TODO.md, or omit the path
+v21	script	final	2	git exited 127 (not found), names the git first on PATH, check PATH; not E13
+v22	script	final	2	names the awk first on PATH and its status 2; check PATH or that awk
+t-hitl	baseline	g4a	2	no message: line: shows the output, stops, offers to investigate; no edit
+t-hitl	baseline	g4b	2	no message: line: shows the output, stops, offers to investigate; no edit
+t-step	baseline	g4a	2	no next: or message: line: shows the output, stops, offers; no edit
+t-step	baseline	g4b	2	no next: or message: line: shows the output, stops, offers; no edit
+t-hitl-f05	baseline	g4a	2	line 10 differs, re-runs once, stops, offers; Grep tried after the stop, not available
+t-hitl-f05	baseline	g4b	2	line 10 differs, re-runs once, stops, offers
+t-step-f05	baseline	g4a	2	line 8 differs, re-runs once, stops, offers
+t-step-f05	baseline	g4b	2	line 8 differs, re-runs once, stops, offers; notes the false kind: led to a whole read
+t-hitl-e07	baseline	g4a	2	relays the git mv fix and mark-[x] alternative as the user's call, offers
+t-hitl-e07	baseline	g4b	2	relays the git mv fix and mark-[x] alternative as the user's call, offers
+t-step-e08	baseline	g4a	2	relays "run /hitl-step instead", offers
+t-step-e08	baseline	g4b	2	relays "run /hitl-step instead", offers

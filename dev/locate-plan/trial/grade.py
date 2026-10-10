@@ -15,7 +15,9 @@ Mechanical checks, per session:
           invocation, and the parent's re-run equals both
   writes  any Edit/Write/NotebookEdit, or a Bash command matching a write pattern, by
           parent or agent
-Fix scores are graded by hand against answer-key.py's KEY, in hand-grades.tsv.
+Fix scores are graded by hand against answer-key.py's KEY, in hand-grades.tsv. scores also
+reads the `script final` rows (feat-locate-plan-diagnostics goal 4): the script after that
+branch on every scored case, and the held-out set v01-v22 against VKEY, with its gate.
 
 extract reads transcripts under ~/.claude/projects and writes only trial.json; it checks
 the fixtures out and back to main for `truth`, as run.sh does. evidence and scores write
@@ -33,6 +35,7 @@ SCORED = ["e01", "e02", "e02b", "e03", "e04", "e05", "e06", "e07", "e07b", "e08"
           "e09", "e10", "e11", "e13", "e14", "f01", "f02", "f03", "f05"]   # f04 tests honesty only
 RECORDED = {"baseline-t1": 26, "baseline-t2": 26, "haiku-t1": 30, "haiku-t2": 26,
             "sonnet-t1": 32, "sonnet-t2": 30}   # feat-plan-locator goal 10, before the regrade
+VCASES = [f"v{i:02d}" for i in range(1, 23)]   # the held-out set (answer-key.py VKEY)
 WRITE = re.compile(r"(^|[\s;&|(])(rm|mv|cp|chmod|chown|touch|mkdir|tee|ln|install|truncate)\s|sed\s+-i|"
                    r"git\s+(mv|rm|add|commit|checkout|switch|reset|restore|stash|apply|am|merge|rebase|tag|branch\s+-[dDmM])|"
                    r">\s*[^&\s]|>>")
@@ -298,21 +301,33 @@ def scores():
         cell = {f"{a}-{t}": hg[(c, a, t)][0] for a in ARMS for t in RUNS}
         cell["best_wrapper"] = max(v for k, v in cell.items() if not k.startswith("baseline"))
         cell["script_today"] = hg[(c, "script", "today")][0]
+        cell["script_final"] = hg[(c, "script", "final")][0]
         cell["required"] = 2
         per[c] = cell
     totals = {k: {"regraded": sum(per[c][k] for c in SCORED), "recorded": RECORDED[k]} for k in RECORDED}
     doc = {"about": "Fix scores per case for the goal-10 trial, derived from trial/hand-grades.tsv. "
                     "2 = full fix, 1 = correct but generic, 0 = wrong or missing, -1 = over-reach; f04 is not scored. "
                     "script_today is the shipped script and Step 1 at the start of feat-locate-plan-diagnostics. "
-                    "Acceptance for that branch: every case at 2, which also meets best_wrapper and script_today.",
+                    "script_final is the same after that branch (its goal 4); f03 and f05 there are graded on the real "
+                    "/hitl-step and /step. Acceptance for that branch: every case at 2, which also meets best_wrapper "
+                    "and script_today (final_below lists any case short of that), and the held-out validation set "
+                    "with no case below 1 (validation.gate).",
            "cases": SCORED, "per_case": per, "totals": totals,
            "best_wrapper_total": sum(per[c]["best_wrapper"] for c in SCORED),
            "script_today_total": sum(per[c]["script_today"] for c in SCORED),
            "required_total": 2 * len(SCORED),
-           "below_required": [c for c in SCORED if per[c]["script_today"] < 2]}
+           "below_required": [c for c in SCORED if per[c]["script_today"] < 2],
+           "script_final_total": sum(per[c]["script_final"] for c in SCORED),
+           "final_below": [c for c in SCORED if per[c]["script_final"] < max(2, per[c]["best_wrapper"], per[c]["script_today"])]}
+    val = {v: hg[(v, "script", "final")][0] for v in VCASES}
+    doc["validation"] = {"per_case": val, "at_2": sum(s == 2 for s in val.values()),
+                         "gate": "pass" if min(val.values()) >= 1 else "FAIL"}
     with open(ROOT + "/scores.json", "w") as f: json.dump(doc, f, indent=1); f.write("\n")
     print(f"script today {doc['script_today_total']}/{doc['required_total']}, best wrapper {doc['best_wrapper_total']};"
           f" below 2: {', '.join(doc['below_required'])}")
+    v = doc["validation"]
+    print(f"script final {doc['script_final_total']}/{doc['required_total']}, short: {', '.join(doc['final_below']) or 'none'};"
+          f" validation {v['at_2']}/{len(VCASES)} at 2, gate {v['gate']}")
     for k, v in totals.items(): print(f"  {k:<12} regraded {v['regraded']:>3}  recorded {v['recorded']:>3}")
 
 if __name__ == "__main__":

@@ -66,9 +66,14 @@ CASES=(
   "f03|fx|case/r2-flat|probe|TODO.md|f03"
   "f04|fx|case/r2-flat|probe|TODO.md|f04"
   "f05|fx|case/r2-flat|probe|TODO.md|f05"
-  # goal 12: a cut-short report through the real commands, which run the shipped Step 1
+  # goal 12 and feat-locate-plan-diagnostics goal 4: faults and errors through the real
+  # commands, which run the shipped Step 1
   "t-hitl|fx|case/cmd-hitl|hitl||f03"
   "t-step|fx|case/cmd-step|step||f03"
+  "t-hitl-f05|fx|case/cmd-hitl-swap|hitl||f05"
+  "t-step-f05|fx|case/cmd-step-swap|step||f05"
+  "t-hitl-e07|fx-diag|d/e07|hitl||"
+  "t-step-e08|fx-diag|d/e08|step||"
 )
 
 run_case() {

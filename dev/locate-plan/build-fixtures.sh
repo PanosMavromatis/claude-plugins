@@ -132,5 +132,12 @@ branch case/cmd-step
 mkdir -p "$FX/docs/plan/case-cmd-step"
 printf '# case/cmd-step\n\n**Status**: active\n\n## Tasks\n\n- [x] done\n%s\n' "$FG" > "$FX/docs/plan/case-cmd-step/DO.md"
 commit c20
+# f05 through the real commands: the command fixtures, plus a master plan to swap to
+branch case/cmd-hitl-swap; plan "$FX/docs/plan/case-cmd-hitl-swap/TODO.md" active '- [x] done' "$FG"
+                           big_master "$FX/docs/plan/TODO.md"; commit t-hitl-f05
+branch case/cmd-step-swap
+mkdir -p "$FX/docs/plan/case-cmd-step-swap"
+printf '# case/cmd-step-swap\n\n**Status**: active\n\n## Tasks\n\n- [x] done\n%s\n' "$FG" > "$FX/docs/plan/case-cmd-step-swap/DO.md"
+big_master "$FX/docs/plan/TODO.md"; commit t-step-f05
 git -C "$FX" checkout -q main
 echo "built: $FX ($(git -C "$FX" branch | wc -l | tr -d ' ') branches), shims in $W/bin"

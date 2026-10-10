@@ -74,7 +74,7 @@ these sessions; Claude does not.
 
 ```bash
 python3 -I dev/locate-plan/trial/build-arms.py           # arms and fault copies in p/<hash>/
-ARM=baseline RUN=t1 dev/locate-plan/trial/run.sh all     # c01–c20, e01–e14, f01–f05, t-hitl, t-step
+ARM=baseline RUN=t1 dev/locate-plan/trial/run.sh all     # c01–c20, e01–e14, f01–f05, t-* (the real commands)
 python3 -I dev/locate-plan/trial/grade.py extract        # transcripts -> $LOCATE_PLAN_WORK/trial.json
 python3 -I dev/locate-plan/trial/grade.py table          # truth, honesty, vetting, next-check, writes
 python3 -I dev/locate-plan/trial/grade.py diag e07 e10   # what each arm said, side by side
@@ -108,4 +108,5 @@ python3 -I dev/locate-plan/trial/show-session.py baseline t1 e07
   work directory and hold absolute paths and session content.
 
 `feat/locate-plan-diagnostics` is accepted when every scored case reaches 2 (40 of 40).
-At its start, today's script scored 28.
+At its start, today's script scored 28. At its end it scored 40, and the validation set had
+22 of 22 at 2 (`scores.json`, `final_below` and `validation`).

@@ -54,6 +54,14 @@ ends with. Settled, and not to be reopened:
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
+- [ ] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
+      On Claude Code 2.1.296, both the interactive driver session and the headless trial
+      runs lacked them, and the model fell back to shell `grep`, which `allowed-tools`
+      doesn't cover, so the user gets a prompt. Measure when they are missing, then rewrite
+      every step that relies on them, across the 11 command files that declare them:
+      `/smart-merge` step 7, `/close-revision`'s pointer check, and in `/step` and
+      `/hitl-step` the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep and
+      the investigation paragraph. Found on `feat-locate-plan-diagnostics` goal 4.
 - [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
       index and edits `_TODO.md`.
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a

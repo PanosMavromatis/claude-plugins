@@ -1,5 +1,5 @@
 {
- "about": "Fix scores per case for the goal-10 trial, derived from trial/hand-grades.tsv. 2 = full fix, 1 = correct but generic, 0 = wrong or missing, -1 = over-reach; f04 is not scored. script_today is the shipped script and Step 1 at the start of feat-locate-plan-diagnostics. Acceptance for that branch: every case at 2, which also meets best_wrapper and script_today.",
+ "about": "Fix scores per case for the goal-10 trial, derived from trial/hand-grades.tsv. 2 = full fix, 1 = correct but generic, 0 = wrong or missing, -1 = over-reach; f04 is not scored. script_today is the shipped script and Step 1 at the start of feat-locate-plan-diagnostics. script_final is the same after that branch (its goal 4); f03 and f05 there are graded on the real /hitl-step and /step. Acceptance for that branch: every case at 2, which also meets best_wrapper and script_today (final_below lists any case short of that), and the held-out validation set with no case below 1 (validation.gate).",
  "cases": [
   "e01",
   "e02",
@@ -32,6 +32,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "e02": {
@@ -43,6 +44,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "e02b": {
@@ -54,6 +56,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e03": {
@@ -65,6 +68,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "e04": {
@@ -76,6 +80,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "e05": {
@@ -87,6 +92,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e06": {
@@ -98,6 +104,7 @@
    "sonnet-t2": 1,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e07": {
@@ -109,6 +116,7 @@
    "sonnet-t2": 1,
    "best_wrapper": 1,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e07b": {
@@ -120,6 +128,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e08": {
@@ -131,6 +140,7 @@
    "sonnet-t2": 1,
    "best_wrapper": 1,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e08b": {
@@ -142,6 +152,7 @@
    "sonnet-t2": 1,
    "best_wrapper": 1,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e09": {
@@ -153,6 +164,7 @@
    "sonnet-t2": 1,
    "best_wrapper": 1,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e10": {
@@ -164,6 +176,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e11": {
@@ -175,6 +188,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "e13": {
@@ -186,6 +200,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "e14": {
@@ -197,6 +212,7 @@
    "sonnet-t2": 0,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "f01": {
@@ -208,6 +224,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "f02": {
@@ -219,6 +236,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 1,
+   "script_final": 2,
    "required": 2
   },
   "f03": {
@@ -230,6 +248,7 @@
    "sonnet-t2": -1,
    "best_wrapper": -1,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   },
   "f05": {
@@ -241,6 +260,7 @@
    "sonnet-t2": 2,
    "best_wrapper": 2,
    "script_today": 2,
+   "script_final": 2,
    "required": 2
   }
  },
@@ -286,5 +306,35 @@
   "e11",
   "e14",
   "f02"
- ]
+ ],
+ "script_final_total": 40,
+ "final_below": [],
+ "validation": {
+  "per_case": {
+   "v01": 2,
+   "v02": 2,
+   "v03": 2,
+   "v04": 2,
+   "v05": 2,
+   "v06": 2,
+   "v07": 2,
+   "v08": 2,
+   "v09": 2,
+   "v10": 2,
+   "v11": 2,
+   "v12": 2,
+   "v13": 2,
+   "v14": 2,
+   "v15": 2,
+   "v16": 2,
+   "v17": 2,
+   "v18": 2,
+   "v19": 2,
+   "v20": 2,
+   "v21": 2,
+   "v22": 2
+  },
+  "at_2": 22,
+  "gate": "pass"
+ }
 }

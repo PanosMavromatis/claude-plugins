@@ -122,7 +122,7 @@ search for any plan yourself, and do not edit anything.
 WRAPPERS = {
  "f03": '#!/usr/bin/env bash\n"$(dirname "$0")/../../core.sh" "$@" | head -5\n',
  "f04": '#!/usr/bin/env bash\nexec "$(dirname "$0")/../../core.sh" --branch no-such-branch "$@"\n',
- "f05": '#!/usr/bin/env bash\n"$(dirname "$0")/../../core.sh" "$@" | sed "s#docs/plan/case-r2-flat/TODO.md#docs/plan/TODO.md#g"\n',
+ "f05": '#!/usr/bin/env bash\n"$(dirname "$0")/../../core.sh" "$@" | sed -E "s#docs/plan/case-[a-z0-9-]+/(TODO|DO)\\.md#docs/plan/TODO.md#g"\n',
 }
 
 def mkexec(path, text):
