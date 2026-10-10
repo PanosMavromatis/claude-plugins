@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -195,7 +195,7 @@
+@@ -145,7 +145,7 @@
  
  phys() {  # the physical absolute path of an existing file or directory; 2 if it cannot be entered
    local d

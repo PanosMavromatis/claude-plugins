@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -667,7 +667,7 @@
+@@ -279,7 +279,7 @@
    if [ "$d" != . ]; then
      below="$(find "$d" -mindepth 2 -type f -name "$MODEL" | sort)" || die "find failed listing plans under $d"
    fi

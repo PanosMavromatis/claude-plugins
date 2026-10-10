@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -342,7 +342,7 @@
+ GOALFILE_AWK='
+   /^[ \t]*```/ { fence = !fence; next }
+   fence { next }
+-  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { m = $0; sub(/^[ \t]*- \[/, "", m); print "SUB\t" NR "\t" substr(m, 1, 1) "\t" $0; next }
++  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { m = $0; sub(/^[ \t]*- \[/, "", m); print "SUB\t" NR "\t" substr(m, 2, 1) "\t" $0; next }
+   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
+   /^\*\*Goal\*\*:/ && !g { g = 1; v = $0; sub(/^\*\*Goal\*\*:[ \t]*/, "", v); print "GOAL\t" substr(v, 2, 1) }'
+ 

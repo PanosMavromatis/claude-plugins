@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -548,7 +548,6 @@
+@@ -443,7 +443,6 @@
    local f st active="" merged="" na nm IFS="$NL"
    for f in $ALL_F; do
      if [ "$f" = "$ROOT_PLAN" ]; then continue; fi

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -251,7 +251,7 @@
+   out="$(TITLES="$TITLES" GD="$R_DIR/$GSTEM" awk "$SLUG_AWK"'
+     function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+     BEGIN {
+-      n = split(ENVIRON["TITLES"], T, "\n"); w = length(n "") < 2 ? 2 : length(n "")
++      n = split(ENVIRON["TITLES"], T, "\n"); w = 2
+       for (i = 1; i <= n; i++) {
+         t = trim(T[i]); if (t == "") { print "EMPTY\t" i; continue }
+         id = sprintf("%0" w "d", i)

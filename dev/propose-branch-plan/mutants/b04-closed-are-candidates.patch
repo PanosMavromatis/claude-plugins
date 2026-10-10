@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -206,7 +206,7 @@
+     f="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+     mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; rest="${rest#*"$TAB"}"; br="${rest%%"$TAB"*}"
+     rest="${rest#*"$TAB"}"; rest="${rest#*"$TAB"}"
+-    case "$mk" in ' '|'~') if [ -z "$br" ]; then R_CAND="${R_CAND:+$R_CAND$NL}$f:$n $rest"; fi ;; esac
++    case "$mk" in *) if [ -z "$br" ]; then R_CAND="${R_CAND:+$R_CAND$NL}$f:$n $rest"; fi ;; esac
+   done
+   unset IFS
+   if [ -n "$R_CAND" ]; then

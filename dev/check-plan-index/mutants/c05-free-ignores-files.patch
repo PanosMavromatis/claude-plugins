@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -162,7 +162,7 @@
+     BEGIN {
+       w = 2
+       n = split(ENVIRON["FILES"], F, "\n")
+-      for (i = 1; i <= n; i++) { b = F[i]; sub(/.*\//, "", b); if (match(b, /^[0-9]+[a-z]?-/)) see(substr(b, 1, RLENGTH - 1)) }
++      for (i = 1; i <= n; i++) { b = F[i]; sub(/.*\//, "", b); if (0) see(substr(b, 1, RLENGTH - 1)) }
+       n = split(ENVIRON["IL"], R, "\n")
+       for (i = 1; i <= n; i++) {
+         split(R[i], f, "\t"); id = f[3]; k = num(id); see(id)

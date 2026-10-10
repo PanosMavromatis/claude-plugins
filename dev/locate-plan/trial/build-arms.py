@@ -7,7 +7,7 @@ its arm or its fault.
   sonnet     probe-resolver command that runs that Step 1 alone (the same, on Sonnet)
 
 Each arm also gets three fault copies, whose scripts/locate-plan.sh wraps the real script
-(kept outside the plugin root, as p/<hex>/core.sh): f03 cuts the report short, f04 gives
+(kept outside the plugin root, as p/<hex>/core.sh, with its library in p/<hex>/lib/): f03 cuts the report short, f04 gives
 a well-formed wrong answer, f05 swaps the plan path so next: no longer matches. f01 and f02
 need no copy: run.sh removes the plan's read bit, or puts a failing awk first on PATH.
 
@@ -164,7 +164,9 @@ if __name__ == "__main__":
             dst = root + "/workflow-claude"
             build_arm(arm, dst)
             if fault:
+                # core.sh sources lib/plan-rules.sh from beside itself, so it takes a copy
                 os.rename(dst + "/scripts/locate-plan.sh", root + "/core.sh")
+                shutil.copytree(dst + "/scripts/lib", root + "/lib")
                 mkexec(dst + "/scripts/locate-plan.sh", WRAPPERS[fault])
             print(f"{arm:<8} {fault or '-':<4} {root}  lockstep {'empty' if lockstep(dst + '/commands') else 'DIFFERS'}")
     body = AGENT.split("---", 2)[2]

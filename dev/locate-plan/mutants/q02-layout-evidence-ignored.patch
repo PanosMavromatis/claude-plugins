@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -316,7 +316,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -185,7 +185,7 @@
    if [ -d "$g" ] && [ -r "$g" ] && [ -x "$g" ]; then
      gf="$(find "$g" -maxdepth 1 -type f -name '[0-9]*-*.md' | sort)" || die "find failed listing $g"
    fi

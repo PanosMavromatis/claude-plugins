@@ -55,9 +55,14 @@ ends with. Settled, and not to be reopened:
   > against the goal-10 answer key (28 before). The held-out validation set scored 22 of 22
   > at 2. `/step` and `/hitl-step` offer a read-only investigation on an error. The suite
   > lives in `dev/locate-plan/` — PR #6
-- [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
+- [x] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
+  > **Branch:** feat/per-goal-layout
+  > **Done:** `/new-branch` writes per-goal plans inside the open revision, placed by
+  > `propose-branch-plan.sh`; `/step` and `/hitl-step` work goal files, goal file first;
+  > `check-plan-index.sh` reports drift. The shared rules live in `lib/plan-rules.sh`,
+  > tested by three suites and a headless end-to-end run — PR #7
 - [ ] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
       On Claude Code 2.1.296, both the interactive driver session and the headless trial
       runs lacked them, and the model fell back to shell `grep`, which `allowed-tools`
@@ -66,6 +71,12 @@ ends with. Settled, and not to be reopened:
       `/smart-merge` step 7, `/close-revision`'s pointer check, and in `/step` and
       `/hitl-step` the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep and
       the investigation paragraph. Found on `feat-locate-plan-diagnostics` goal 4.
+      Also every other step that relies on a tool its command does not allow. One is
+      known: `/hitl-step`'s legacy Step 6 completion check runs `awk`, which is not
+      allow-listed, so it prompts or is refused, and the model falls back to shell
+      `grep`. The likely fix is `check-plan-index.sh` reporting a legacy plan's open
+      items, so Step 6 runs one script for both layouts; `Bash(awk:*)` is ruled out.
+      Found on `feat-per-goal-layout` goal 6.
 - [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
       index and edits `_TODO.md`.
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a

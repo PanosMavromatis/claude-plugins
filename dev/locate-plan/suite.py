@@ -11,8 +11,10 @@ its fix: lines are graded against answer-key.py's VKEY at the final re-grade, no
 
 By default every case runs twice under each shell found, and must print the same thing each
 time. --once runs each case once, under the first shell. --mutants applies each patch in
-mutants/ to a copy of the script and runs the suite on it once: every mutant must fail it,
-except the known equivalent ones, and a patch that no longer applies is reported stale."""
+mutants/ to a copy of the script and its library and runs the suite on it once: every
+mutant must fail it, except the known equivalent ones, and a patch that no longer applies
+is reported stale. A patch names the file it changes, relative to scripts/:
+locate-plan.sh, or lib/plan-rules.sh, the rules shared with the other plan scripts."""
 import hashlib, os, re, shutil, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +22,7 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 SCRIPT = REPO + "/plugins/workflow-claude/scripts/locate-plan.sh"
 if "--script" in sys.argv:
     SCRIPT = os.path.abspath(sys.argv[sys.argv.index("--script") + 1])
+LIB = os.path.dirname(SCRIPT) + "/lib/plan-rules.sh"   # sourced by the script, from beside it
 P = os.environ.get("LOCATE_PLAN_WORK") or sys.exit("set LOCATE_PLAN_WORK to a directory outside the repository")
 os.makedirs(P, exist_ok=True); P = os.path.realpath(P)
 if (P + "/").startswith(os.path.realpath(REPO) + "/"): sys.exit(f"refusing: {P} is inside the repository")
@@ -133,6 +136,12 @@ D = [
                      "docs/plan/d-e10b/TODO/2-two.md": goalfile("~", "- [ ] a")}, ["TODO.md"],
   dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/d-e10b/TODO/02-*.md"],
        fix=["git mv docs/plan/d-e10b/TODO/2-two.md docs/plan/d-e10b/TODO/02-two.md"], nofix=["create"])),
+ # a title whose slug passes 40 characters, cut on a `-` that must then go: the slug rule
+ # is a contract with the plan writers (feat-per-goal-layout), so its cap is tested
+ ("e10c", "d/e10c", {"docs/plan/d-e10c/TODO.md": pergoal_index("- [~] 02 — Rewrite Step 1 of both step commands so they call the new script")},
+  ["TODO.md"],
+  dict(exit=1, result="error", rung="2", prob=["goal 02 has no file matching docs/plan/d-e10c/TODO/02-*.md"],
+       fix=["create docs/plan/d-e10c/TODO/02-rewrite-step-1-of-both-step-commands-so.md, or correct"])),
  ("e11", "d/e11", {"docs/plan/d-e11/TODO.md": pergoal_index("- [~] 02 — two"),
                    "docs/plan/d-e11/TODO/02-a.md": goalfile("~", "- [ ] a"),
                    "docs/plan/d-e11/TODO/02-b.md": goalfile("~", "- [ ] b")}, ["TODO.md"],
@@ -453,7 +462,7 @@ def grade(cid, exp, code, out, err):
     return probs
 
 def static_checks():
-    src = open(SCRIPT).read()
+    src = open(SCRIPT).read() + "\n" + open(LIB).read()
     probs = []
     code = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith("#"))
     if "<<" in code: probs.append("a heredoc or here-string (a temporary file on Bash 3.2)")
@@ -474,11 +483,13 @@ def mutants():
     d = HERE + "/mutants"; tmp = P + "/mut"; bad = 0
     shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp)
     for fn in sorted(f for f in os.listdir(d) if f.endswith(".patch")):
-        name = fn[:-6]; out = f"{tmp}/{name}.sh"
-        ap = sh(["patch", "-s", "-F0", "-o", out, SCRIPT, f"{d}/{fn}"], tmp)
+        # each mutant is a copy of the script and its library, patched in place
+        name = fn[:-6]; root = f"{tmp}/{name}"; out = root + "/locate-plan.sh"
+        os.makedirs(root + "/lib")
+        shutil.copy2(SCRIPT, out); shutil.copy2(LIB, root + "/lib/plan-rules.sh")
+        ap = sh(["patch", "-s", "-F0", "-p1", "-d", root, "-i", f"{d}/{fn}"], tmp)
         if ap.returncode:
             bad += 1; print(f"STALE  {name}: the patch no longer applies ({(ap.stdout + ap.stderr).strip()[:120]})"); continue
-        os.chmod(out, 0o755)
         r = sh([sys.executable, "-I", os.path.abspath(__file__), "--once", "--script", out], HERE)
         killed = r.returncode != 0
         why = next((l for l in r.stdout.splitlines() if l.startswith("FAIL") or (l.startswith("static:") and l != "static: ok")), "")

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -122,7 +122,7 @@
+ scan_dirs
+ if [ -d "$PD" ]; then
+   taken="$(find "$PD" -type d -name "$FLAT")" || die "find failed looking for $FLAT under $PD"
+-  if [ -n "$taken" ]; then
++  if false; then
+     taken="$(printf '%s\n' "$taken" | sort)" || die "sort failed"
+     IFS="$NL"
+     for d in $taken; do

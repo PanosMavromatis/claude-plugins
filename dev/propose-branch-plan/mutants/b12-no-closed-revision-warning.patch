@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -214,7 +214,7 @@
+     R_MSG="Choose the subgoal $BRANCH executes and pass it as --subgoal <file>:<line>, or pass --standalone."
+     finish
+   fi
+-  if [ "$R_LAYOUT" = per-goal ] && [ -z "$MASTERS" ]; then
++  if false; then
+     warn "no revision is open in $ROOT_PLAN, so the plan is standalone; to file it under a revision, open one first"
+   elif [ -n "$MASTERS" ]; then
+     warn "no open subgoal in $(printf '%s' "$MASTERS" | awk 'BEGIN { ORS = "" } { print (NR == 1 ? "" : ", ") $0 }') is without a branch, so the plan is standalone"

@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -549,7 +549,7 @@
+@@ -444,7 +444,7 @@
    for f in $ALL_F; do
      if [ "$f" = "$ROOT_PLAN" ]; then continue; fi
      need_file "$f" 4

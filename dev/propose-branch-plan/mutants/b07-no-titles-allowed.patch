@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -244,7 +244,7 @@
+ R_INDEX="$R_DIR/$MODEL"
+ 
+ if [ "$R_LAYOUT" = per-goal ]; then
+-  if [ "$NT" -eq 0 ]; then
++  if false; then
+     violation "no goal titles were given, and a per-goal plan needs at least one" "pass the Scope items as titles, after --"
+     fail ""
+   fi

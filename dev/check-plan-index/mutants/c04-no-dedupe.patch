@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -237,7 +237,7 @@
+   nn="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
+   case "$mk" in ' '|'~'|'!') R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$n $text" ;; esac
+   d="${nn%%[a-z]*}"; key="$((10#$d))${nn#"$d"}"
+-  case "$SEEN" in *" $key "*) continue ;; esac
++  case "$SEEN" in *" $key "*) : ;; esac
+   SEEN="$SEEN$key "
+   unset IFS; for_goal "$n" "$mk" "$nn" "$text"; IFS="$NL"
+ done

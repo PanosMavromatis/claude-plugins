@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -297,7 +297,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -325,7 +325,7 @@
        for (j = 1; j <= k; j++) if (T[j] == "I" && L[j] == goal) sel = j
        if (!sel || (todo && I[sel])) { print "GOALERR"; exit }
      } else if (todo) {

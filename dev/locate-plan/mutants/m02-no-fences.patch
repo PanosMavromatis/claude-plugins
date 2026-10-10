@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -277,7 +277,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -146,7 +146,7 @@
    LAYOUT_V=legacy
    need_file "$f" "$2"
    out="$(awk '
@@ -9,7 +9,7 @@
      !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }
    ' "$f")" || die "awk failed reading the **Layout** header of $f"
    if [ -z "$out" ]; then return 0; fi
-@@ -298,7 +298,7 @@
+@@ -167,7 +167,7 @@
  layout_fix() {  # layout_fix <file> <line> <value>; sets LFIX
    local f="$1" n="$2" v="$3" ev g gf=""
    if [ "$f" = "$ROOT_PLAN" ]; then
@@ -18,7 +18,7 @@
        || die "awk failed looking for a Revisions section in $f"
      if [ -n "$ev" ]; then
        LFIX="correct line $n to \`**Layout**: revisions\`: the file has a \`## Revisions\` section, so it is the revisions index"
-@@ -308,7 +308,7 @@
+@@ -177,7 +177,7 @@
      return 0
    fi
    ev="$(awk '
@@ -27,7 +27,7 @@
      fence { next }
      /^- \[[ ~x!-]\]( |$)/ { k++; if ($0 ~ /^- \[.\] [0-9]+[a-z]?( |$)/) m++ }
      END { if (0 < k && m == k) print "y" }' "$f")" || die "awk failed reading the items of $f"
-@@ -348,7 +348,7 @@
+@@ -217,7 +217,7 @@
        if (lab == "" || lab ~ /\// || lab ~ /^[#-]/) return mk "\t"
        return mk "\t- [" mk "] " lab (note != "" ? " — " note : "")
      }
@@ -36,7 +36,7 @@
      fence { next }
      /^\*\*Layout\*\*:/ && !hl { hl = NR }
      /^#/ {
-@@ -434,7 +434,7 @@
+@@ -303,7 +303,7 @@
  # Item lines outside fenced code blocks, and the selection rules of both models.
  SELECT_AWK='
    function item(s) { return s ~ /^[ \t]*- \[[ ~x!-]\] / || s ~ /^[ \t]*- \[[ ~x!-]\]$/ }
@@ -45,12 +45,12 @@
    fence { next }
    /^## / { k++; T[k] = "H"; L[k] = NR; next }
    item($0) {
-@@ -468,7 +468,7 @@
+@@ -340,7 +340,7 @@
  
- # Every item line of a goal file, at any indent.
+ # Every item line of a goal file, at any indent: SUB <line> <marker> <the line>.
  GOALFILE_AWK='
 -  /^[ \t]*```/ { fence = !fence; next }
 +  /^NEVER$/ { }
    fence { next }
-   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { print "SUB\t" NR; next }
+   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { m = $0; sub(/^[ \t]*- \[/, "", m); print "SUB\t" NR "\t" substr(m, 1, 1) "\t" $0; next }
    /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }

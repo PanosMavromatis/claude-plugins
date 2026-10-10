@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -104,7 +104,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -53,7 +53,7 @@
    if [ -z "$val" ]; then printf '%s: %s\n' "$key" "$DASH"; return 0; fi
    for line in $val; do
      if [ $first -eq 1 ]; then printf '%s: %s\n' "$key" "$line"; first=0

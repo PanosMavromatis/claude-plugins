@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -512,7 +512,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -412,7 +412,7 @@
          if (B[i] == "") continue
          line = B[i]; sub(/\t.*/, "", line); text = substr(B[i], length(line) + 2)
          mk = substr(text, 4, 1); t = title(text); s = slug(t); fix = ""

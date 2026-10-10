@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -231,7 +231,7 @@
+   if [ -n "$br" ]; then warn "$f:$n already has a branch ($br): the subgoal may have been branched before"; fi
+   if [ "$R_LAYOUT" = per-goal ]; then
+     R_REV="$(basename "$(dirname "$f")")"
+-    R_DIR="$(dirname "$f")/$FLAT"
++    R_DIR="$PD/$FLAT"
+   else
+     case "$head" in
+       "## Subgoals — revision "*) R_REV="${head#"## Subgoals — revision "}"; R_REV="${R_REV%% *}" ;;

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -146,7 +146,7 @@
+ if [ -f "$ROOT_PLAN" ]; then
+   need_file "$ROOT_PLAN" ""
+   if ! check_layout "$ROOT_PLAN" ""; then fail ""; fi
+-  if [ "$LAYOUT_V" = revisions ]; then
++  if [ "$LAYOUT_V" = nope ]; then
+     R_LAYOUT=per-goal
+     index_open "$ROOT_PLAN" ""
+     MASTERS="$OPEN_LIST"

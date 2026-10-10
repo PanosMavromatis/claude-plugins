@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -436,7 +436,7 @@
+@@ -332,7 +332,7 @@
      violation "'$p' lies outside the repository" "give a path inside it, relative to its root"; fail 1
    else
      violation "nothing exists at '$p' (tried it repository-relative and under $PD/)" \

@@ -1,0 +1,10 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -235,7 +235,6 @@
+ for rec in $IL; do
+   n="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+   nn="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
+-  case "$mk" in ' '|'~'|'!') R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$n $text" ;; esac
+   d="${nn%%[a-z]*}"; key="$((10#$d))${nn#"$d"}"
+   case "$SEEN" in *" $key "*) continue ;; esac
+   SEEN="$SEEN$key "

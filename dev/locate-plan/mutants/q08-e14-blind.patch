@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -651,7 +651,7 @@
+@@ -263,7 +263,7 @@
      st="$(status_of "$f")" || exit 3
      case "$st" in merged*) nm=$((nm + 1)) ;; *) active="${active:+$active$NL}$f" ;; esac
    done

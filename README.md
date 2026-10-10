@@ -104,16 +104,33 @@ their imports, each command plus what it reads whole, `docs/agents/**`, the bran
 and the master plan. **It measures the main session only**: a subagent's own reads are
 not in it, so total usage is judged separately.
 
-Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it:
+Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it or
+to `scripts/lib/plan-rules.sh`, the rules it shares with the other plan scripts:
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite   # outside this repository; fixtures are built here
-python3 -I dev/locate-plan/suite.py              # 82 cases, no model, ~30 s
-python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~3 min
+python3 -I dev/locate-plan/suite.py              # 83 cases, no model, ~30 s
+python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~4 min
 ```
 
 `dev/locate-plan/README.md` covers the answer key and the headless trial that compares
 Step 1 with a subagent wrapping the script.
+
+Test its drift report for per-goal plans, `scripts/check-plan-index.sh`, and the script
+`/new-branch` places a new plan with, `scripts/propose-branch-plan.sh`, the same way. All
+three share `scripts/lib/plan-rules.sh`, so run all three suites after a change to it:
+
+```bash
+python3 -I dev/check-plan-index/suite.py                 # 33 cases, no model, ~10 s
+python3 -I dev/check-plan-index/suite.py --mutants       # the suite must catch each mutant, ~1 min
+python3 -I dev/propose-branch-plan/suite.py              # 32 cases, no model, ~20 s
+python3 -I dev/propose-branch-plan/suite.py --mutants    # the suite must catch each mutant, ~2 min
+```
+
+`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step` and `/step` headless on
+fresh fixture repositories, and grades what they leave behind. Those are real sessions,
+which cost money, so run them yourself, after a change to the command text;
+`dev/per-goal-e2e/README.md` covers how.
 
 ## License
 

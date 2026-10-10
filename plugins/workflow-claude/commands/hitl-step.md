@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next top-level goal from a docs/plan TODO.md with human-in-the-loop Q&A, logged inline.
 argument-hint: "[count] [plan-path]"
 ---
@@ -48,12 +48,17 @@ resolve the plan yourself.
        ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh TODO.md -- <path>
 
    If the user named an item out of order, run it once to find the plan, `Grep` that
-   file for the item, and run it again with `--goal <line>` before the `--`.
+   file for the item, and run it again with `--goal <line>` before the `--`. In a
+   per-goal plan the item is an index line, and the index is small: `Read` it instead.
 2. Act on `result:`; the report says everything the exit status does. A key with
    several items continues on lines indented two spaces.
    - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
      before any work, and show every `warnings:` line; then carry on. If `layout:` is
-     `per-goal`, say this version cannot yet edit goal files, and stop.
+     `per-goal`, the plan is an index and `goal-file:` holds the selected goal; Steps 2–6
+     say where each read and edit goes. A warning that the `next:` line's marker differs
+     from its goal file's `**Goal**:` means an edit stopped between the two files. The
+     goal file is the source of truth: offer to rewrite that index line with its marker,
+     and once the user agrees and it is written, run the script again before any work.
    - `ask`: show `candidates:` and `message:`, wait for the user's choice, and
      run the script again with it as the path. Never pick a candidate yourself.
    - `none`: say there is no plan, and stop.
@@ -118,10 +123,17 @@ acceptance criteria. A goal the user named out of order was passed as `--goal`, 
   under it.
 - If `next: —`, every top-level goal is `[x]` or `[-]`: say that all reachable work is
   complete, and stop. List `blocked:` separately, so the user knows what is waiting on them.
+- **A per-goal plan** (`layout: per-goal`): read the index and `goal-file:` whole; both are
+  small. `subgoals:` are the goal file's lines. Everything that sits under a goal in a
+  single-file plan sits in its goal file, **outdented one level**: the goal's own `>`
+  lines at indent 0, directly under `**Goal**:` and before the first subgoal; its
+  subgoals at indent 0; and each subgoal's `>` lines at indent 2 beneath it.
 
 ## Step 3: Execute the Goal
 
 **At the start of execution**, flip the selected goal's marker from `[ ]` → `[~]` (leave it alone if already `[~]`) and save the plan file. This makes mid-work state visible across sessions — if the work is interrupted, the next `/hitl-step` resumes here. Flip subgoals to `[~]` as you actively work on each one (optional for fast-finishing goals, but recommended for any subgoal spanning more than one conversational turn).
+
+**In a per-goal plan, every change to a goal's marker goes goal file first, then index**: `**Goal**:` in the goal file, then the goal's index line. The goal file is the source of truth and the index mirrors it, so a run interrupted between the two leaves a mismatch Step 1 can repair; the other order would lose the edit. The Q&A (3b), notes (3b-bis), subgoal markers and escape-hatch notes all go in the goal file, outdented as Step 2 describes.
 
 Work through the goal and its subgoals. **Every write operation and every external command requires user confirmation first.**
 
@@ -206,6 +218,7 @@ This pause is non-negotiable: every `[x]` subgoal gets one. The point is to give
 - **Defer or descope a subgoal**: if the subgoal is intentionally being skipped (optional work, out of scope, replaced by a different approach), mark it `[-]` and append `> **Deferred:** reason` or `> **Descoped:** reason` under it. The parent can still complete as `[x]` — `[-]` subgoals count as "resolved" for parent-state purposes.
 - **Split a goal**: if a top-level goal turns out to contain two independent decisions, rewrite it in place into two separate `- [ ]` lines in the plan file before continuing.
 - **Descope a whole goal**: if a top-level goal becomes irrelevant, flip it to `[-]` with a `> **Descoped:** reason` note under it. This is distinct from `[x]` — it records that the work wasn't done, but by design.
+- **In a per-goal plan**, a split goal NN gains a sibling NNa. Add the index line `- [ ] NNa — <title>` directly after NN's line, and create `TODO/NNa-<slug>.md` with the heading `# NNa — <title>` and the line `**Goal**: [ ]`. The slug is the title lowercased, with each run of other characters as one `-`, at most 40 characters. Step 6's check confirms the name. Descoping a goal flips its goal file first, then its index line.
 
 ## Step 4: Mark Complete
 
@@ -224,13 +237,14 @@ above is precisely a claim about lines you are no longer looking at. Re-read the
 `Grep` the goal's line range for `- \[[ ~!]\]`, and resolve every hit before step 2 below.
 A hit that turns out not to be a task at all is a finding written as a checkbox: convert it
 to `> **Note:**` per 3b-bis rather than ticking it, since ticking implies work that was
-never done.
+never done. In a per-goal plan the subgoals are the goal file's items: `Read` the goal
+file again, since it is small.
 
 **Applying the result:**
 
 1. Update each subgoal's marker to reflect its current state (`[x]`, `[!]`, `[-]`, or `[~]` — never `[ ]` once work has touched it).
-2. Flip the parent goal's marker per the rules above.
-3. If the completed work isn't obvious from the subgoals alone, optionally add a brief `> **Done:**` note under the parent:
+2. Flip the parent goal's marker per the rules above. In a per-goal plan, flip `**Goal**:` in the goal file first, then the index line.
+3. If the completed work isn't obvious from the subgoals alone, optionally add a brief `> **Done:**` note under the parent (in a per-goal plan, at indent 0 in the goal file, under `**Goal**:`):
 
     ```
     - [x] The original top-level goal
@@ -248,7 +262,7 @@ never done.
 
 - Increment the counter only if the parent goal's final state in Step 4 was `[x]`, `[!]`, or `[-]`. If it was left as `[~]`, the iteration still counts (we did work), but the user will almost certainly want to stop here and debrief — in that case, still increment and proceed to Step 6.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 and execute the next top-level goal. Pick up your latest edits the same way Step 2 found the first goal — re-`Grep` for the next `[ ]` / `[~]` marker rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around.
+- Otherwise, go back to Step 2 and execute the next top-level goal. Pick up your latest edits the same way Step 2 found the first goal — re-`Grep` for the next `[ ]` / `[~]` marker rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around. In a per-goal plan, run the script again exactly as in Step 1 instead: it reports the next goal and its goal file, and an index is a few lines.
 - If no top-level goals remain in `[ ]` or `[~]` state, proceed to Step 6.
 
 ## Step 6: Report
@@ -264,9 +278,25 @@ Tell the user:
   user acts on, so it is worth re-deriving rather than inheriting:
 
   ```bash
-  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s" | "$0}' <plan file>
+  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s " — " $0}' <plan file>
   ```
 
   Report "section complete" only if that prints nothing for the section. A completion claim
-  is the one report a reader will not re-check.
+  is the one report a reader will not re-check. Keep `|` out of that program, even inside a
+  string: Claude Code's command safety check reads it as an awk pipe to a command and
+  refuses to run it.
+
+  **In a per-goal plan**, the goals are spread across files, so the awk above cannot see
+  them. Run instead, alone, with `plan:` from Step 1:
+
+      ${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh TODO.md -- <plan>
+
+  Its report has `result:`, `open:`, `problem:` and `fix:`, read as Step 1 reads
+  `locate-plan.sh`'s.
+  - `clean` with `open: —`: every goal is resolved, and the plan is complete. Say so,
+    and suggest `/smart-commit` as above.
+  - `clean` with open items: they are what remains. Do not report the plan complete.
+  - `drift`: relay each `problem:` line with its `fix:` line. The index and the goal
+    files disagree, and the fix is the user's to make.
+  - `error`, or no report: show the output.
 - What the next pending top-level goal is (if any) — prefer a `[~]` in-progress goal over a `[ ]` not-started one when naming it, so the user knows the next `/hitl-step` will resume rather than start fresh.

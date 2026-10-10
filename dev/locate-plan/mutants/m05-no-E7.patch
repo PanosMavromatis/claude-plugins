@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -405,7 +405,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -274,7 +274,7 @@
          violation "$idx:$n is not a revision line: \`$val\`" "$fx" ;;
        OPEN)
          p="$PD/$val/_$MODEL"; o="$PD/$val/_$OTHER"
