@@ -131,8 +131,9 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 ```
 
-`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step` and `/step` headless on
-fresh fixture repositories, and grades what they leave behind. Those are real sessions,
+`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge`
+headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
+runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,
 which cost money, so run them yourself, after a change to the command text;
 `dev/per-goal-e2e/README.md` covers how.
 

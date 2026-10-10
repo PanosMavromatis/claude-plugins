@@ -144,9 +144,11 @@ If the doc doesn't exist, skip this step.
 Check if `origin/<branch>` exists and is in sync:
 
 ```bash
-git rev-parse origin/<branch> 2>/dev/null
+git rev-parse origin/<branch>
 git status -sb
 ```
+
+A failing `git rev-parse` means the branch is not on the remote yet. That failure is the answer, so let it show rather than redirecting it.
 
 If the branch isn't on the remote, or the local branch is ahead of its remote counterpart, run:
 
@@ -354,6 +356,10 @@ Summarize:
   `git push origin --delete`. Do not "fix" this by adding them; see "Scoped
   `allowed-tools`" in the plugin's `CLAUDE.md`.
 - **Read-only commands run freely**: `git status`, `git log`, `git diff`, `git branch`, `gh pr view`, `gh pr list`, and the read-only GitHub MCP tools (`pull_request_read`, `list_pull_requests`, `get_me`, `search_repositories`).
+- **Run every command alone**: each `git`, `gh` and script command as its own call, with
+  nothing chained (`;`, `&&`), piped or appended (`2>&1`, `echo $?`). `allowed-tools`
+  matches a single command, so a chain matches none of its entries: it prompts, and in a
+  headless run it is refused. Read an exit status from the call's result instead.
 - **Announce every MCP→`gh` fallback**, naming the repo and the operation. See "GitHub access" above — a silent fallback defeats the point of a narrowly-scoped PAT.
 - **Never use placeholders in actual commands** — always substitute the real branch name, PR number, title, etc.
 - **If anything unexpected happens** (merge conflicts, auth errors, divergent branches, failed push), stop immediately and explain before proceeding.

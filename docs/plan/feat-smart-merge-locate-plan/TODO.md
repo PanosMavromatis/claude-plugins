@@ -90,4 +90,45 @@
   > and its fixture gained a master plan. The absolute-path error stopped echoing the path.
   > **Done:** All four suites pass with 0 failing, and every mutant is killed but
   > `locate-plan`'s known-equivalent `n05`; the READMEs say four suites.
-- [ ] Verify end to end: the user runs it, `check.py` grades
+- [x] Verify end to end: the user runs it, `check.py` grades
+  > **Q:** The fixtures have no remote and a real `/smart-merge` needs GitHub, while this
+  > branch's own merge runs the installed 0.9.0 text, not the new step 7. How should the
+  > new text be verified: (A) three merge sessions in `dev/per-goal-e2e/` (`e1-merge`,
+  > `e3-merge`, `e4-merge`) with a fake `gh` on `PATH`, MCP off (`--strict-mcp-config`,
+  > and any `mcp__` call fails), `git rm` and `gh pr merge` allowed for those sessions only,
+  > and `check.py` grading the stamp, the closed item, the commit and the PR body's plan
+  > pointer; (B) this branch's own merge; or (C) defer to the release?
+  > **A:** A.
+  > **Note:** Run `r4` (9 sessions, $4.46): every failure was the harness's. The step
+  > sessions leave their work uncommitted, as the fixture's `CLAUDE.md` says, and a clone
+  > carries only commits, so each merge saw a branch with nothing done, and correctly left
+  > the subgoal open (`[~]`, or `[ ]` on the DO model) with an honest Done line or none.
+  > The clones also had an `origin` against a `CLAUDE.md` saying there is none, so
+  > sessions probed it and `e3` tried to push. Steps 2 and 7 themselves worked in all
+  > three layouts: rung 2 with the right model (`DO.md` included), the open goals listed,
+  > the step-2 plan passed on, exact `item:`/`after:`, the stamp applied, no MCP, no
+  > `Grep`/`Glob`. `--strict-mcp-config` measured: no MCP server at init, the plugin's
+  > GitHub server included, where earlier e2e sessions had it connected.
+  > **Note:** `rm /tmp/pr-body-…` was denied in all three despite `--allowedTools` and
+  > `--add-dir /tmp`, though `Bash(git rm:*)` and `Bash(gh pr merge:*)` were honoured.
+  > `/smart-merge` documents that `rm` as a gate, so `check.py` now reports it as one.
+  > The body file's path was flattened (`/tmp/pr-body-fix-do-tasks.md`) without being
+  > told to.
+  > **Q:** Two sessions chained commands (`gh pr checks 42; echo "exit: $?"`, `git branch
+  > -a && …`) and were denied: `/smart-merge` says "run alone" only for its scripts. Fix it
+  > here (A), or leave it to R2 and only report it (B)?
+  > **A:** A. A Guidelines bullet says to run every `git`, `gh` and script command alone;
+  > step 5's `git rev-parse … 2>/dev/null` lost its redirect, the one example that broke
+  > the rule; and `check.py` checks every command ran alone. The other commands keep the
+  > gap until R2.
+  > **Note:** Harness fixed: the clone gets the fixture's working tree committed as "The
+  > step session's work", a local `main`, `refs/e2e/pre` at that tip for `check.py`, and no
+  > remote; a missing ref fails with a reason instead of a traceback. Rehearsed on `r1`
+  > into a scratch clone: the step work committed, the source untouched.
+  > **Note:** Run `r5` (9 sessions, $4.18): 124 checks, 0 failing. In all three layouts
+  > the merge closed the subgoal `[x]` with a truthful Done line naming PR #42 directly
+  > after the block's last line, stamped the index, committed exactly those two files,
+  > and ended the PR body with the plan's name; every command ran alone, and the only
+  > denial was the body-file `rm`, the documented gate.
+  > **Done:** `dev/per-goal-e2e/` has merge sessions for the revisions, DO and legacy
+  > layouts, with a stub `gh` and MCP off; the new steps 2 and 7 pass them.
