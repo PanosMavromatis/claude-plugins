@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Bash(git pull --prune:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(ls:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Bash(git pull --prune:*), Read, Write, Edit, Glob, Grep
 description: Interactive guided workflow to merge current branch into main via GitHub PR
 ---
 
@@ -51,19 +51,52 @@ Report a brief summary: branch name, N commits ahead of main, clean/dirty state.
 
 **Branch doc.** Check for `docs/git/<current-branch>.md`. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
 
-**Branch plan.** Flatten the branch name's `/` to `-` to get the **plan name** (branch `feat/user-auth` → `feat-user-auth`), then find the directory of that name *wherever* it sits under `docs/plan/`: check `docs/plan/<plan-name>/` first — the flat location `/new-branch` creates, and the answer in nearly every case — and only if that misses, glob `docs/plan/**/<plan-name>/`. Read whichever of `DO.md` or `TODO.md` it contains — the completed items and their `> **Q:** / > **A:**` logs record how the work actually went, which is useful input for the PR body's Summary.
+**Branch plan.** The bundled `scripts/locate-plan.sh` resolves it, by the rules `/step` and
+`/hitl-step` use. It is read-only. Do not resolve the plan yourself. The completed items and
+their `> **Q:** / > **A:**` logs record how the work actually went, which is useful input
+for the PR body's Summary.
 
-Resolve by name rather than by a fixed path because the layout beneath `docs/plan/` is deliberately unconstrained: plans may be regrouped into milestone or component directories with `git mv`. A path-based check would report a moved plan as absent, and this command would then skip the stamp in step 7 — leaving a merged plan marked `active` forever. **Note the resolved path**; steps 3, 4 and 7 all refer back to it.
+1. Pass `TODO.md` if `docs/plan/TODO.md` exists, otherwise `DO.md`. Run it alone, in exactly
+   this form, with nothing appended, chained or piped: `allowed-tools` matches that command
+   and nothing else.
+
+       ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <DO.md|TODO.md> --
+
+2. Act on `result:`. A key with several items continues on lines indented two spaces.
+   - `found` at `rung: 2`: the branch plan is `plan:`. Note it and `layout:`; steps 3, 4
+     and 7 refer back to that path, never a reconstructed one. Show every `warnings:` line;
+     a merged stamp usually means this branch was merged once already.
+   - `found` at any other rung, `ask` at any rung but 2, or `none`: this branch has no plan.
+     The script fell through to the master plan or to another branch's plan, and neither is
+     this branch's, so do not read it as one. Say so, and draft from the commits and diff.
+   - `ask` at `rung: 2`: several directories carry this branch's name, so one was copied
+     rather than moved. Show `candidates:` and ask which to use; never pick one yourself.
+     Run the script again with the choice after the `--`; a `found` at `rung: 1` is then
+     the plan.
+   - `error` whose `problem:` says the plan exists only as the other file: run the script
+     once more with that model. Its `fix:` names a step command and does not apply here.
+   - any other `error`: relay each `problem:` line with its `fix:` line and stop. A plan
+     that breaks the convention cannot be stamped reliably; the fix is the user's.
+   - no `result:` line, or no `message:` line (the report's last key, so it was cut short):
+     show the output and stop. Never act on part of a report.
+
+3. Read it. A `layout: legacy` plan is one file: read `plan:` whole. A `layout: per-goal`
+   plan is an index: read it, then `ls` its goal directory (`TODO/` or `DO/` beside it) and
+   read each goal file, since the `> **Q:** / > **A:**` logs live there. Either is small;
+   only a master plan is never read whole.
+
+Resolve by name rather than by a fixed path because the layout beneath `docs/plan/` is deliberately unconstrained: plans may be regrouped into milestone or component directories with `git mv`, and the script searches for the plan's name wherever it sits. A path-based check would report a moved plan as absent, and this command would then skip the stamp in step 7 — leaving a merged plan marked `active` forever.
 
 Unlike the branch doc, **the plan is not deleted at merge.** It lands on `main` as the durable record; step 7 only stamps it.
 
-**Warn on unfinished items.** If the plan still has items in `[ ]`, `[~]`, or `[!]`, list them and say so plainly:
+**Warn on unfinished items.** Run, alone,
+`${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh <DO.md|TODO.md> -- <plan>` with the
+model and path from above. Every `open:` line is an unfinished item, at any indent and in
+either layout. If there are any, list them and say so plainly:
 
 > The plan for this branch has N unfinished items: <list>. Merging is fine — the plan survives on `main` and you can keep working it — but flagging in case something was meant to land in this PR.
 
-This is a **warning, not a gate**. Do not block the merge; the user may be deliberately landing partial work, and nothing is lost either way.
-
-If neither file exists, note this and proceed using only the commit log and diff as input.
+This is a **warning, not a gate**. Do not block the merge; the user may be deliberately landing partial work, and nothing is lost either way. A `drift` or `error` result is shown with its `problem:` and `fix:` lines as a warning too; it does not block the merge.
 
 ### 3. Draft PR title and body
 

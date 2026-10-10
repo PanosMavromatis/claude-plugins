@@ -37,7 +37,18 @@
     > **A:** A. It reports the master file, the item's `file:line`, marker, text and block
     > end; `result:` is `found`, `none` (standalone, or a lost backlink) or `error`
     > (duplicates, with their lines). A fourth suite with mutants joins goal 4.
-- [ ] Step 2 resolves the branch plan through `locate-plan.sh`
+- [x] Step 2 resolves the branch plan through `locate-plan.sh`
+  > **Note:** `locate-plan.sh` falls through: on a branch with no plan it returns the master
+  > plan (rung 3) or another branch's active plan (rung 4) rather than a miss. Only a rung-2
+  > result, or rung 1 after a rung-2 `ask`, is this branch's plan; anything else means it has
+  > none, or step 7 would stamp the wrong file `merged`.
+  > **Q:** Which model does `/smart-merge` pass: (A) `TODO.md` if `docs/plan/TODO.md` exists,
+  > else `DO.md`, re-running once with the other model on E2; (B) always `TODO.md` then
+  > `DO.md`; or (C) a model-agnostic mode in `locate-plan.sh`?
+  > **A:** A. E2's `fix:` names a step command, so `/smart-merge` ignores it and re-runs.
+  > **Done:** Step 2 runs `locate-plan.sh`, accepting only a rung-2 (or rung-1-after-ask)
+  > result as the branch plan, reads a per-goal plan's goal files, and takes the unfinished
+  > items from `check-plan-index.sh`.
 - [ ] Write `scripts/propose-merge-record.sh`, with the master-file selection moved into
       `lib/plan-rules.sh`
 - [ ] Step 7 stamps the resolved index and edits the backlinked item in the right master file
