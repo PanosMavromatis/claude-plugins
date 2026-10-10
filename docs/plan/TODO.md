@@ -77,8 +77,10 @@ ends with. Settled, and not to be reopened:
       `grep`. The likely fix is `check-plan-index.sh` reporting a legacy plan's open
       items, so Step 6 runs one script for both layouts; `Bash(awk:*)` is ruled out.
       Found on `feat-per-goal-layout` goal 6.
+  > **Branch:** fix/disallowed-tool-steps
 - [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
-      index and edits `_TODO.md`.
+      index and edits `_TODO.md`. That also ends step 7's reliance on `Grep`, deferred
+      here from the subgoal above.
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
       `--dry-run` that writes to a given path. `/close-revision` stamps, `/file-plans`
       becomes legacy-only and `/open-revision` becomes an alias. Fix the reopen guard:
@@ -86,8 +88,16 @@ ends with. Settled, and not to be reopened:
       writes, and today it never does.
 - [ ] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
       "do not reintroduce the split" paragraph gains the §4.2 distinction.
-- [ ] Release `0.10.0` and update the install. Confirm with `claude --debug` that 0.10.0
-      is the driver and that the old-layout root plan still resolves under it.
+- [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
+      Renaming now means R2's agents, R3's skills and R4's contract file are each written
+      once, under the new name. Every live reference moves: the plugin directory, its
+      manifest, `marketplace.json`, command and agent names, both READMEs and `CLAUDE.md`s,
+      the hook messages, `dev/`, and `dp-compile`, which depends on it by name and so
+      moves to `0.4.1`. Records keep the old name: merged plans, `Done` lines, commits and
+      PR bodies. `.claude/settings.json` switches in the last commit before the merge.
+      After the merge, replace the install, and confirm with `claude --debug` that
+      exactly one plugin loads, `workflow-coding` `0.10.0`, and that the old-layout root
+      plan still resolves under it.
 
 ## Closed revisions
 
