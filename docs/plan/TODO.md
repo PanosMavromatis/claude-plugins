@@ -93,11 +93,12 @@ ends with. Settled, and not to be reopened:
   > it to, the root plan or an open revision's `_TODO.md`, and stamps a per-goal plan's
   > index; `master_files` is shared through the library. A fourth suite and e2e merge
   > sessions on a stub `gh` verify it, and every command now runs alone — PR #9
-- [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
+- [~] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
       `--dry-run` that writes to a given path. `/close-revision` stamps, `/file-plans`
       becomes legacy-only and `/open-revision` becomes an alias. Fix the reopen guard:
       it must match `**Revision <label>** — closed`, which is what `/close-revision`
       writes, and today it never does.
+  > **Branch:** feat/master-plan
 - [ ] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
       "do not reintroduce the split" paragraph gains the §4.2 distinction.
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
