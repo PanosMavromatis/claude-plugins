@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch --show-current:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, SlashCommand(/workflow-claude:agents-docs-build)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch --show-current:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, Skill(workflow-claude:agents-docs-build)
 description: Update project docs and regenerate agent artifacts to match staged changes.
 argument-hint: "[extra doc paths...]"
 ---
@@ -63,7 +63,7 @@ When an edit could plausibly belong in more than one of `core.md` / `claude.md` 
 
 ## Step 4: Rebuild Generated Artifacts
 
-If any `core.md` or `codex.md` source was modified in Step 3 — at the root (`docs/agents/core.md`, `docs/agents/codex.md`) or under any component directory (`docs/agents/<path>/core.md`, `docs/agents/<path>/codex.md`) — invoke `/agents-docs-build` once (via the SlashCommand tool) to regenerate the corresponding generated artifacts: the root `AGENTS.md` and `AGENTS.override.md`, and in a monorepo layout the per-component `<path>/AGENTS.md` and `<path>/AGENTS.override.md` files. Skip this step if no `core.md` or `codex.md` was modified.
+If any `core.md` or `codex.md` source was modified in Step 3 — at the root (`docs/agents/core.md`, `docs/agents/codex.md`) or under any component directory (`docs/agents/<path>/core.md`, `docs/agents/<path>/codex.md`) — invoke `/agents-docs-build` once (with the Skill tool, skill `workflow-claude:agents-docs-build`) to regenerate the corresponding generated artifacts: the root `AGENTS.md` and `AGENTS.override.md`, and in a monorepo layout the per-component `<path>/AGENTS.md` and `<path>/AGENTS.override.md` files. Skip this step if no `core.md` or `codex.md` was modified.
 
 If only `claude.md` files (root or component) were modified, no build is needed — the corresponding `CLAUDE.md` dispatcher picks up changes via `@import` at the next session.
 

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Bash(git pull --prune:*), Read, Write, Edit, Glob, Grep
 description: Interactive guided workflow to merge current branch into main via GitHub PR
 ---
 
@@ -127,21 +127,19 @@ git push -u origin <branch>
 
 **MCP path (preferred).** Call `create_pull_request` with `owner`, `repo`, `head` (the branch), `base` (`main`), `title`, and `body`. The body is a plain string parameter, so the approved body goes straight in — no temp file, and no heredoc quoting hazard when the body contains backticks or `$`.
 
-**`gh` fallback.** `gh pr create` reads the body from a file to avoid editor friction:
+**`gh` fallback.** `gh pr create` reads the body from a file to avoid editor friction. Write
+the approved body to `/tmp/pr-body-<branch>.md` with `Write`, which has no heredoc quoting
+hazard either, then run:
 
 ```bash
-cat > /tmp/pr-body-<branch>.md <<'EOF'
-<approved body>
-EOF
-
 gh pr create \
   --base main \
   --head <branch> \
   --title "<approved title>" \
   --body-file /tmp/pr-body-<branch>.md
-
-rm /tmp/pr-body-<branch>.md
 ```
+
+Then `rm /tmp/pr-body-<branch>.md`. Like every deletion here, it prompts.
 
 Report the PR number and URL, and note which path created it — the PR number is needed by step 7.
 
@@ -311,6 +309,13 @@ Summarize:
 ## Guidelines
 
 - **Confirm before every write action**: push, file deletion, commit, PR create, merge, branch delete. State what will run, then wait for approval.
+- **Unlisted writes are deliberate gates, not drift.** `git push`, `git rm`,
+  `git branch -d`, `gh pr merge`, `git push origin --delete` and the `gh` fallback's
+  `rm` are absent from `allowed-tools` on purpose, so the harness prompt stands behind
+  each step's own CONFIRM FIRST. `git push` cannot be allowed narrowly: any
+  `Bash(git push…:*)` prefix that matches the routine pushes also matches
+  `git push origin --delete`. Do not "fix" this by adding them; see "Scoped
+  `allowed-tools`" in the plugin's `CLAUDE.md`.
 - **Read-only commands run freely**: `git status`, `git log`, `git diff`, `git branch`, `gh pr view`, `gh pr list`, and the read-only GitHub MCP tools (`pull_request_read`, `list_pull_requests`, `get_me`, `search_repositories`).
 - **Announce every MCP→`gh` fallback**, naming the repo and the operation. See "GitHub access" above — a silent fallback defeats the point of a narrowly-scoped PAT.
 - **Never use placeholders in actual commands** — always substitute the real branch name, PR number, title, etc.

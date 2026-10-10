@@ -142,7 +142,7 @@ Work through the goal and its subgoals. **Every write operation and every extern
 
 ### 3a. Research
 
-Do any read-only investigation needed (Read, Grep, Glob, Bash for git queries, WebFetch/context7 for library docs). Keep this phase brief — the point is to understand the goal well enough to proceed, not to pre-solve it.
+Do any read-only investigation needed: `Read`; `Grep` and `Glob` if your session has them, and otherwise shell `grep` and `find`, read-only (native macOS and Linux builds have had neither tool since Claude Code 2.1.117); Bash for git queries; WebFetch/context7 for library docs. Keep this phase brief — the point is to understand the goal well enough to proceed, not to pre-solve it.
 
 ### 3b. Decisions → Q&A with inline logging
 

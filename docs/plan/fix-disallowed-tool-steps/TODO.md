@@ -52,6 +52,11 @@
     > cannot allow `git push`, because that prefix also covers `--delete`. Only
     > `git pull --prune` is undocumented. The first Q&A above was answered on the opposite
     > premise, so it is asked again when that subgoal is worked.
+    > **Note:** A second correction: `/agents-docs-init`'s heredoc was documented as a
+    > deliberate gate too, in the command itself. The scanner checked allow-lists against
+    > the bodies but never read the rationale beside them, so class B overcounts. Only
+    > `/hitl-step`'s `awk` and `/smart-merge`'s `git pull --prune` and `/tmp` heredoc were
+    > real gaps.
 - [x] `/new-branch` marks the master-plan subgoal it executes `[~]`
   > **Note:** Raised by the user, 2026-10-10: no R1 master-plan item went `[~]` when its
   > branch started. It is unrelated to `Grep`. Neither the installed 0.9.0 nor the working
@@ -85,7 +90,18 @@
   > `c07` retargeted), all killed. The `locate-plan` and `propose-branch-plan` suites and
   > their mutants still pass. The e2e grader now checks that e4's Step 6 ran the script and
   > no `awk`.
-- [~] Rewrite the remaining steps onto tools their command allows
+- [x] Rewrite the remaining steps onto tools their command allows
+  > **Done:** No command step names `Grep`, `Glob` or `SlashCommand` as the only way to
+  > do it. Plan lookups go through `locate-plan.sh` and `check-plan-index.sh`. Open-ended
+  > search names both the tools and their shell stand-ins. Gates that are left out on purpose
+  > are now documented in `/smart-merge` itself. The step-7 `Grep` waits for the next R1
+  > subgoal.
+  > **Q:** Asked again on the corrected premise: the plugin's `CLAUDE.md` gates `git rm`,
+  > `git branch -d`, `gh pr merge` and the delete on purpose, and `git push` cannot be
+  > allowed without also allowing `--delete`. What should `/smart-merge` change?
+  > **A:** Allow only `git pull --prune`, which is additive. Write the `gh` fallback's body
+  > file with `Write` instead of a `cat` heredoc. Add a Guidelines bullet naming every
+  > unlisted write as a deliberate gate, as `/clean-gone` does.
   - [x] `/close-revision`'s pointer check
     > **Note:** Step 5 also relied on `Glob` without naming it ("the archive does not
     > appear among `docs/plan/**/DO.md` matches"), so the inventory's scanner missed it.
@@ -102,12 +118,28 @@
     > which is open-ended, keeps search tools: `Grep`/`Glob` if the session has them, and
     > otherwise shell `grep`/`find`, read-only. Step 1 is still byte-identical across both
     > commands.
-  - [ ] `/hitl-step` Step 3a's research list
-  - [ ] `/smart-merge` allows its routine writes, with patterns that don't also cover
+  - [x] `/hitl-step` Step 3a's research list
+    > **Note:** Worded like the investigation paragraph: `Grep`/`Glob` if the session has
+    > them, and otherwise shell `grep`/`find`, read-only. `/step` has no such list.
+  - [x] `/smart-merge` allows its routine writes, with patterns that don't also cover
         `git push origin --delete`, which stays a documented second gate
-  - [ ] `SlashCommand` becomes `Skill(workflow-claude:<name>)` in `/smart-commit`,
+    > **Note:** Narrowed by the Q&A above. No `git push` pattern can exclude `--delete`,
+    > since even `git push -u origin` prefixes `git push -u origin --delete <b>`. So only
+    > `git pull --prune` was allowed, and the gates are now documented in the command
+    > itself. Whether a `Write` to `/tmp` prompts is unmeasured; the heredoc it replaces
+    > was not allowed either.
+  - [x] `SlashCommand` becomes `Skill(workflow-claude:<name>)` in `/smart-commit`,
         `/agents-docs-update` and `/agents-docs-codex-init`
-  - [ ] `/agents-docs-init`'s heredoc is documented as a deliberate gate
+    > **Note:** The rule takes the skill's name with no slash, the same value the 72
+    > transcript calls passed as `skill`. `/agents-docs-codex-init` also gained the grant it
+    > never had. The plugin's `CLAUDE.md` said `/smart-commit` used the SlashCommand tool;
+    > that one word was fixed here too. Whether a `Skill(...)` entry pre-approves the nested
+    > call is unmeasured, so the Verify goal checks it.
+  - [-] `/agents-docs-init`'s heredoc is documented as a deliberate gate
+    > **Descoped:** It already was. Line 85 of the command says `Bash(cat:*)` is deliberately
+    > absent, because the heredoc replaces the user's `CLAUDE.md` and should keep prompting.
   - [-] `/smart-merge` step 7
     > **Deferred:** rewritten once, through `scripts/locate-plan.sh`, by the next R1 subgoal.
-- [ ] Verify: the three script suites pass, per-goal-e2e `e4` passes Step 6, and `e1`, `e3` and `e4` pass the master-plan `[~]` check (the user runs them)
+- [ ] Verify: the three script suites pass, per-goal-e2e `e4` passes Step 6, and `e1`, `e3` and `e4` pass the master-plan `[~]` check (the user runs them). A headless
+      `/smart-commit` shows its nested `Skill(workflow-claude:agents-docs-update)` call with
+      no permission denial

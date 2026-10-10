@@ -25,14 +25,17 @@ expected.
 - Rewrite `/close-revision`'s pointer check. In `/step` and `/hitl-step`, rewrite the
   out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep and the investigation
   paragraph. In `/hitl-step`, also rewrite Step 3a's research list.
-- `/smart-merge` allows its routine writes. `git push origin --delete` stays a documented
-  second gate.
+- `/smart-merge` allows `git pull --prune`, writes the `gh` fallback's body file with `Write`,
+  and says in its Guidelines that its other unlisted writes are deliberate gates. No
+  `git push` pattern can be allowed without also allowing `git push origin --delete`.
 - `SlashCommand` becomes `Skill(workflow-claude:<name>)` in `/smart-commit`,
   `/agents-docs-update` and `/agents-docs-codex-init`.
-- `/agents-docs-init`'s `CLAUDE.md` heredoc is documented as a deliberate gate.
+- `/agents-docs-init`'s `CLAUDE.md` heredoc turned out to be documented as a deliberate gate
+  already, so nothing changed there.
 - `/new-branch` marks the master-plan subgoal it executes `[~]` (with a `TODO.md` master
   plan), and the e2e grader expects it. Raised by the user mid-branch.
-- Verify: the three script suites pass, and the user re-runs per-goal-e2e `e4`.
+- Verify: the three script suites pass. The user re-runs per-goal-e2e `e1`, `e3` and `e4`,
+  and a headless `/smart-commit` to check its nested `Skill` call.
 - In the setup commit, the master plan's R1 release item gains the
   `workflow-claude` → `workflow-coding` rename (D-N8).
 
