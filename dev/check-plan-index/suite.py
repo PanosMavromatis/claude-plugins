@@ -81,9 +81,26 @@ C = [
        fix=["close each item, or reopen the goal (`**Goal**: [~]` in docs/plan/k12/TODO/01-one.md, then docs/plan/k12/TODO.md:8)"])),
  ("k12b", {"TODO.md": idx("- [x] 01 — One"), "TODO/01-one.md": gf("01", "One", "x", "- [x] a", "- [~] b")}, None,
   dict(exit=1, result="drift", nprob=1, prob=["has open items, on line 6"])),
+ # A legacy (one-file) plan: nothing to drift, so only its open items, each with its heading.
  ("k13", {"TODO.md": idx("- [ ] One", layout="")}, None,
-  dict(exit=1, result="error", goals="—", open=[], prob=["docs/plan/k13/TODO.md is not a per-goal plan"],
-       fix=["nothing to check: a legacy plan keeps its goals in one file"])),
+  dict(exit=0, result="clean", goals="1", openx=["docs/plan/k13/TODO.md:7 - [ ] One — under ## Goals"],
+       msg="is a one-file plan, so nothing can drift; 1 item is open")),
+ ("k13b", {"TODO.md": idx("- [x] One", "  - [ ] a", "  - [x] b", "- [-] Two", "- [~] Three", "  - [!] c", layout="")}, None,
+  dict(exit=0, result="clean", goals="3", open=["docs/plan/k13b/TODO.md:8", "docs/plan/k13b/TODO.md:11", "docs/plan/k13b/TODO.md:12"],
+       msg="3 items are open")),
+ ("k13c", {"TODO.md": idx("- [x] One", "```", "- [ ] example", "```", layout="")}, None,
+  dict(exit=0, result="clean", goals="1", open=[], msg="0 items are open")),
+ ("k13d", {"TODO.md": "# p\n\n**Status**: active\n\n- [ ] Before\n\n## First\n\n- [x] Done\n\n## Second\n\n  - [ ] After\n"}, None,
+  dict(exit=0, result="clean", goals="2", openx=["docs/plan/k13d/TODO.md:5 - [ ] Before",
+                                                "docs/plan/k13d/TODO.md:13   - [ ] After — under ## Second"])),
+ ("k13e", {"TODO.md": idx("- [ ] One", "- [y] Bad", layout="")}, None,
+  dict(exit=0, result="clean", open=["docs/plan/k13e/TODO.md:7"],
+       warn=["docs/plan/k13e/TODO.md:8 looks like an item but its marker is not one of"])),
+ ("k13f", {"DO.md": idx("- [x] One", "- [ ] Two", layout="")}, ["DO.md", "docs/plan/k13f/DO.md"],
+  dict(exit=0, result="clean", goals="2", open=["docs/plan/k13f/DO.md:8"])),
+ ("k13g", {"../TODO.md": "# Master\n\n**Layout**: revisions\n\n## Revisions\n\n- [~] r1\n"}, ["TODO.md", "docs/plan/TODO.md"],
+  dict(exit=1, result="error", goals="—", open=[], prob=["docs/plan/TODO.md is a revisions index: its items are revisions, not goals"],
+       fix=["check the open revision's plan instead"])),
  ("k14", {"TODO.md": idx("- [ ] 01 — One", layout="pergoal")}, None,
   dict(exit=1, result="error", prob=["has `**Layout**: pergoal`, which is not valid there"])),
  ("k15", {}, ["TODO.md", "docs/plan/nope"],
@@ -177,6 +194,7 @@ def grade(exp, r):
     if "open" in exp:
         got = [l.split(" ", 1)[0] for l in allv("open")]
         if got != exp["open"]: probs.append(f"open {got} want {exp['open']}")
+    if "openx" in exp and allv("open") != exp["openx"]: probs.append(f"open {allv('open')} want exactly {exp['openx']}")
     for k, key in (("prob", "problem"), ("fix", "fix"), ("warn", "warnings")):
         for w in exp.get(k, []):
             if not any(w in v for v in allv(key)): probs.append(f"{key} lacks {w!r}: {allv(key)}")

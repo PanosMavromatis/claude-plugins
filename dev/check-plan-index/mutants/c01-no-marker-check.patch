@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -216,7 +216,7 @@
+@@ -241,7 +241,7 @@
      violation "$gf has no **Goal** line" "add \`**Goal**: [$mk]\` under its heading, the marker $IDX:$n has"
      return 0
    fi

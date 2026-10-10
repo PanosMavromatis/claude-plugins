@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -220,7 +220,7 @@
+@@ -245,7 +245,7 @@
      violation "$IDX:$n has [$mk] but $gf says **Goal**: [$gm]" \
        "the goal file is the source of truth: write $IDX:$n as \`- [$gm]${text#- \[?\]}\`"
    fi

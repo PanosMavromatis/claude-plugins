@@ -72,7 +72,19 @@
   - [x] This repository's master plan marks the `fix/disallowed-tool-steps` subgoal `[~]`
   - [-] Re-run e2e `e1`, `e3` and `e4`
     > **Deferred:** to the Verify goal, where the user runs them.
-- [ ] `check-plan-index.sh` reports a legacy plan's open items, and Step 6 runs it for both layouts
+- [x] `check-plan-index.sh` reports a legacy plan's open items, and Step 6 runs it for both layouts
+  > **Q:** For a legacy plan, how should Step 6 know whether the just-completed section is
+  > fully resolved?
+  > **A:** Put the heading in `open:`. In a one-file plan, each line ends
+  > `— under <## heading>`, and the 8 report keys stay as they are.
+  > **Done:** A legacy plan now gets `result: clean`, with its open items at every indent,
+  > each with the `## ` heading it sits under (`OPEN_AWK` in the library). A revisions
+  > index stays an `error`, with a fix that points to the revision's plan. `/hitl-step`'s
+  > Step 6 runs the script for both layouts, and the `awk` is gone. `/step`'s Step 6 check
+  > now runs for both layouts too. The suite has 39 cases (7 new) and 24 mutants (6 new,
+  > `c07` retargeted), all killed. The `locate-plan` and `propose-branch-plan` suites and
+  > their mutants still pass. The e2e grader now checks that e4's Step 6 ran the script and
+  > no `awk`.
 - [ ] Rewrite the remaining steps onto tools their command allows
   - [ ] `/close-revision`'s pointer check
   - [ ] `/step` and `/hitl-step`: the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep, the investigation paragraph

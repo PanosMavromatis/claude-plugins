@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -194,7 +194,7 @@
+@@ -219,7 +219,7 @@
      1) gf="$matches" ;;
      *) names="$(printf '%s\n' "$matches" | awk '{ sub(/.*\//, ""); s = s (NR == 1 ? "" : ", ") $0 } END { print s }')" \
           || die "awk failed listing goal $nn's files"

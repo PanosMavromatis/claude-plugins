@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -80,8 +80,7 @@
+@@ -84,8 +84,7 @@
    emit result "$R_RESULT";   emit plan "$R_PLAN";       emit goals "$R_GOALS"
    emit open "$R_OPEN";       emit warnings "$R_WARN";   emit problem "$R_PROB"
    emit fix "$R_FIX";         emit message "$R_MSG"

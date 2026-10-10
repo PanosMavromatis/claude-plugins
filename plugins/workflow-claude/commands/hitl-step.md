@@ -275,28 +275,19 @@ Tell the user:
 
   **Verify this at every indent, not just at the top level.** Step 4 should already have
   made it impossible for a `[x]` parent to hide an open subgoal, but this is the line the
-  user acts on, so it is worth re-deriving rather than inheriting:
-
-  ```bash
-  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s " — " $0}' <plan file>
-  ```
-
-  Report "section complete" only if that prints nothing for the section. A completion claim
-  is the one report a reader will not re-check. Keep `|` out of that program, even inside a
-  string: Claude Code's command safety check reads it as an awk pipe to a command and
-  refuses to run it.
-
-  **In a per-goal plan**, the goals are spread across files, so the awk above cannot see
-  them. Run instead, alone, with `plan:` from Step 1:
+  user acts on, so it is worth re-deriving rather than inheriting. Run, alone, with
+  `plan:` from Step 1:
 
       ${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh TODO.md -- <plan>
 
-  Its report has `result:`, `open:`, `problem:` and `fix:`, read as Step 1 reads
-  `locate-plan.sh`'s.
-  - `clean` with `open: —`: every goal is resolved, and the plan is complete. Say so,
-    and suggest `/smart-commit` as above.
-  - `clean` with open items: they are what remains. Do not report the plan complete.
-  - `drift`: relay each `problem:` line with its `fix:` line. The index and the goal
-    files disagree, and the fix is the user's to make.
-  - `error`, or no report: show the output.
+  It reads both layouts. Its report has `result:`, `open:`, `problem:` and `fix:`, read as
+  Step 1 reads `locate-plan.sh`'s. Each `open:` line is an open item, at any indent; in a
+  one-file plan it ends `— under <heading>`, naming the `## ` section it sits in.
+  - `clean`: report the section complete only if no `open:` line names its heading, and
+    the plan complete only if `open:` is `—`. A per-goal plan's goals have no sections,
+    so for one only the second applies. A completion claim is the one report a reader
+    will not re-check.
+  - `drift`: relay each `problem:` line with its `fix:` line. A per-goal plan's index
+    and goal files disagree, and the fix is the user's to make.
+  - `error`, or no report: show the output, and report nothing complete.
 - What the next pending top-level goal is (if any) — prefer a `[~]` in-progress goal over a `[ ]` not-started one when naming it, so the user knows the next `/hitl-step` will resume rather than start fresh.

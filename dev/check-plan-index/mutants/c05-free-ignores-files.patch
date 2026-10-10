@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -162,7 +162,7 @@
+@@ -187,7 +187,7 @@
      BEGIN {
        w = 2
        n = split(ENVIRON["FILES"], F, "\n")

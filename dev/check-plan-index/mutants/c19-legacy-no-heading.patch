@@ -1,0 +1,11 @@
+--- a/check-plan-index.sh
++++ b/check-plan-index.sh
+@@ -134,7 +134,7 @@
+     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+     case "$typ" in
+       OPEN)  h="${rest%%"$TAB"*}"; t="${rest#*"$TAB"}"
+-             R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$ln $t${h:+ — under $h}" ;;
++             R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$ln $t" ;;
+       W6)    w6 "$IDX" "$ln" "$rest" ;;
+       GOALS) R_GOALS="$ln" ;;
+     esac

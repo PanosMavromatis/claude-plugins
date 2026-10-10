@@ -185,13 +185,13 @@ Tell the user:
 - How many tasks were completed out of the N requested.
 - A brief summary of each task completed.
 - What the next pending task is (if any), so they know what `/step` will do next.
-- **In a per-goal plan**, check the plan before reporting it done. Run, alone, with
-  `plan:` from Step 1:
+- Check the plan before reporting it done, in either layout. Run, alone, with `plan:`
+  from Step 1:
 
       ${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh DO.md -- <plan>
 
   - `clean` with `open: —`: every task is done.
   - `clean` with open items: they are what remains.
-  - `drift`: relay each `problem:` line with its `fix:` line. The index and the goal
-    files disagree, and the fix is the user's to make.
-  - `error`, or no report: show the output.
+  - `drift`: relay each `problem:` line with its `fix:` line. A per-goal plan's index
+    and goal files disagree, and the fix is the user's to make.
+  - `error`, or no report: show the output, and report nothing done.

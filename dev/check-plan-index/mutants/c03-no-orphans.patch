@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -264,7 +264,7 @@
+@@ -289,7 +289,7 @@
  for rec in $out; do   # "<NN>\t<file>"
    nn="${rec%%"$TAB"*}"; gf="${rec#*"$TAB"}"
    need_file "$gf" ""

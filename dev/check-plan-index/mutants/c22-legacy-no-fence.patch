@@ -1,0 +1,10 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -352,7 +352,6 @@
+ # reports these for a legacy plan, where there is nothing to drift.
+ OPEN_AWK='
+   /^[ \t]*```/ { fence = !fence; next }
+-  fence { next }
+   /^## / { head = $0; next }
+   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ {
+     if ($0 ~ /^-/) g++

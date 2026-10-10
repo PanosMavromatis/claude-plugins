@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -354,7 +354,7 @@
+   /^[ \t]*```/ { fence = !fence; next }
+   fence { next }
+   /^## / { head = $0; next }
+-  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ {
++  /^- \[[ ~x!-]\] / || /^- \[[ ~x!-]\]$/ {
+     if ($0 ~ /^-/) g++
+     m = $0; sub(/^[ \t]*- \[/, "", m)
+     if (substr(m, 1, 1) ~ /[ ~!]/) print "OPEN\t" NR "\t" head "\t" $0

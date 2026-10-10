@@ -346,6 +346,23 @@ GOALFILE_AWK='
   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
   /^\*\*Goal\*\*:/ && !g { g = 1; v = $0; sub(/^\*\*Goal\*\*:[ \t]*/, "", v); print "GOAL\t" substr(v, 2, 1) }'
 
+# Every open item of a one-file plan, at any indent, outside fences, with the `## `
+# heading it sits under: OPEN <line> <heading> <the line>, the heading empty above the
+# first one. GOALS <n> counts its indent-0 items. W6 as above. check-plan-index.sh
+# reports these for a legacy plan, where there is nothing to drift.
+OPEN_AWK='
+  /^[ \t]*```/ { fence = !fence; next }
+  fence { next }
+  /^## / { head = $0; next }
+  /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ {
+    if ($0 ~ /^-/) g++
+    m = $0; sub(/^[ \t]*- \[/, "", m)
+    if (substr(m, 1, 1) ~ /[ ~!]/) print "OPEN\t" NR "\t" head "\t" $0
+    next
+  }
+  /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
+  END { print "GOALS\t" g + 0 }'
+
 # The subgoals of a master plan (a legacy one, or a revision's _F): one record per indent-0
 # item outside fences, ITEM <line> <marker> <last line> <branches> <heading> <the line>.
 # An item's block is its line and every following indented, non-blank line, up to the next

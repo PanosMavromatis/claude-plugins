@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -166,7 +166,7 @@
+@@ -191,7 +191,7 @@
        n = split(ENVIRON["IL"], R, "\n")
        for (i = 1; i <= n; i++) {
          split(R[i], f, "\t"); id = f[3]; k = num(id); see(id)

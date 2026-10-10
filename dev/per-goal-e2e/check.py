@@ -163,7 +163,14 @@ def e4():
     check("r4: a flat single-file plan, as before", bool(txt) and "**Layout**" not in txt and not os.path.exists(f"{E}/r4/docs/plan/feat-legacy-notes/TODO"), txt[:200])
     check("r4: the plan has `**Status**: active`", "**Status**: active" in txt)
     master_plan_change("r4", "docs/plan/TODO.md", "feat/legacy-notes", 9, 10)
-    common("e4-step")
+    s2 = common("e4-step")
+    if s2:
+        cmds = bash(s2)
+        check("e4-step: Step 6 ran check-plan-index.sh, and no awk", any("check-plan-index.sh" in c for c in cmds)
+              and not any(c.strip().startswith("awk") for c in cmds), "; ".join(c[:80] for c in cmds if "awk" in c))
+    rc, out, _ = sh([f"{SCRIPTS}/check-plan-index.sh", "TODO.md", "--", plan], f"{E}/r4")
+    r = report(out)
+    check("r4: check-plan-index.sh: clean, nothing open", r.get("result") == ["clean"] and r.get("open") == ["—"], out[:400])
     check("r4: the first goal is [x]", bool(re.search(r"^- \[x\] ", txt, re.M)), txt[:300])
     p = f"{E}/r4/notes/legacy.txt"; check("r4: notes/legacy.txt holds `legacy`", os.path.exists(p) and "legacy" in open(p).read())
 

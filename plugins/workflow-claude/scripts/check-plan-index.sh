@@ -17,12 +17,16 @@
 #   D6 a goal number is on several lines    D7 a goal file has no **Goal**: line
 #   D8 a goal is [x] but its file still has open items
 #
+# A legacy (one-file) plan has nothing to drift, so for one the script only reports its
+# open items, at every indent, each with the `## ` heading it sits under: the completion
+# check /step and /hitl-step run before reporting a plan or section done, in either layout.
+#
 # READ-ONLY. Writes nothing; of git it runs only `rev-parse --show-toplevel`, and for a
 # fix: line, the reads locate-plan.sh's E10 makes. Deterministic, Bash 3.2.
 #
 # Usage: check-plan-index.sh <TODO.md|DO.md> [--] <index>
-#        <index> is the per-goal plan's index file, or its directory, relative to the
-#        repository root: the `plan:` locate-plan.sh reports.
+#        <index> is the plan file (a per-goal plan's index, or a legacy plan), or its
+#        directory, relative to the repository root: the `plan:` locate-plan.sh reports.
 # Exit:  0 = clean. 1 = drift, or the plan could not be checked (result: error).
 #        2 = usage error, no report. 3 = a tool failed; message on stderr, no report.
 
@@ -116,10 +120,31 @@ if [ ! -e "$IDX" ]; then
 fi
 need_file "$IDX" ""
 if ! check_layout "$IDX" ""; then fail ""; fi
-if [ "$LAYOUT_V" != per-goal ]; then
-  violation "$IDX is not a per-goal plan: it has no \`**Layout**: per-goal\` line" \
-    "nothing to check: a $LAYOUT_V plan keeps its goals in one file, so they cannot drift"
+if [ "$LAYOUT_V" = revisions ]; then
+  violation "$IDX is a revisions index: its items are revisions, not goals" \
+    "check the open revision's plan instead, the plan: locate-plan.sh reports"
   fail ""
+fi
+if [ "$LAYOUT_V" = legacy ]; then
+  # One file holds every goal, so nothing can drift: report the open items, each with the
+  # `## ` heading it sits under, which is what a section's completion check needs.
+  out="$(awk "$OPEN_AWK" "$IDX")" || die "awk failed reading the items of $IDX"
+  IFS="$NL"
+  for rec in $out; do
+    typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+    case "$typ" in
+      OPEN)  h="${rest%%"$TAB"*}"; t="${rest#*"$TAB"}"
+             R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$ln $t${h:+ — under $h}" ;;
+      W6)    w6 "$IDX" "$ln" "$rest" ;;
+      GOALS) R_GOALS="$ln" ;;
+    esac
+  done
+  unset IFS
+  no="$(count_items "$R_OPEN")" || exit 3
+  R_RESULT=clean
+  if [ "$no" -eq 1 ]; then R_MSG="$IDX is a one-file plan, so nothing can drift; 1 item is open."
+  else R_MSG="$IDX is a one-file plan, so nothing can drift; $no items are open."; fi
+  finish
 fi
 
 GDIR="$(goal_dir "$IDX")"
