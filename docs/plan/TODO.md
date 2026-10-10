@@ -47,6 +47,7 @@ ends with. Settled, and not to be reopened:
       that answer key. On every case the script must score at least the best wrapper run,
       and reach the full fix on e07, e08, e08b and e09, where no arm reached one, with no
       case lower than today. Required: decided in `feat-plan-locator` goal 10.
+  > **Branch:** feat/locate-plan-diagnostics
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
