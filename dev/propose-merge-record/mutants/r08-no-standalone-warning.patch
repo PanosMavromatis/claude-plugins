@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -221,7 +221,7 @@
+   case "$mk" in
+     x|-) warn "$f:$n is already closed ([$mk]): the merge may be recorded already" ;;
+   esac
+-  if [ "$R_SUB" = standalone ]; then
++  if false; then
+     warn "$PLAN says the branch is standalone, but $f:$n backlinks $BRANCH"
+   fi
+ elif [ -n "$PLAN" ] && [ "$R_SUB" != standalone ]; then

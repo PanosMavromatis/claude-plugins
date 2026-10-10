@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -120,7 +120,7 @@
+ 
+ if [ -n "$PLAN" ]; then
+   case "$PLAN" in
+-    /*) violation "the plan path is absolute, and a report names only repository-relative paths" \
++    /nope*) violation "the plan path is absolute, and a report names only repository-relative paths" \
+           "pass it repository-relative, as locate-plan.sh reports it in plan:"; fail "" ;;
+   esac
+   if [ ! -f "$PLAN" ]; then

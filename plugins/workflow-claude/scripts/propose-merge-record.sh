@@ -120,7 +120,8 @@ cd "$ROOT" || die "cannot enter the repository root $ROOT"
 
 if [ -n "$PLAN" ]; then
   case "$PLAN" in
-    /*) violation "the plan path $PLAN is absolute" "pass it repository-relative, as locate-plan.sh reports it in plan:"; fail "" ;;
+    /*) violation "the plan path is absolute, and a report names only repository-relative paths" \
+          "pass it repository-relative, as locate-plan.sh reports it in plan:"; fail "" ;;
   esac
   if [ ! -f "$PLAN" ]; then
     violation "$PLAN is not a file" "pass the plan: path locate-plan.sh reported, or no plan if the branch has none"

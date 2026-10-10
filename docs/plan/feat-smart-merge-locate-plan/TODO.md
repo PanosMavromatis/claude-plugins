@@ -81,5 +81,13 @@
     > **Note:** The script decides each case (`ask` with candidates, `none`, or a warning
     > naming the lost subgoal) and step 7 says what to show for each; the e2e run in goal 6
     > checks a real merge against it.
-- [ ] The four `dev/` suites and their mutant passes pass, `propose-merge-record`'s new
+- [x] The four `dev/` suites and their mutant passes pass, `propose-merge-record`'s new
+  > **Note:** `dev/propose-merge-record/`: 37 cases (~16 s), 18 mutants (116 s), all
+  > killed by the case aimed at each. m29 runs a branch's life through the scripts:
+  > propose-branch-plan places the backlink, this script finds it, the merge is applied,
+  > and locate-plan, a second run and propose-branch-plan all read it back. m28 first
+  > failed: with no plans the script never runs `awk`, so the fake `awk` was never reached,
+  > and its fixture gained a master plan. The absolute-path error stopped echoing the path.
+  > **Done:** All four suites pass with 0 failing, and every mutant is killed but
+  > `locate-plan`'s known-equivalent `n05`; the READMEs say four suites.
 - [ ] Verify end to end: the user runs it, `check.py` grades

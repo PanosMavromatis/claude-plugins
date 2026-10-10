@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -219,7 +219,7 @@
+   mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; last="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
+   R_ITEM="$f:$n $text"; R_AFTER="$f:$last"
+   case "$mk" in
+-    x|-) warn "$f:$n is already closed ([$mk]): the merge may be recorded already" ;;
++    x) warn "$f:$n is already closed ([$mk]): the merge may be recorded already" ;;
+   esac
+   if [ "$R_SUB" = standalone ]; then
+     warn "$PLAN says the branch is standalone, but $f:$n backlinks $BRANCH"
