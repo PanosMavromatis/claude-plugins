@@ -58,6 +58,7 @@ ends with. Settled, and not to be reopened:
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
+  > **Branch:** feat/per-goal-layout
 - [ ] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
       On Claude Code 2.1.296, both the interactive driver session and the headless trial
       runs lacked them, and the model fell back to shell `grep`, which `allowed-tools`
