@@ -140,6 +140,26 @@
     > absent, because the heredoc replaces the user's `CLAUDE.md` and should keep prompting.
   - [-] `/smart-merge` step 7
     > **Deferred:** rewritten once, through `scripts/locate-plan.sh`, by the next R1 subgoal.
-- [ ] Verify: the three script suites pass, per-goal-e2e `e4` passes Step 6, and `e1`, `e3` and `e4` pass the master-plan `[~]` check (the user runs them). A headless
-      `/smart-commit` shows its nested `Skill(workflow-claude:agents-docs-update)` call with
-      no permission denial
+- [x] Verify the branch end to end
+  - [x] The three script suites and their mutants pass
+    > **Result:** On `95b8e17`: `locate-plan` 83 cases, `check-plan-index` 39 and
+    > `propose-branch-plan` 32, all passing; mutants 27, 24 and 18, all killed, none stale.
+  - [x] per-goal-e2e `e1`, `e3` and `e4` pass: e4's Step 6 runs `check-plan-index.sh` with
+        no denial, and all three pass the master-plan `[~]` check (the user runs them)
+    > **Result:** Run `r3`, 2026-10-10, on the working tree: 65 checks and 0 failing. That
+    > includes "e4-step: Step 6 ran check-plan-index.sh, and no awk" and the `[~]` flip on
+    > `r1` and `r4`, with `r3`'s `DO.md` master plan left alone. All six sessions had no
+    > permission denials and made no `Grep`, `Glob` or shell-search calls, for $2.43 in all.
+    > Run `r2`'s e4 had failed only on the Step 6 `awk`.
+  - [x] A headless `/smart-commit` makes its nested `Skill(workflow-claude:agents-docs-update)`
+        call with no permission denial, against a `SlashCommand` control (the user runs it)
+    > **Result:** Two runs in scratchpad fixtures, each with one staged file and no remote.
+    > On the working tree, the `Skill` call ran ("Launching skill"). In the 0.9.0 control,
+    > whose `SlashCommand(…)` grant matches nothing, the same call was **denied**, and the
+    > model synced the docs inline and committed anyway. So the grant is what lets the
+    > call through. A headless 0.9.0 `/smart-commit` silently skips `/agents-docs-update`,
+    > and the 72 interactive successes must have been approved prompts.
+    > **Note:** The working-tree run had one denial of another kind: the model appended
+    > `2>&1; echo "exit=$?"` to `git push --follow-tags`, and a chained command matches no
+    > prefix rule. Its bare retry ran. The command text says "run alone" only for its
+    > scripts, not for git.

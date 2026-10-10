@@ -50,3 +50,7 @@ expected.
 
 - 2026-10-10: `/smart-merge` step 7 is measured here but rewritten by the next subgoal,
   through `scripts/locate-plan.sh`, so that it is written only once.
+- 2026-10-10: verified. The e2e run `r3` passed 65 checks with 0 failing. A headless
+  `/smart-commit` control on 0.9.0 had its nested `Skill` call denied, because the dead
+  `SlashCommand(…)` grant matches nothing, so it silently skipped `/agents-docs-update`.
+  With the new `Skill(…)` grant, the call ran.
