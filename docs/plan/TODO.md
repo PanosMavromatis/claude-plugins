@@ -63,7 +63,7 @@ ends with. Settled, and not to be reopened:
   > `propose-branch-plan.sh`; `/step` and `/hitl-step` work goal files, goal file first;
   > `check-plan-index.sh` reports drift. The shared rules live in `lib/plan-rules.sh`,
   > tested by three suites and a headless end-to-end run — PR #7
-- [~] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
+- [x] `Grep` and `Glob` can be missing from a session whose `allowed-tools` grants them.
       On Claude Code 2.1.296, both the interactive driver session and the headless trial
       runs lacked them, and the model fell back to shell `grep`, which `allowed-tools`
       doesn't cover, so the user gets a prompt. Measure when they are missing, then rewrite
@@ -78,6 +78,12 @@ ends with. Settled, and not to be reopened:
       items, so Step 6 runs one script for both layouts; `Bash(awk:*)` is ruled out.
       Found on `feat-per-goal-layout` goal 6.
   > **Branch:** fix/disallowed-tool-steps
+  > **Done:** Since 2.1.117, native builds have no `Grep` or `Glob` in the main session,
+  > and the shell `grep` fallback runs unprompted rather than prompting; `SlashCommand` was
+  > dead too. Plan lookups now go through `locate-plan.sh` and `check-plan-index.sh`, which
+  > reports a legacy plan's open items, so Step 6's `awk` is gone. `SlashCommand` grants
+  > became `Skill(…)`, and `/new-branch` marks its subgoal `[~]`. Step 7 moved to the
+  > subgoal below — PR #8
 - [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
       index and edits `_TODO.md`. That also ends step 7's reliance on `Grep`, deferred
       here from the subgoal above.

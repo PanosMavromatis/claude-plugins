@@ -1,6 +1,6 @@
 # fix/disallowed-tool-steps
 
-**Status**: active
+**Status**: merged — PR #8 — 2026-10-10
 **Created**: 2026-10-10
 **Subgoal**: revision 06-subagent-refactor-R1 — steps that rely on a tool their command does not allow
 
