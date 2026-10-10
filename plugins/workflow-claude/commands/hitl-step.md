@@ -278,11 +278,13 @@ Tell the user:
   user acts on, so it is worth re-deriving rather than inheriting:
 
   ```bash
-  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s" | "$0}' <plan file>
+  awk '/^## /{s=$0} /^[[:space:]]*- \[[ ~!]\]/{print s " — " $0}' <plan file>
   ```
 
   Report "section complete" only if that prints nothing for the section. A completion claim
-  is the one report a reader will not re-check.
+  is the one report a reader will not re-check. Keep `|` out of that program, even inside a
+  string: Claude Code's command safety check reads it as an awk pipe to a command and
+  refuses to run it.
 
   **In a per-goal plan**, the goals are spread across files, so the awk above cannot see
   them. Run instead, alone, with `plan:` from Step 1:

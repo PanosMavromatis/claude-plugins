@@ -70,3 +70,9 @@ repository's own plans stay legacy until R2 step 0.
   - Step 6 decides completion with `check-plan-index.sh`.
 
   Lockstep stays empty, including in the trial arms.
+- 2026-10-10: goal 6 ran the real commands headless (`dev/per-goal-e2e/`, 7 sessions,
+  $2.74). Every per-goal scenario passes, with no `Grep` or `Glob`. The legacy run found
+  `/hitl-step`'s Step 6 awk refused by the safety check (a `|` in an awk string). That
+  is fixed, but the awk is not allow-listed, which is now part of the next subgoal.
+  `/new-branch` writes `docs/git/<branch>.md` unflattened, while this repository's own
+  branch docs are flattened: still to settle.

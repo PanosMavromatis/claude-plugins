@@ -67,6 +67,12 @@ ends with. Settled, and not to be reopened:
       `/smart-merge` step 7, `/close-revision`'s pointer check, and in `/step` and
       `/hitl-step` the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep and
       the investigation paragraph. Found on `feat-locate-plan-diagnostics` goal 4.
+      Also every other step that relies on a tool its command does not allow. One is
+      known: `/hitl-step`'s legacy Step 6 completion check runs `awk`, which is not
+      allow-listed, so it prompts or is refused, and the model falls back to shell
+      `grep`. The likely fix is `check-plan-index.sh` reporting a legacy plan's open
+      items, so Step 6 runs one script for both layouts; `Bash(awk:*)` is ruled out.
+      Found on `feat-per-goal-layout` goal 6.
 - [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
       index and edits `_TODO.md`.
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a

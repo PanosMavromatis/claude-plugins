@@ -127,6 +127,11 @@ python3 -I dev/propose-branch-plan/suite.py              # 32 cases, no model, ~
 python3 -I dev/propose-branch-plan/suite.py --mutants    # the suite must catch each mutant, ~2 min
 ```
 
+`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step` and `/step` headless on
+fresh fixture repositories, and grades what they leave behind. Those are real sessions,
+which cost money, so run them yourself, after a change to the command text;
+`dev/per-goal-e2e/README.md` covers how.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one

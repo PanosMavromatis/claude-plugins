@@ -208,6 +208,53 @@
     > **Note:** lockstep is empty in the drafts, in the repository, and in all 12 trial
     > arms, which `build-arms.py` still splices. No script changed in this goal, and
     > the locate-plan suite passes all 83 cases under both shells.
-- [ ] End-to-end through the real commands: `/new-branch` inside a revision, then
+- [x] End-to-end through the real commands: `/new-branch` inside a revision, then
       `/hitl-step` and `/step` over goal files, then the same on a legacy plan. The user
       runs the headless sessions.
+  > **Q:** Every write in these commands waits for confirmation, which a headless session
+  > cannot give. How should the end-to-end sessions run?
+  > **A:** Scripted headless: one `claude -p` per command, from a script the user starts.
+  > The decisions come with the prompt, the writes are approved in advance, and a
+  > checker grades the result and each session's permission denials. The confirmation
+  > pauses themselves are not exercised; this goal does not change them.
+  > **Note:** the harness is `dev/per-goal-e2e/` (`build.py`, `run.sh`, `check.py`). Each
+  > fixture is a consumer repository whose `CLAUDE.md` gives the approvals in advance,
+  > so the commands run unmodified, and only the `--plugin-dir` copy is loaded:
+  > `workflow-claude@mavromatis-ai-labs` is enabled in this repository's project
+  > settings, not the user's. `check.py` grades each fixture's end state and each
+  > session's tool calls (stream-json), which is how ordering claims become checkable:
+  > proposed before `git checkout -b`, goal file before index, master plan edited not
+  > rewritten, every script from the copy.
+  > **Result:** run `r1`, 7 sessions, $2.74. e1 (`/new-branch` in a revision, then
+  > `/hitl-step 2`), e3 (DO model, `/step 2`) and e5 (the interrupted-edit repair) pass
+  > every check:
+  > - the index and goal files are written to the proposal, with a one-line backlink
+  >   after the subgoal's block;
+  > - every goal file was edited before its index line;
+  > - `locate-plan.sh` re-ran between goals, and `check-plan-index.sh` came back clean
+  >   with nothing open;
+  > - e5 named the mismatch and rewrote the index line from the goal file.
+  >
+  > The per-goal sessions made no `Grep`, `Glob` or shell-search calls at all.
+  > **Note:** two of r1's three failures were the checker's. `/new-branch` writes
+  > `docs/git/<branch-name>.md` with the name unflattened (`docs/git/feat/plan-dirs.md`),
+  > and `/smart-merge` reads the same path. This repository's own branch docs are
+  > flattened, written by hand, so the two disagree. The checker now follows the
+  > command.
+  > **Note:** the third was real, and older than this branch. `/hitl-step`'s legacy Step 6
+  > awk printed `s" | "$0`, and Claude Code's safety check reads a `|` inside an awk
+  > string as a pipe to a command, so it refused the check outright. The separator is
+  > now ` — `, and the command says why. Run `r2` re-ran e4: the safety refusal is
+  > gone, but awk is not in `/hitl-step`'s `allowed-tools`, so the check now needs
+  > approval and the model fell back to shell `grep`. Everything else in e4 passes:
+  > the flat plan, the one-line backlink, the goal ticked.
+  > **Q:** The awk check prompts (interactive) or is refused (headless). Fix it now, in
+  > the next subgoal, or allow-list awk?
+  > **A:** In the next subgoal, broadened from `Grep` and `Glob` to every step that relies
+  > on a tool its command does not allow, this awk included, measured before rewriting.
+  > The likely fix there is `check-plan-index.sh` reporting a legacy plan's open items,
+  > so Step 6 uses one script for both layouts. `Bash(awk:*)` was rejected: awk can run
+  > commands and write files.
+  > **Done:** the per-goal layout runs end to end through the real commands, and the
+  > legacy path behaves as in 0.9.0, apart from the Step 6 safety fix. The remaining awk
+  > prompt is recorded in the master plan's next subgoal.
