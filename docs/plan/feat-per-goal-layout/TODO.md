@@ -1,6 +1,6 @@
 # feat/per-goal-layout
 
-**Status**: active
+**Status**: merged — PR #7 — 2026-10-10
 **Created**: 2026-10-10
 **Subgoal**: revision 06-subagent-refactor-R1 — per-goal layout
 
