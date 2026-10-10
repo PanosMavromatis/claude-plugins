@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count] [plan-path]"
 ---
@@ -34,12 +34,17 @@ resolve the plan yourself.
        ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh DO.md -- <path>
 
    If the user named an item out of order, run it once to find the plan, `Grep` that
-   file for the item, and run it again with `--goal <line>` before the `--`.
+   file for the item, and run it again with `--goal <line>` before the `--`. In a
+   per-goal plan the item is an index line, and the index is small: `Read` it instead.
 2. Act on `result:`; the report says everything the exit status does. A key with
    several items continues on lines indented two spaces.
    - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
      before any work, and show every `warnings:` line; then carry on. If `layout:` is
-     `per-goal`, say this version cannot yet edit goal files, and stop.
+     `per-goal`, the plan is an index and `goal-file:` holds the selected goal; Steps 2–6
+     say where each read and edit goes. A warning that the `next:` line's marker differs
+     from its goal file's `**Goal**:` means an edit stopped between the two files. The
+     goal file is the source of truth: offer to rewrite that index line with its marker,
+     and once the user agrees and it is written, run the script again before any work.
    - `ask`: show `candidates:` and `message:`, wait for the user's choice, and
      run the script again with it as the path. Never pick a candidate yourself.
    - `none`: say there is no plan, and stop.
@@ -96,6 +101,10 @@ The report's `next:` is the **current task**: the first `- [ ]` line, at any ind
 - Read the item and any blockquotes beneath it: the whole file for a branch plan, which is
   small; for a master plan, a window starting at `next:`.
 - If `next: —`, every item is checked: say that all tasks are complete, and stop.
+- **A per-goal plan** (`layout: per-goal`): `next:` is a goal's index line, and its tasks
+  are in `goal-file:`. Read the index and the goal file whole; both are small. The
+  current task is the first `- [ ]` line among `subgoals:`. If the goal file has none,
+  the goal itself is the task. A task's `>` lines sit at indent 2 beneath it.
 
 ## Step 3: Execute the Task
 
@@ -148,7 +157,7 @@ a task: write it as one, where it belongs in the list.
 
 Once the task is fully done:
 
-1. Replace `- [ ]` with `- [x]` on the task's line in the plan file. Use `Edit` for this — it is a one-line change, and rewriting the whole file with `Write` costs as much as reading it whole, which is the cost Step 2 exists to avoid on a large master plan.
+1. Replace `- [ ]` with `- [x]` on the task's line in the plan file. In a per-goal plan that line is in the goal file. Once the goal file has no `- [ ]` left, or the goal itself was the task, set `**Goal**: [x]` in the goal file, then `[x]` on its index line: goal file first, then index, since the goal file is the source of truth and the index mirrors it. Use `Edit` for this — it is a one-line change, and rewriting the whole file with `Write` costs as much as reading it whole, which is the cost Step 2 exists to avoid on a large master plan.
 2. If no Q&A was logged but you want to note what was done, you may optionally add a brief completion note:
 
 ```
@@ -167,7 +176,7 @@ Once the task is fully done:
 
 - Increment your completed-task counter.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 and execute the next unchecked item. Pick up your latest edits the same way Step 2 found the first item — re-`Grep` for the next `- [ ]` rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around.
+- Otherwise, go back to Step 2 and execute the next unchecked item. Pick up your latest edits the same way Step 2 found the first item — re-`Grep` for the next `- [ ]` rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around. In a per-goal plan, run the script again exactly as in Step 1 instead: it reports the next goal and its goal file, and an index is a few lines.
 - If you run out of unchecked items before reaching N, proceed to Step 6.
 
 ## Step 6: Report
@@ -176,3 +185,13 @@ Tell the user:
 - How many tasks were completed out of the N requested.
 - A brief summary of each task completed.
 - What the next pending task is (if any), so they know what `/step` will do next.
+- **In a per-goal plan**, check the plan before reporting it done. Run, alone, with
+  `plan:` from Step 1:
+
+      ${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh DO.md -- <plan>
+
+  - `clean` with `open: —`: every task is done.
+  - `clean` with open items: they are what remains.
+  - `drift`: relay each `problem:` line with its `fix:` line. The index and the goal
+    files disagree, and the fix is the user's to make.
+  - `error`, or no report: show the output.

@@ -61,3 +61,12 @@ repository's own plans stay legacy until R2 step 0.
   Case p24 shows the writer and the readers agree. The suite caught a silent `set -e`
   exit in an assignment's `$( [ … ] && … )`. The real command runs end to end in
   goal 6.
+- 2026-10-10: goal 5 taught `/step` and `/hitl-step` the per-goal layout, beside the
+  untouched legacy path:
+  - Step 1 drops its stop, and offers to repair an index line that an interrupted edit
+    left behind;
+  - Steps 2–4 work on the goal file, goal file first;
+  - Step 5 re-runs `locate-plan.sh`;
+  - Step 6 decides completion with `check-plan-index.sh`.
+
+  Lockstep stays empty, including in the trial arms.

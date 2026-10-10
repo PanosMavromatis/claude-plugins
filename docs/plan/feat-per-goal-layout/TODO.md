@@ -184,14 +184,30 @@
     > **Note:** cases p02–p05 and the smoke test on this repository's master plan show
     > it. `/new-branch` no longer greps for the item: the script lists the candidates,
     > and the user picks one.
-- [ ] `/step` and `/hitl-step` read and write goal files
-  - [ ] Drop the "cannot yet edit goal files" stop in Step 1, and offer to repair W11 on
+- [x] `/step` and `/hitl-step` read and write goal files
+  > **Q:** The drafts change `/hitl-step` in 34 lines and `/step` in 23, legacy paths
+  > untouched: Step 1's warning repair, the per-goal reads in Step 2, goal file before
+  > index in Steps 3–4, a script re-run in Step 5, `check-plan-index.sh` in Step 6.
+  > A split goal's slug is applied by hand, and Step 6 confirms it. Write them?
+  > **A:** Yes.
+  - [x] Drop the "cannot yet edit goal files" stop in Step 1, and offer to repair W11 on
         the selected goal
-  - [ ] Steps 2–4 work on the goal file, goal file before index; Step 5 re-runs
+    > **Note:** a goal named out of order is found in the index, which is small, by `Read`
+    > rather than `Grep`.
+  - [x] Steps 2–4 work on the goal file, goal file before index; Step 5 re-runs
         `locate-plan.sh`; Step 6 runs `check-plan-index.sh`
-  - [ ] `/step`'s DO-model unit is one task in the goal file
-  - [ ] No new step depends on `Grep` or `Glob`
-  - [ ] The lockstep `sed` diff stays empty, and the `locate-plan` suite stays green
+    > **Note:** `check-plan-index.sh` is now allow-listed in both commands. Step 2 spells
+    > out the one-level outdent, so the model does not carry legacy indents into a goal
+    > file.
+  - [x] `/step`'s DO-model unit is one task in the goal file
+  - [x] No new step depends on `Grep` or `Glob`
+    > **Note:** scanned: the only `Grep` on changed lines is legacy text, the frontmatter
+    > and Step 5's legacy sentence, which gained a per-goal clause. Removing the legacy
+    > dependency is the next subgoal's.
+  - [x] The lockstep `sed` diff stays empty, and the `locate-plan` suite stays green
+    > **Note:** lockstep is empty in the drafts, in the repository, and in all 12 trial
+    > arms, which `build-arms.py` still splices. No script changed in this goal, and
+    > the locate-plan suite passes all 83 cases under both shells.
 - [ ] End-to-end through the real commands: `/new-branch` inside a revision, then
       `/hitl-step` and `/step` over goal files, then the same on a legacy plan. The user
       runs the headless sessions.
