@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -182,7 +182,7 @@
+   for rec in $HITS; do
+     f="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"
+     rest="${rest#*"$TAB"}"; rest="${rest#*"$TAB"}"; rest="${rest#*"$TAB"}"
+-    printf '%s:%s %s\n' "$f" "$n" "$rest"
++    printf '%s:%s %s\n' "$f" "$n" "${rest##*"$TAB"}"
+   done
+ }
+ 

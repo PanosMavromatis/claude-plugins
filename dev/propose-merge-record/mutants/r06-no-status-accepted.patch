@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -135,7 +135,7 @@
+   # The first **Status** line anywhere, as status_of reads it, with its line number.
+   out="$(awk '/^\*\*Status\*\*:/ { s = $0; sub(/[ \t\r]+$/, "", s); print NR "\t" s; exit }' "$PLAN")" \
+     || die "awk failed reading the status of $PLAN"
+-  if [ -z "$out" ]; then
++  if false; then
+     violation "$PLAN has no **Status** line, so it cannot be stamped merged, and it would count as active for good" \
+       "add \`**Status**: active\` under its title, then run this again"
+     fail ""

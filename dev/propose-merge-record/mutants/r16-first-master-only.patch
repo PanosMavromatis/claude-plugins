@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -416,7 +416,7 @@
+ master_items() {  # master_items <rung>
+   local m out rec IFS="$NL"
+   ITEMS=""
+-  for m in $MASTERS; do
++  for m in ${MASTERS%%"$NL"*}; do
+     need_file "$m" "$1"
+     out="$(awk "$SUBGOALS_AWK" "$m")" || die "awk failed reading the subgoals of $m"
+     for rec in $out; do ITEMS="${ITEMS:+$ITEMS$NL}$m$TAB${rec#ITEM"$TAB"}"; done

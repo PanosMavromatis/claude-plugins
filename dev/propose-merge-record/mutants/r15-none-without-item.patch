@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -239,7 +239,7 @@
+   fi
+ fi
+ 
+-if [ -z "$R_STAMP" ] && [ -z "$R_ITEM" ]; then
++if [ -z "$R_ITEM" ]; then
+   R_RESULT=none
+   R_MSG="Nothing to record: $BRANCH has no plan, and no item backlinks it."
+   finish

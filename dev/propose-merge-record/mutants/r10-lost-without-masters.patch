@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -227,7 +227,7 @@
+ elif [ -n "$PLAN" ] && [ "$R_SUB" != standalone ]; then
+   # With no master file, the warning above (or the missing master plan) is the reason, and
+   # nothing was lost; with some, the plan expected a backlink they do not hold.
+-  if [ -n "$MASTERS" ]; then
++  if true; then
+     where="no item in $(joined "$MASTERS") backlinks $BRANCH"
+     if [ -n "$R_SUB" ]; then
+       warn "$PLAN names the subgoal \`$R_SUB\`, but $where: the backlink was lost or misspelled"

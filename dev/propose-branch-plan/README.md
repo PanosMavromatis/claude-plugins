@@ -7,7 +7,8 @@ plugin, so they don't ship with it. The contract they test is `per-goal-layout-s
 in the `feat-per-goal-layout` branch plan, and the reasoning is in that plan's goal 4.
 
 The script shares its rules with `locate-plan.sh` and `check-plan-index.sh` through
-`scripts/lib/plan-rules.sh`. After a change to the library, run all three suites.
+`scripts/lib/plan-rules.sh`, and with `propose-merge-record.sh`, which finds the backlinks
+this one places. After a change to the library, run all four suites.
 
 ## Running it: no model, no cost
 

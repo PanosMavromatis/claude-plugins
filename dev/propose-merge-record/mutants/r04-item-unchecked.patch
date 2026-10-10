@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -192,7 +192,7 @@
+   IFS="$NL"
+   for rec in $HITS; do
+     f="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; n="${rest%%"$TAB"*}"
+-    if [ "$f" = "$sf" ] && [ "$n" = "$sl" ]; then SEL="$rec"; fi
++    if true; then SEL="$rec"; fi
+   done
+   unset IFS
+   if [ -z "$SEL" ]; then

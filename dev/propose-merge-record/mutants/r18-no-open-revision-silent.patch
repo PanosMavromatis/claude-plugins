@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -154,7 +154,7 @@
+ master_files ""
+ case "$MLAYOUT" in
+   revisions) R_LAYOUT=revisions
+-             if [ -z "$MASTERS" ]; then warn "no revision is open in $ROOT_PLAN, so there is no subgoal to close"; fi ;;
++             if false; then warn "no revision is open in $ROOT_PLAN, so there is no subgoal to close"; fi ;;
+   legacy)    R_LAYOUT=legacy ;;
+   none)      if [ -f "$PD/$OTHER" ]; then
+                warn "there is no $ROOT_PLAN, but $PD/$OTHER exists: the master plan uses the other model, so no subgoal is closed in it"

@@ -1,0 +1,13 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -204,8 +204,8 @@
+     fi
+     fail ""
+   fi
+-elif [ "$NH" -eq 1 ]; then
+-  SEL="$HITS"
++elif [ "$NH" -ge 1 ]; then
++  SEL="${HITS%%"$NL"*}"
+ elif [ "$NH" -gt 1 ]; then
+   R_RESULT=ask; R_CAND="$(cands)"
+   R_MSG="$NH items backlink $BRANCH, so one is a duplicate; choose the one to close and pass it as --item <file>:<line>."

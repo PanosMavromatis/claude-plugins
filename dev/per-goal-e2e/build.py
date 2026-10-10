@@ -29,7 +29,30 @@ own files: do it, and say what you did. When /hitl-step or /step pauses to ask w
 commit, the answer is to keep going without committing. When a command needs a decision
 from the user, take the first option you offer, and log it as the user's answer wherever
 the command says answers are logged.
+
+`gh` here is a test stub standing in for GitHub: use it for every GitHub operation. There
+is no GitHub MCP server for this repository.
 """
+# The merge sessions' gh: no network, every call logged to $GH_LOG, a PR body file copied
+# in whole. pr create answers with PR #42; there are no PRs before it and no checks.
+GH = r"""#!/bin/sh
+log="${GH_LOG:?GH_LOG is not set}"
+{ printf 'ARGV'; for a in "$@"; do printf ' %s' "$a"; done; printf '\n'; } >> "$log"
+case "$1 $2" in
+  "pr create")
+    while [ $# -gt 0 ]; do
+      if [ "$1" = --body-file ] && [ $# -ge 2 ]; then { echo BODY-BEGIN; cat "$2"; echo; echo BODY-END; } >> "$log"; fi
+      shift
+    done
+    echo "https://github.com/e2e/fixture/pull/42" ;;
+  "pr list") case " $* " in *" --json "*) echo "[]" ;; esac ;;
+  "pr view") echo "no pull requests found for branch" >&2; exit 1 ;;
+  "pr checks") echo "no checks reported on the branch" >&2; exit 1 ;;
+  "pr merge") echo "Merged pull request #42" ;;
+  *) echo "gh stub: unsupported: $*" >&2; exit 1 ;;
+esac
+"""
+GHBIN = f"{E}/bin/{h('e2e/gh')}"   # run.sh derives the same path
 INDEX = lambda model: f"""# Plans
 
 **Layout**: revisions
@@ -98,8 +121,9 @@ def repo(name, files, branch=None, branch_files=None):  # branch_files goes with
     return d
 
 # the fixtures and the plugin copy are rebuilt; earlier runs' out-*/ results are kept
-for d in ("p", "r1", "r3", "r4", "r5"): shutil.rmtree(f"{E}/{d}", ignore_errors=True)
+for d in ("p", "r1", "r3", "r4", "r5", "r1m", "r3m", "r4m", "bin"): shutil.rmtree(f"{E}/{d}", ignore_errors=True)
 os.makedirs(E, exist_ok=True)
+os.makedirs(GHBIN); open(GHBIN + "/gh", "w").write(GH); os.chmod(GHBIN + "/gh", 0o755)
 shutil.copytree(REPO + "/plugins/workflow-claude", PLUGIN)
 repo("r1", {"docs/plan/TODO.md": INDEX("TODO.md"), "docs/plan/07-rev/_TODO.md": REVMASTER,
             "docs/plan/05-old/_TODO.md": REVMASTER.replace("07-rev", "05-old")})

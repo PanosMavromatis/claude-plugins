@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -230,7 +230,7 @@
+   if [ -n "$MASTERS" ]; then
+     where="no item in $(joined "$MASTERS") backlinks $BRANCH"
+     if [ -n "$R_SUB" ]; then
+-      warn "$PLAN names the subgoal \`$R_SUB\`, but $where: the backlink was lost or misspelled"
++      :
+     else
+       warn "$PLAN has no **Subgoal** line to say whether it is standalone, and $where"
+     fi

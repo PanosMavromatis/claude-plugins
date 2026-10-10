@@ -1,11 +1,11 @@
---- a/propose-branch-plan.sh
-+++ b/propose-branch-plan.sh
-@@ -146,7 +146,7 @@
- if [ -f "$ROOT_PLAN" ]; then
-   need_file "$ROOT_PLAN" ""
-   if ! check_layout "$ROOT_PLAN" ""; then fail ""; fi
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -402,7 +402,7 @@
+   if [ ! -f "$ROOT_PLAN" ]; then return 0; fi
+   need_file "$ROOT_PLAN" "$1"
+   if ! check_layout "$ROOT_PLAN" "$1"; then fail "$1"; fi
 -  if [ "$LAYOUT_V" = revisions ]; then
 +  if [ "$LAYOUT_V" = nope ]; then
-     R_LAYOUT=per-goal
-     index_open "$ROOT_PLAN" ""
+     MLAYOUT=revisions
+     index_open "$ROOT_PLAN" "$1"
      MASTERS="$OPEN_LIST"

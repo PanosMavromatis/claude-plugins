@@ -117,19 +117,23 @@ python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mut
 Step 1 with a subagent wrapping the script.
 
 Test its plan check, `scripts/check-plan-index.sh` (drift in a per-goal plan, open items in
-either layout), and the script `/new-branch` places a new plan with,
-`scripts/propose-branch-plan.sh`, the same way. All three share `scripts/lib/plan-rules.sh`,
-so run all three suites after a change to it:
+either layout), the script `/new-branch` places a new plan with,
+`scripts/propose-branch-plan.sh`, and the one `/smart-merge` records a merge with,
+`scripts/propose-merge-record.sh`, the same way. All four share `scripts/lib/plan-rules.sh`,
+so run all four suites after a change to it:
 
 ```bash
 python3 -I dev/check-plan-index/suite.py                 # 39 cases, no model, ~10 s
 python3 -I dev/check-plan-index/suite.py --mutants       # the suite must catch each mutant, ~1 min
 python3 -I dev/propose-branch-plan/suite.py              # 32 cases, no model, ~20 s
 python3 -I dev/propose-branch-plan/suite.py --mutants    # the suite must catch each mutant, ~2 min
+python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~15 s
+python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 ```
 
-`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step` and `/step` headless on
-fresh fixture repositories, and grades what they leave behind. Those are real sessions,
+`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge`
+headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
+runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,
 which cost money, so run them yourself, after a change to the command text;
 `dev/per-goal-e2e/README.md` covers how.
 

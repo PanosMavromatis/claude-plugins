@@ -1,0 +1,11 @@
+--- a/propose-merge-record.sh
++++ b/propose-merge-record.sh
+@@ -171,7 +171,7 @@
+   mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; last="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+   br="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; text="${rest#*"$TAB"}"
+   case " $br " in
+-    *" $BRANCH "*) HITS="${HITS:+$HITS$NL}$f$TAB$n$TAB$mk$TAB$last$TAB$text" ;;
++    *"$BRANCH"*) HITS="${HITS:+$HITS$NL}$f$TAB$n$TAB$mk$TAB$last$TAB$text" ;;
+   esac
+ done
+ unset IFS

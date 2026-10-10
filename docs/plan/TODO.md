@@ -84,9 +84,15 @@ ends with. Settled, and not to be reopened:
   > reports a legacy plan's open items, so Step 6's `awk` is gone. `SlashCommand` grants
   > became `Skill(…)`, and `/new-branch` marks its subgoal `[~]`. Step 7 moved to the
   > subgoal below — PR #8
-- [ ] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
+- [x] `/smart-merge` step 7 goes through `scripts/locate-plan.sh`, stamps the branch
       index and edits `_TODO.md`. That also ends step 7's reliance on `Grep`, deferred
       here from the subgoal above.
+  > **Branch:** feat/smart-merge-locate-plan
+  > **Done:** Steps 2 and 7 run `locate-plan.sh` and the new `propose-merge-record.sh`,
+  > which matches a backlink as a whole value in whichever master file `/new-branch` wrote
+  > it to, the root plan or an open revision's `_TODO.md`, and stamps a per-goal plan's
+  > index; `master_files` is shared through the library. A fourth suite and e2e merge
+  > sessions on a stub `gh` verify it, and every command now runs alone — PR #9
 - [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
       `--dry-run` that writes to a given path. `/close-revision` stamps, `/file-plans`
       becomes legacy-only and `/open-revision` becomes an alias. Fix the reopen guard:
