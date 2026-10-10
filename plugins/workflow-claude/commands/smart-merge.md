@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(ls:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Bash(git pull --prune:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-merge-record.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch -v:*), Bash(git rev-parse:*), Bash(git fetch:*), Bash(ls:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr create:*), Bash(git add:*), Bash(git commit:*), Bash(git checkout main:*), Bash(git pull --prune:*), Read, Write, Edit
 description: Interactive guided workflow to merge current branch into main via GitHub PR
 ---
 
@@ -180,9 +180,23 @@ Report the PR number and URL, and note which path created it — the PR number i
 
 The PR number now exists, and the branch is still open — this is the only window where both are true, so both plan updates happen here, on the branch, in one commit. Doing it after the merge would mean committing directly to `main`, which branch protection commonly forbids.
 
-Skip this step entirely if no branch plan and no master plan exist.
+**Propose the record.** The bundled `scripts/propose-merge-record.sh` finds what this step edits: the branch plan's status line, and the master-plan item that backlinks this branch, in whichever master file `/new-branch` wrote the backlink to: the root plan, or an open revision's `_TODO.md` under a revisions index. It is read-only. Do not search the master plan yourself. Run it alone, in exactly this form, with nothing appended, chained or piped, passing step 2's model, the current branch, and step 2's plan path (nothing after the `--` if step 2 found no plan):
 
-**Stamp the branch plan.** Using the path resolved in step 2 — not a reconstructed one — rewrite its status line to record the merge:
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/propose-merge-record.sh <DO.md|TODO.md> <branch> -- <plan>
+```
+
+Act on `result:`. A key with several items continues on lines indented two spaces.
+
+- `propose`: show `stamp:`, `item:`, `after:` and every `warnings:` line. That is what this step edits, and nothing else.
+- `ask`: more than one item backlinks this branch, a duplicated backlink. Show `candidates:` and ask which to close; never pick one yourself, and never close both. Run it again with `--item <file>:<line>` before the `--`.
+- `none`: there is no plan and no backlink, so there is nothing to record. Say so, and go on to step 8.
+- `error`: relay each `problem:` line with its `fix:` line, and stop before editing anything. Once the user has fixed it, start this step again.
+- no `result:` line, or no `message:` line (the report was cut short): show the output and stop. Never act on part of a report.
+
+**A miss is reported, never passed over.** A `propose` with `item: —` stamps the plan and closes nothing, and the report says which of two things that means. With no warning, the branch is standalone (its plan says so), and stamping is the whole of this step. With a warning that the backlink was lost or misspelled, say so plainly: the subgoal it names stays open, with no trace of why, until someone closes it by hand. An unreported miss is indistinguishable from having had nothing to do.
+
+**Stamp the branch plan.** `Read` the `stamp:` line (`offset` it, `limit` 1) and `Edit` it to record the merge. In a per-goal plan, that line is in the index; goal files carry no status.
 
 ```
 **Status**: merged — PR #123 — 2026-08-29
@@ -190,11 +204,7 @@ Skip this step entirely if no branch plan and no master plan exist.
 
 `/step` and `/hitl-step` read this line to filter merged plans out of their disambiguation prompt. The value must begin with `merged` for that filter to see it.
 
-**Update the master plan — locate first, do not read the whole file.** The master plan is the one file in this system that grows without bound: it accumulates every subgoal of every revision, each with its `> **Done:**` annotation. All this step needs from it is the one item backlinked to this branch. Find that item, then read only around it.
-
-1. **Locate.** Use `Grep` for the pattern `> \*\*Branch:\*\* <branch-name>` in `docs/plan/DO.md` (or `TODO.md`), with line numbers on. Use the `Grep` tool rather than a shell `grep` — it is allow-listed here and a bash `grep` would prompt.
-2. **Read a window.** `Read` the file with `offset` and `limit` set to a window around the hit — roughly 10 lines before and 15 after is ample, since a subgoal item plus its blockquotes runs a few lines. That window is what you edit.
-3. **Edit in place.** Mark the item complete and append the `> **Done:**` line beneath the existing backlink.
+**Close the item.** `Read` from the `item:` line to the `after:` line, which is the item's whole block, a few lines long, and edit only those lines. Change the item's marker, and insert the `> **Done:**` line directly after the `after:` line, which is the block's last line, so it lands below the backlink and any Q&A beneath it:
 
 ```markdown
 - [x] The master-plan subgoal this branch executed
@@ -202,17 +212,11 @@ Skip this step entirely if no branch plan and no master plan exist.
   > **Done:** One-or-two-sentence summary of what landed — PR #123
 ```
 
-**Follow the sequence literally.** The instinct when told "update the master plan" is to read the file and edit it, and at today's sizes that works fine — which is exactly why it survives until it doesn't. Measured against synthetic master plans built from this repo's own subgoal blocks: at 250 subgoals the file is ~197 KB / ~55k tokens and **0.39%** of what a whole-file read loads is the block being edited; at ~500 subgoals it passes 2000 lines and a default read **truncates**. Locating first costs about 200 tokens and does not change with file size.
-
-**Handle a missing or duplicated backlink explicitly — never silently.**
-
-- **Exactly one hit** — the normal case. Proceed.
-- **No hits** — say so, and say which of the two things it means: either this branch legitimately has no master-plan item (a standalone branch, or one created without `/new-branch`), in which case stamping the branch plan is the whole of this step; or the backlink was lost or misspelled, which is a defect worth knowing about. Do not silently skip: an unreported miss is indistinguishable from having had nothing to do, and it leaves a subgoal open forever with no trace of why. If the file is large enough that truncation is plausible, say that too rather than concluding the item is absent.
-- **More than one hit** — a duplicated backlink. List the line numbers and ask which item to close. Do not update both.
-
 For a `TODO.md` master plan, apply `/hitl-step`'s marker rules instead of a bare `[x]`: `[!]` if the work is blocked, `[-]` if the subgoal was descoped, `[~]` if real progress was made but the subgoal isn't finished. The summary should say what changed, not restate the subgoal.
 
-**Commit and push**, substituting real names throughout. Stage the branch plan at **the path resolved in step 2**, not a reconstructed one — a plan that has been filed into a revision directory is not at `docs/plan/<name>/`:
+**Never read a master file whole.** It accumulates every subgoal of every revision, each with its `> **Done:**` line, and grows without bound. Measured against synthetic master plans built from this repo's own subgoal blocks: at 250 subgoals the file is ~197 KB / ~55k tokens and **0.39%** of what a whole-file read loads is the block being edited; at ~500 subgoals it passes 2000 lines and a default read **truncates**. The script reads the file, so the session reads only the block.
+
+**Commit and push**, substituting real names throughout. Stage exactly the files `stamp:` and `item:` name, as the script reported them, never reconstructed — a plan that has been filed into a revision directory is not at `docs/plan/<name>/`:
 
 ```bash
 git add docs/plan/03-example-revision/feat-user-auth/DO.md docs/plan/DO.md

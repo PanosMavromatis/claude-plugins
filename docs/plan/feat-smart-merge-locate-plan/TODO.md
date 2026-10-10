@@ -73,7 +73,13 @@
   > **Done:** `propose-merge-record.sh` reports the stamp line, the backlinked item and the
   > line its Done goes after, or `ask`/`none`/`error`; `master_files` and `master_items`
   > in the library serve it and `propose-branch-plan.sh`.
-- [ ] Step 7 stamps the resolved index and edits the backlinked item in the right master file
-  - [ ] Zero or several backlinks are reported, never guessed
+- [x] Step 7 stamps the resolved index and edits the backlinked item in the right master file
+  > **Done:** Step 7 runs `propose-merge-record.sh`, stamps the `stamp:` line, closes the
+  > `item:` block with the Done line after `after:`, and stages exactly those files; `Glob`
+  > and `Grep` are gone from `/smart-merge`.
+  - [x] Zero or several backlinks are reported, never guessed
+    > **Note:** The script decides each case (`ask` with candidates, `none`, or a warning
+    > naming the lost subgoal) and step 7 says what to show for each; the e2e run in goal 6
+    > checks a real merge against it.
 - [ ] The four `dev/` suites and their mutant passes pass, `propose-merge-record`'s new
 - [ ] Verify end to end: the user runs it, `check.py` grades
