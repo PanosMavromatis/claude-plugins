@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(ls:*), Bash(find:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(git status:*), Bash(ls:*), Bash(find:*), Read, Write, Edit, Glob, Grep, Skill(workflow-claude:agents-docs-build)
 description: Generate docs/agents/[<path>/]codex.md sidecars configuring Codex as a cross-provider reviewer (root + every component).
 ---
 
@@ -47,7 +47,7 @@ If any candidate target is missing its `core.md` or `claude.md`:
   > targets (or the generated source files were deleted). May I run
   > `/agents-docs-build` now to (re)build the `docs/agents/` sources?
   > (yes / no)"
-  - If yes → invoke `/agents-docs-build` via the SlashCommand tool, then
+  - If yes → invoke `/workflow-claude:agents-docs-build` with the Skill tool, then
     re-check. If it fails, show the error and stop.
   - If no → stop and remind the user to run it before retrying.
 
@@ -302,7 +302,7 @@ will report drift until the build is re-run. Offer to handle it:
 > `AGENTS.override.md` files (root and per-component) are now stale — shall
 > I run `/agents-docs-build` to regenerate them? (yes / no)"
 
-- If yes → invoke `/agents-docs-build` via the SlashCommand tool and show
+- If yes → invoke `/workflow-claude:agents-docs-build` with the Skill tool and show
   its output. If it fails, surface the error, do not retry silently, and
   let the user decide how to proceed.
 - If no → acknowledge and remind the user that the `AGENTS.override.md`

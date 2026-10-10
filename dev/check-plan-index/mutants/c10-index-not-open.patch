@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -235,7 +235,6 @@
+@@ -260,7 +260,6 @@
  for rec in $IL; do
    n="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
    nn="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"

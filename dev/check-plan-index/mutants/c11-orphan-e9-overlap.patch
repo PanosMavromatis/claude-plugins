@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -256,7 +256,6 @@
+@@ -281,7 +281,6 @@
        if (!match(b, /^[0-9]+[a-z]?/)) continue
        id = substr(b, 1, RLENGTH)
        if (substr(b, RLENGTH + 1, 1) != "-" || b !~ /\.md$/) continue

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Bash(mkdir:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Bash(mkdir:*), Read, Write, Edit, Glob, Grep
 argument-hint: "<revision-number>"
 description: Extract a finished revision's section from the master plan into its revision directory.
 ---
@@ -69,9 +69,9 @@ git commit -m "<subject>"
 
 Confirm, and report:
 
-- The section is now in exactly one place.
-- `Grep` the master plan for the pointer line to confirm it landed.
-- Plan resolution is unaffected: the master plan still resolves on `main`, and the archive does **not** appear among `docs/plan/**/DO.md` matches.
+- The section is now in exactly one place. Run the script again, exactly as in step 1: it must now refuse with **no such section**, which shows the master plan no longer holds it. The archive holds it because step 3 wrote it there verbatim.
+- The pointer landed: `Read` the `## Closed revisions` lines you edited in step 3, and confirm the pointer is there once, with a blank line before the next `## ` heading.
+- Plan resolution is unaffected: run, alone, `${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <DO.md|TODO.md> --`, matching the master plan's name. It must resolve the master plan, never the archive: `_DO.md` and `_TODO.md` are not names resolution matches.
 - Which branch the commit landed on, and that it still needs a PR.
 
 ## Guidelines

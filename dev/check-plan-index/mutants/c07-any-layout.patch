@@ -1,11 +1,11 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -116,7 +116,7 @@
- fi
- need_file "$IDX" ""
- if ! check_layout "$IDX" ""; then fail ""; fi
--if [ "$LAYOUT_V" != per-goal ]; then
-+if false; then
-   violation "$IDX is not a per-goal plan: it has no \`**Layout**: per-goal\` line" \
-     "nothing to check: a $LAYOUT_V plan keeps its goals in one file, so they cannot drift"
+@@ -125,7 +125,7 @@
+     "check the open revision's plan instead, the plan: locate-plan.sh reports"
    fail ""
+ fi
+-if [ "$LAYOUT_V" = legacy ]; then
++if false; then
+   # One file holds every goal, so nothing can drift: report the open items, each with the
+   # `## ` heading it sits under, which is what a section's completion check needs.
+   out="$(awk "$OPEN_AWK" "$IDX")" || die "awk failed reading the items of $IDX"

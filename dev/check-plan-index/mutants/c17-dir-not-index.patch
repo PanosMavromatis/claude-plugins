@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -108,7 +108,7 @@
+@@ -112,7 +112,7 @@
  case "$IDX" in
    /*) violation "the index was given as an absolute path" "pass it relative to the repository root, as locate-plan.sh's plan: names it"; fail "" ;;
  esac

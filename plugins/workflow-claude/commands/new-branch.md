@@ -163,6 +163,8 @@ Either way, the `**Status**: active` line is load-bearing: `/step` and `/hitl-st
 
 Use `Edit`, never `Write`: the master plan is the one file that grows without bound, and rewriting it whole costs what reading it whole does. `Read` that one line (`offset` it, `limit` 2), and anchor the `Edit` on it together with the line after it, so the match is unique. If `backlink:` is `—`, the plan is standalone and nothing is backlinked.
 
+**Mark the subgoal in progress.** When the model is `TODO.md`, also flip the marker on the `subgoal:` line from `[ ]` to `[~]`: a branch is now working that subgoal, and `[~]` is how the marker model tells anyone scanning the master plan so. Leave a `[~]` as it is. A `DO.md` master plan has no `[~]`, so leave its marker alone, as with a standalone plan, which has no `subgoal:` line. `Read` that one line the same way and change only its marker; the line count does not change, so the backlink's line still holds. `/smart-merge` closes the item at merge time.
+
 ### 8. Commit the doc and plan — CONFIRM FIRST
 
 Explain: the branch doc informs the PR title and body and is deleted at merge; the plan directory is the durable record and stays on `main`.

@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -169,7 +169,6 @@
+@@ -194,7 +194,6 @@
          L[k] = L[k] (L[k] == "" ? "" : " and ") f[1]; C[k]++; if (!(k in ID)) ID[k] = id
          if (C[k] == 2) order[++m] = k
        }

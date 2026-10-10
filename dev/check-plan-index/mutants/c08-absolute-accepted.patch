@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -106,7 +106,7 @@
+@@ -110,7 +110,7 @@
  
  IDX="${ARG_PATH%/}"
  case "$IDX" in

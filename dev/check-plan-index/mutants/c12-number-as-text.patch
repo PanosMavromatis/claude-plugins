@@ -1,6 +1,6 @@
 --- a/check-plan-index.sh
 +++ b/check-plan-index.sh
-@@ -236,7 +236,7 @@
+@@ -261,7 +261,7 @@
    n="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; mk="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
    nn="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
    case "$mk" in ' '|'~'|'!') R_OPEN="${R_OPEN:+$R_OPEN$NL}$IDX:$n $text" ;; esac
