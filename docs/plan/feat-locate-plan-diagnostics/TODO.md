@@ -70,6 +70,36 @@
     > Three arm-run totals land one point from the recorded ones: baseline t2 25 against
     > 26 (f02), Haiku t1 31 against 30 (e14), and Haiku t2 25 against 26 (e02). Each is a
     > borderline call, explained in `hand-grades.tsv`, and none moves the bar.
+- [ ] Write a held-out validation set before any fix is written
+  > **Note:** a side agent pointed out that goal 2 writes each sharper line from the
+  > answer key's own cases, and the same author grades them. 40/40 could then mean "fits
+  > these 20 repositories" rather than "works". Grading by another agent was set aside as
+  > too involved for now. The user: "let's add a few broken repos the fixes weren't
+  > designed for — or even measure entirely on new broken repos, like a validation set".
+  > The training cases stay as well: only they have wrapper scores to compare against.
+  > The set is held out, not blind, because the same author writes and grades it. Three
+  > rules narrow that gap. It is committed before goal 2's first change to the script. It
+  > is not run against the script until goal 4. If a case fails there and is then fixed,
+  > both results are recorded and the set is marked spent.
+  > **Q:** How should the validation set count toward acceptance?
+  > **A:** As a gate on wrong advice: every validation case must score 1 or 2, so no 0
+  > and no −1. How many reach 2 is recorded but not required, because requiring 2 on
+  > held-out cases invites tuning to them after the first look.
+  > **Q:** What should it contain?
+  > **A:** For each of goal 2's twelve items, a variant of the same problem in a
+  > different form: other names, depth, rung or goal numbers. Where a rule could fire
+  > without its evidence, add a counter-case that needs a different fix. About 15–20
+  > cases.
+  - [ ] A variant for each of goal 2's twelve items
+  - [ ] Counter-cases for every rule that reads evidence, for example:
+        - a `_TODO.md` that was committed and then deleted: restore it, not create it;
+        - a misspelt `**Layout**` on a plan that really is per-goal (numbered items and
+          a `TODO/` directory): correct it, not remove it
+  - [ ] An answer key in `KEY`'s form (full fix, weaker fix, over-reach). Each mechanical
+        full fix is verified on a clone, and the cases live apart from the training cases
+        in the suite
+  - [ ] Committed before goal 2 changes `locate-plan.sh`. Until goal 4, the suite skips
+        the validation cases by default
 - [ ] Sharpen the `fix:` lines in `scripts/locate-plan.sh`, so that every case in the
       goal-10 answer key scores 2. Each item names its cases; today's script scores 1 on
       all twelve listed here.
@@ -107,4 +137,6 @@
       wrapper run; the full fix on e07, e08, e08b and e09; no case lower than today. The
       user runs the headless sessions. f03 is scored through the real `/hitl-step` and
       `/step`, whose Step 1 refuses a cut-short report (goal 12), and not through a probe
-      that paraphrases Step 1.
+      that paraphrases Step 1. Then run the validation set once: every case must score 1
+      or 2, and the number at 2 is recorded. If a case fails and is then fixed, both
+      results are recorded and the set is marked spent.

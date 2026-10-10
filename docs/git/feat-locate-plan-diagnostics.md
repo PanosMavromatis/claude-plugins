@@ -17,12 +17,16 @@ scratchpad into the repository.
 
 - Bring the goal-10 suite, fixtures and answer key into the repo. Name the fault wrappers
   neutrally.
-- Five sharper `fix:` lines: create rather than restore a file that was never committed;
-  `git mv` a plan written under the other model; name the exact goal file; say a directory
-  holds no plan; remove a header that no file justifies.
+- A held-out validation set, written and committed before any fix: a variant of each
+  fixed problem, plus counter-cases where a rule could fire without its evidence.
+- Sharper `fix:` lines on all twelve cases below 2. Among them: create rather than
+  restore a file that was never committed; `git mv` a plan written under the other model;
+  name the exact goal file; say a directory holds no plan; remove a header that no file
+  justifies. The full list, case by case, is in the branch plan.
 - `/step` and `/hitl-step` offer a read-only investigation on an `error` or a failed run,
   and only run it when the user asks.
-- Re-grade against the goal-10 answer key. Acceptance is 40/40.
+- Re-grade against the goal-10 answer key. Acceptance is 40/40, and no validation case
+  may score below 1.
 
 ## Context
 
