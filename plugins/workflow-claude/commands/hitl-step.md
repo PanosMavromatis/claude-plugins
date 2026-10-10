@@ -47,9 +47,10 @@ resolve the plan yourself.
 
        ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh TODO.md -- <path>
 
-   If the user named an item out of order, run it once to find the plan, `Grep` that
-   file for the item, and run it again with `--goal <line>` before the `--`. In a
-   per-goal plan the item is an index line, and the index is small: `Read` it instead.
+   If the user named an item out of order, run it once to find the plan, then run
+   `${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh TODO.md -- <plan>`, alone, to list
+   its open items by line: in a per-goal plan, the item is an index line among them. Run
+   `locate-plan.sh` again with `--goal <line>` before the `--`.
 2. Act on `result:`; the report says everything the exit status does. A key with
    several items continues on lines indented two spaces.
    - `found`: the plan file is `plan:`. State it, with `rung:` and `kind:`,
@@ -75,10 +76,12 @@ resolve the plan yourself.
 
 **Investigating, only when asked.** The offer is one line, ending the reply: that you can
 look into it, read-only. Investigate only if the user then asks. When they do:
-- Stay inside the repository, with `Read`, `Grep`, `Glob`, and `git status`, `git log`,
-  `git diff` and `ls`, each run alone. Never read or search outside it, even where a path
-  hints at another repository, and never edit, move, create or delete anything; any other
-  command needs the user's approval.
+- Stay inside the repository, with `Read` and `git status`, `git log`, `git diff` and
+  `ls`, each run alone. To search, use `Grep` and `Glob` if your session has them; native
+  macOS and Linux builds have had neither since Claude Code 2.1.117, and there use shell
+  `grep` and `find`, read-only, with no `-exec`, `-delete` or redirection. Never read or
+  search outside it, even where a path hints at another repository, and never edit, move,
+  create or delete anything; any other command needs the user's approval.
 - Look for evidence that makes each `fix:` exact, or shows it wrong: the lines the report
   names, the history (`git log --stat --follow -- <path>`), near-miss names. For a failed
   run, start from its stderr and any `hint:` line.
@@ -233,8 +236,9 @@ Determine the parent goal's final state based on the states of its subgoals and 
 
 **Check the subgoals before flipping the parent — do not do it from memory.** A goal that
 took several turns has scrolled its own acceptance criteria out of view, and the `[x]` rule
-above is precisely a claim about lines you are no longer looking at. Re-read them, or
-`Grep` the goal's line range for `- \[[ ~!]\]`, and resolve every hit before step 2 below.
+above is precisely a claim about lines you are no longer looking at. Re-read them, or run
+`check-plan-index.sh` as Step 6 does and take the `open:` lines between this goal's line
+and the next goal's, and resolve every one before step 2 below.
 A hit that turns out not to be a task at all is a finding written as a checkbox: convert it
 to `> **Note:**` per 3b-bis rather than ticking it, since ticking implies work that was
 never done. In a per-goal plan the subgoals are the goal file's items: `Read` the goal
@@ -262,7 +266,7 @@ file again, since it is small.
 
 - Increment the counter only if the parent goal's final state in Step 4 was `[x]`, `[!]`, or `[-]`. If it was left as `[~]`, the iteration still counts (we did work), but the user will almost certainly want to stop here and debrief — in that case, still increment and proceed to Step 6.
 - If the counter equals **N**, proceed to Step 6. **Do not ask the user if they want to continue.**
-- Otherwise, go back to Step 2 and execute the next top-level goal. Pick up your latest edits the same way Step 2 found the first goal — re-`Grep` for the next `[ ]` / `[~]` marker rather than re-reading the file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around. In a per-goal plan, run the script again exactly as in Step 1 instead: it reports the next goal and its goal file, and an index is a few lines.
+- Otherwise, go back to Step 2 and execute the next top-level goal. Pick up your latest edits by running the script again, exactly as in Step 1, rather than re-reading the file: it reports the next goal, and in a per-goal plan its goal file. On a large master plan a whole-file re-read every iteration multiplies the cost by N, which is exactly the loop this command is built around.
 - If no top-level goals remain in `[ ]` or `[~]` state, proceed to Step 6.
 
 ## Step 6: Report

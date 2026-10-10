@@ -85,9 +85,23 @@
   > `c07` retargeted), all killed. The `locate-plan` and `propose-branch-plan` suites and
   > their mutants still pass. The e2e grader now checks that e4's Step 6 ran the script and
   > no `awk`.
-- [ ] Rewrite the remaining steps onto tools their command allows
-  - [ ] `/close-revision`'s pointer check
-  - [ ] `/step` and `/hitl-step`: the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep, the investigation paragraph
+- [~] Rewrite the remaining steps onto tools their command allows
+  - [x] `/close-revision`'s pointer check
+    > **Note:** Step 5 also relied on `Glob` without naming it ("the archive does not
+    > appear among `docs/plan/**/DO.md` matches"), so the inventory's scanner missed it.
+    > All three checks now use tools the command has. The "exactly one place" check re-runs
+    > `close-revision.sh`, which must now refuse with "no such section". The pointer check is
+    > a `Read` of the lines step 3 edited. The resolution check runs `locate-plan.sh`, newly
+    > allowed. The `/master-plan` subgoal reworks this command anyway, and this keeps it
+    > working until then.
+  - [x] `/step` and `/hitl-step`: the out-of-order lookup, Step 4's subgoal check, Step 5's re-Grep, the investigation paragraph
+    > **Note:** Three of the four now go through scripts both commands already allow. The
+    > out-of-order lookup finds the item's line in `check-plan-index.sh`'s `open:` list, so
+    > the per-goal special case goes. Step 4 takes the goal's `open:` lines. Step 5 re-runs
+    > `locate-plan.sh` for both layouts, so the legacy re-`Grep` goes. Only the investigation,
+    > which is open-ended, keeps search tools: `Grep`/`Glob` if the session has them, and
+    > otherwise shell `grep`/`find`, read-only. Step 1 is still byte-identical across both
+    > commands.
   - [ ] `/hitl-step` Step 3a's research list
   - [ ] `/smart-merge` allows its routine writes, with patterns that don't also cover
         `git push origin --delete`, which stays a documented second gate
