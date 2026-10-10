@@ -1,6 +1,6 @@
 # feat/smart-merge-locate-plan
 
-**Status**: active
+**Status**: merged — PR #9 — 2026-10-10
 **Created**: 2026-10-10
 **Subgoal**: revision 06-subagent-refactor-R1 — `/smart-merge` step 7 through `locate-plan.sh`
 
