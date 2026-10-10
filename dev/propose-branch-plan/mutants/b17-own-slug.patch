@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -255,7 +255,7 @@
+       for (i = 1; i <= n; i++) {
+         t = trim(T[i]); if (t == "") { print "EMPTY\t" i; continue }
+         id = sprintf("%0" w "d", i)
+-        print "GOAL\t" ENVIRON["GD"] "/" id "-" slug(t) ".md - [ ] " id " — " t
++        print "GOAL\t" ENVIRON["GD"] "/" id "-" tolower(t) ".md - [ ] " id " — " t
+       }
+     }' </dev/null)" || die "awk failed naming the goal files"
+   IFS="$NL"

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -227,7 +227,7 @@
+   f="${SEL%%"$TAB"*}"; rest="${SEL#*"$TAB"}"; n="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+   rest="${rest#*"$TAB"}"; last="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; br="${rest%%"$TAB"*}"
+   rest="${rest#*"$TAB"}"; head="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
+-  R_SUB="$f:$n $text"; R_BACK="$f:$last"
++  R_SUB="$f:$n $text"; R_BACK="$f:$n"
+   if [ -n "$br" ]; then warn "$f:$n already has a branch ($br): the subgoal may have been branched before"; fi
+   if [ "$R_LAYOUT" = per-goal ]; then
+     R_REV="$(basename "$(dirname "$f")")"

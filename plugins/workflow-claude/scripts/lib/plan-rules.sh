@@ -346,6 +346,34 @@ GOALFILE_AWK='
   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }
   /^\*\*Goal\*\*:/ && !g { g = 1; v = $0; sub(/^\*\*Goal\*\*:[ \t]*/, "", v); print "GOAL\t" substr(v, 2, 1) }'
 
+# The subgoals of a master plan (a legacy one, or a revision's _F): one record per indent-0
+# item outside fences, ITEM <line> <marker> <last line> <branches> <heading> <the line>.
+# An item's block is its line and every following indented, non-blank line, up to the next
+# indent-0 line, heading or blank line; the backlink goes after its last line. <branches>
+# is every `> **Branch:**` value in the block, space-separated (a branch name has no
+# space); <heading> is the `## ` heading the item sits under. /new-branch writes the
+# backlink this reads, through propose-branch-plan.sh, and /smart-merge looks it up.
+SUBGOALS_AWK='
+  function flush() {
+    if (cur) print "ITEM\t" cur "\t" mk "\t" last "\t" br "\t" head "\t" txt
+    cur = 0
+  }
+  /^[ \t]*```/ { if (cur && /^[ \t]/) last = NR; else flush(); fence = !fence; next }
+  fence { if (cur && /^[ \t]+[^ \t\r]/) last = NR; else flush(); next }
+  /^## / { flush(); head = $0; sub(/[ \t\r]+$/, "", head); next }
+  /^#/ { flush(); next }
+  /^- \[[ ~x!-]\] / || /^- \[[ ~x!-]\]$/ { flush(); cur = NR; last = NR; mk = substr($0, 4, 1); br = ""; txt = $0; next }
+  cur && /^[ \t]+[^ \t\r]/ {
+    last = NR
+    if ($0 ~ /^[ \t]+> \*\*Branch:\*\*[ \t]+[^ \t]/) {
+      b = $0; sub(/^[ \t]+> \*\*Branch:\*\*[ \t]+/, "", b); sub(/[ \t\r].*$/, "", b)
+      br = br (br == "" ? "" : " ") b
+    }
+    next
+  }
+  { flush() }
+  END { flush() }'
+
 w6() {  # w6 <file> <line> <text>
   warn "$1:$2 looks like an item but its marker is not one of [ ] [~] [x] [!] [-], so it was ignored: \`$3\`"
 }

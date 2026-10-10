@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -155,7 +155,7 @@
+   fi
+ else
+   R_LAYOUT=legacy
+-  if [ -f "$PD/$OTHER" ]; then
++  if false; then
+     warn "there is no $ROOT_PLAN, but $PD/$OTHER exists: the master plan uses the other model, so this plan will not be backlinked to it"
+   fi
+ fi

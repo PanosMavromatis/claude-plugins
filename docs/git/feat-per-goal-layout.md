@@ -54,3 +54,10 @@ repository's own plans stay legacy until R2 step 0.
   mutants. Vetting found that findings interact: problems must pair one-to-one with
   fixes, and E9, D4 and D6 must not give conflicting advice. Nothing calls it yet; Step
   6 does, from goal 5.
+- 2026-10-10: goal 4 added `scripts/propose-branch-plan.sh`, and `SUBGOALS_AWK` in the
+  library. `/new-branch` was rewritten around them: it proposes before `git checkout -b`,
+  writes only what the proposal lists, and backlinks with an anchored `Edit`, which is
+  now allow-listed. Its suite, `dev/propose-branch-plan/`, has 32 cases and 18 mutants.
+  Case p24 shows the writer and the readers agree. The suite caught a silent `set -e`
+  exit in an assignment's `$( [ … ] && … )`. The real command runs end to end in
+  goal 6.

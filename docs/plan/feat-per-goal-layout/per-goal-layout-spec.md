@@ -124,8 +124,33 @@ message:    one sentence for the user
 - **The goals.** The titles come in order and are numbered `01…`. A title that is empty
   after trimming is an error. Two titles with one slug are fine, since the numbers
   differ.
+  - A per-goal plan needs at least one title.
+  - A title can't hold a newline or a tab (a usage error).
+  - The width is two digits, or more at 100 goals and beyond.
+- **The block and the backlink.** `SUBGOALS_AWK` in the library reads a master file's
+  subgoals. A block is the item line and every following indented, non-blank line, up
+  to the next indent-0 line, heading or blank line. `backlink:` names its last line.
+  `/smart-merge` step 7 will look the backlink up with the same program.
+- **Also reported, and checked:**
+  - A legacy subgoal's `revision:` is its `## Subgoals — revision <label>` heading's
+    label.
+  - Under a revisions index with no revision open, the plan is standalone and flat, with
+    a warning that says to open a revision first to file it under one.
+  - With no `docs/plan/F` but a `docs/plan/F′`, it warns that the master plan uses the
+    other model.
+  - A branch name that is empty, holds whitespace or starts with `-` is a usage error.
+- **When it runs.** `/new-branch` runs it once the name is agreed, before
+  `git checkout -b`. A refused name or an `ask` happens while nothing exists yet, and the
+  script never reads the current branch.
 - **Read-only.** It writes nothing. The command writes exactly the paths it lists, and
   the date, which the script never reads.
+
+Its suite is `dev/propose-branch-plan/`. Its case p24 writes what a proposal lists, then
+checks it four ways:
+- `locate-plan.sh` resolves it;
+- `check-plan-index.sh` finds it clean;
+- a second proposal for the same name is refused;
+- the subgoal is no longer a candidate.
 
 ## One home for the rules
 

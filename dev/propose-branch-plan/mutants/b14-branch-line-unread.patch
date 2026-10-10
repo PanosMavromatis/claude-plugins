@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -367,7 +367,7 @@
+     last = NR
+     if ($0 ~ /^[ \t]+> \*\*Branch:\*\*[ \t]+[^ \t]/) {
+       b = $0; sub(/^[ \t]+> \*\*Branch:\*\*[ \t]+/, "", b); sub(/[ \t\r].*$/, "", b)
+-      br = br (br == "" ? "" : " ") b
++      br = br
+     }
+     next
+   }

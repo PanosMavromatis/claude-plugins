@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -197,7 +197,7 @@
+   fi
+   rest="${SEL#*"$TAB"}"; rest="${rest#*"$TAB"}"; mk="${rest%%"$TAB"*}"
+   case "$mk" in
+-    ' '|'~') ;;
++    *) ;;
+     *) violation "$sf:$sl is not open: its marker is [$mk]" "pass an open ([ ] or [~]) subgoal, or --standalone"; fail "" ;;
+   esac
+ elif [ $STANDALONE -eq 0 ]; then

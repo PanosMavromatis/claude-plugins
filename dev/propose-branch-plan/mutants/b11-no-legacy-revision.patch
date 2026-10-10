@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -234,7 +234,7 @@
+     R_DIR="$(dirname "$f")/$FLAT"
+   else
+     case "$head" in
+-      "## Subgoals — revision "*) R_REV="${head#"## Subgoals — revision "}"; R_REV="${R_REV%% *}" ;;
++      "## Nothing "*) R_REV="${head#"## Subgoals — revision "}"; R_REV="${R_REV%% *}" ;;
+     esac
+     R_DIR="$PD/$FLAT"
+   fi

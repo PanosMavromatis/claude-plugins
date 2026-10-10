@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -359,7 +359,7 @@
+     cur = 0
+   }
+   /^[ \t]*```/ { if (cur && /^[ \t]/) last = NR; else flush(); fence = !fence; next }
+-  fence { if (cur && /^[ \t]+[^ \t\r]/) last = NR; else flush(); next }
++  fence { }
+   /^## / { flush(); head = $0; sub(/[ \t\r]+$/, "", head); next }
+   /^#/ { flush(); next }
+   /^- \[[ ~x!-]\] / || /^- \[[ ~x!-]\]$/ { flush(); cur = NR; last = NR; mk = substr($0, 4, 1); br = ""; txt = $0; next }

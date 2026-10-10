@@ -116,12 +116,15 @@ python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mut
 `dev/locate-plan/README.md` covers the answer key and the headless trial that compares
 Step 1 with a subagent wrapping the script.
 
-Test its drift report for per-goal plans, `scripts/check-plan-index.sh`, the same way, and
-run both suites after a change to `scripts/lib/plan-rules.sh`:
+Test its drift report for per-goal plans, `scripts/check-plan-index.sh`, and the script
+`/new-branch` places a new plan with, `scripts/propose-branch-plan.sh`, the same way. All
+three share `scripts/lib/plan-rules.sh`, so run all three suites after a change to it:
 
 ```bash
-python3 -I dev/check-plan-index/suite.py              # 33 cases, no model, ~10 s
-python3 -I dev/check-plan-index/suite.py --mutants    # the suite must catch each mutant, ~1 min
+python3 -I dev/check-plan-index/suite.py                 # 33 cases, no model, ~10 s
+python3 -I dev/check-plan-index/suite.py --mutants       # the suite must catch each mutant, ~1 min
+python3 -I dev/propose-branch-plan/suite.py              # 32 cases, no model, ~20 s
+python3 -I dev/propose-branch-plan/suite.py --mutants    # the suite must catch each mutant, ~2 min
 ```
 
 ## License

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -176,7 +176,7 @@
+ if [ -n "$SUBGOAL" ]; then
+   sf="${SUBGOAL%:*}"; sl="${SUBGOAL##*:}"; sl=$((10#$sl))
+   case "$NL$MASTERS$NL" in
+-    *"$NL$sf$NL"*) ;;
++    *) ;;
+     *) if [ -z "$MASTERS" ]; then
+          violation "--subgoal names $sf, but there is no master plan to take a subgoal from" "pass --standalone"
+        else

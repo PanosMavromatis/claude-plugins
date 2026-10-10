@@ -138,12 +138,52 @@
   - [x] Its callers: Step 6 of both step commands now; `/smart-merge` step 2 later
     > **Note:** decided and recorded in the spec. The wiring itself is goal 5's Step 6
     > subgoal and the merge subgoal's step 2; nothing calls the script yet.
-- [ ] `scripts/propose-branch-plan.sh` and `/new-branch`: per-goal inside the open
+- [x] `scripts/propose-branch-plan.sh` and `/new-branch`: per-goal inside the open
       revision, the legacy path kept
-  - [ ] The script, to the spec's report and rules, with a suite and mutants
-  - [ ] `/new-branch` runs it, asks on `ask`, and writes exactly the paths it lists: the
+  > **Note:** `/new-branch` has no `Edit` in `allowed-tools`. So its backlink, a one-line
+  > insert, is a whole-file `Write` of the master plan: the access pattern the plugin's
+  > `CLAUDE.md` records `/step` once had, on the one file that grows without bound.
+  > **Q:** When should `/new-branch` run the script: before or after `git checkout -b`?
+  > **A:** Before the branch: once the name is agreed, after step 2 and before step 4.
+  > A collision, a broken index or an `ask` then happens while nothing exists yet. The
+  > script never reads the current branch, so either order would work.
+  > **Q:** Approve the rest? `SUBGOALS_AWK` goes in the library, since `/smart-merge`
+  > step 7 needs the same block and backlink lookup. The report gives the legacy
+  > `## Subgoals — revision <label>` heading. Branch names are validated. `/new-branch`
+  > gains `Edit`. The suite goes in `dev/propose-branch-plan/`.
+  > **A:** Approve as proposed.
+  > **Done:** `scripts/propose-branch-plan.sh` and `SUBGOALS_AWK` in the library, with
+  > the spec updated. `/new-branch` was rewritten into nine steps around them.
+  - [x] The script, to the spec's report and rules, with a suite and mutants
+    > **Note:** smoke-tested read-only on this repository's real master plan. `ask`
+    > listed the five open subgoals and left out subgoal 3, which has its branch.
+    > `--subgoal` read the revision from the `##` heading and put the backlink after
+    > line 69, the end of subgoal 4's block. Reusing `feat/plan-locator` was refused,
+    > with that plan named.
+    > **Note:** the suite found the script dying with no report and no stderr on every
+    > standalone proposal. The cause was `R_MSG="…$( [ -n "$R_BACK" ] && printf … )"`:
+    > an assignment takes its last substitution's status, so `set -e` ended the script
+    > whenever there was no backlink. It is now a plain `if`. A scan of every plan
+    > script finds no other such substitution outside a here-document.
+    > **Note:** `dev/propose-branch-plan/` has 32 cases, one orphan branch each, and
+    > passes under both shells. p24 writes what a proposal lists, then checks that
+    > `locate-plan.sh` resolves it at rung 2 with the right goal file, that
+    > `check-plan-index.sh` finds it clean, that a second proposal is refused, and that
+    > the subgoal is no longer a candidate. 18 mutants, all killed by the rule each
+    > breaks. Adding `SUBGOALS_AWK` shifted the library, so a scratchpad tool rebased
+    > every mutant (fuzz 0, offset only) and rewrote the 3 that moved. All three
+    > suites, both mutant sets, the validation set and the answer key then pass.
+  - [x] `/new-branch` runs it, asks on `ask`, and writes exactly the paths it lists: the
         index, one goal-file stub per Scope title, the backlink
-  - [ ] Picking the subgoal replaces the hand lookup on a legacy master plan too
+    > **Note:** the command text is written, not yet run. Step 4 proposes before
+    > `git checkout -b`. Step 7 writes only `index:`, the `goals:` paths and the
+    > backlink, the backlink by an anchored `Edit` (now allow-listed). The legacy
+    > templates are unchanged. Running it through the real command is goal 6's
+    > end-to-end check, with the user running the sessions.
+  - [x] Picking the subgoal replaces the hand lookup on a legacy master plan too
+    > **Note:** cases p02–p05 and the smoke test on this repository's master plan show
+    > it. `/new-branch` no longer greps for the item: the script lists the candidates,
+    > and the user picks one.
 - [ ] `/step` and `/hitl-step` read and write goal files
   - [ ] Drop the "cannot yet edit goal files" stop in Step 1, and offer to repair W11 on
         the selected goal

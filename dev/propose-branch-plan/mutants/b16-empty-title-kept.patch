@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -253,7 +253,7 @@
+     BEGIN {
+       n = split(ENVIRON["TITLES"], T, "\n"); w = length(n "") < 2 ? 2 : length(n "")
+       for (i = 1; i <= n; i++) {
+-        t = trim(T[i]); if (t == "") { print "EMPTY\t" i; continue }
++        t = trim(T[i])
+         id = sprintf("%0" w "d", i)
+         print "GOAL\t" ENVIRON["GD"] "/" id "-" slug(t) ".md - [ ] " id " — " t
+       }
