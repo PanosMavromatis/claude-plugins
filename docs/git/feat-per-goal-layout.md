@@ -20,8 +20,12 @@ repository's own plans stay legacy until R2 step 0.
 - A write-side spec: when `/new-branch` goes per-goal and when it stays flat, the goal-file
   stubs and numbering, the edit order (goal file, then index), and Steps 2–6 on a
   per-goal plan.
+- `scripts/lib/plan-rules.sh`: the rules more than one script applies, defined once and
+  sourced by `locate-plan.sh` and the two new scripts.
 - `scripts/check-plan-index.sh`, read-only, with a test suite under `dev/`.
-- `/new-branch` writes the index, the goal-file stubs and the backlink in `_TODO.md`.
+- `scripts/propose-branch-plan.sh`, read-only: where a new plan goes, its goal-file names
+  and the backlink line. `/new-branch` writes exactly what it proposes: the index, the
+  goal-file stubs and the backlink in `_TODO.md`.
 - `/step` and `/hitl-step` read and write goal files; the lockstep `sed` diff stays empty.
 - An end-to-end check through the real commands, per-goal and legacy. The user runs the
   headless sessions.
@@ -37,3 +41,7 @@ repository's own plans stay legacy until R2 step 0.
   so new steps should not depend on them.
 
 ## Notes
+
+- 2026-10-10: goal 1 wrote the write-side spec (`per-goal-layout-spec.md`, beside the
+  plan). The root plan decides the layout, and a proposing script decides placement,
+  which added the shared rules file and `propose-branch-plan.sh` to the scope.

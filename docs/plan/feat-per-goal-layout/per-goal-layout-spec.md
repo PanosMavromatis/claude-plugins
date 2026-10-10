@@ -1,0 +1,200 @@
+# The per-goal layout — write-side specification
+
+The reader side is settled: `scripts/locate-plan.sh` and its specification,
+`locate-plan-spec.md` in the `feat-plan-locator` branch plan, already read a
+`**Layout**: revisions` root index and a `**Layout**: per-goal` branch plan. Everything
+here writes what that reader accepts, and where the two could disagree, the reader's
+specification wins. The layout itself is §4.2 of the agreed plan
+(`tmp/subagent-refactor-plan.md`, not under version control), with D2 (the goal file is
+the source of truth for its marker) and D3 (goal files in `TODO/` or `DO/` beside the
+index).
+
+This revision builds the layout and does not adopt it. This repository's plans stay legacy
+until the first step of R2. Legacy single-file plans stay readable and writable through 1.x.
+
+## Which layout a new branch plan gets
+
+The root plan decides, so a project switches once, by adopting the index, and upgrading
+the plugin changes nothing until it does.
+
+| `docs/plan/F` | The branch | Written |
+|---|---|---|
+| `**Layout**: revisions` index | executes a subgoal of an open revision | `docs/plan/<label>/<flat>/F` + `<flat>/F-without-.md/`, per-goal |
+| `**Layout**: revisions` index | standalone | `docs/plan/<flat>/F` + goal files, per-goal, flat |
+| a legacy master plan | either | `docs/plan/<flat>/F`, legacy single file, as today |
+| none | standalone | `docs/plan/<flat>/F`, legacy single file, as today |
+
+F is `TODO.md` or `DO.md`, chosen as `/new-branch` chooses it today. `<flat>` is the
+branch with `/` flattened to `-`.
+
+## What is written
+
+**The branch index** (`<dir>/F`). Legacy plans keep today's form exactly.
+
+```markdown
+# <branch>
+
+**Status**: active
+**Created**: <YYYY-MM-DD>
+**Revision**: <label>
+**Subgoal**: <the subgoal's text, or standalone>
+**Layout**: per-goal
+
+## Goals
+
+- [ ] 01 — <first Scope title>
+- [ ] 02 — <second Scope title>
+```
+
+`**Revision**:` is left out for a standalone branch. Numbers are two digits, or more
+when there are more than 99 goals, all zero-padded to the same width. The separator is
+` — `. These are the forms `locate-plan.sh` reads: `title()` strips the number and a
+following `—`, `-` or `:`.
+
+**A goal file** (`<dir>/F-without-.md/NN-<slug>.md`), one per index line. `<slug>` is the
+reader's `slug()` of the title: lowercase, each run of other characters as one `-`, at most
+40 characters, `goal` if nothing is left.
+
+```markdown
+# NN — <title>
+
+**Goal**: [ ]
+```
+
+Everything that sat under a goal in a legacy plan sits in its goal file, **outdented one
+level**:
+- indent-0 `>` lines are the goal's own (Q&A, `Note`, `Done`, `Blocked`, `Descoped`);
+- indent-0 items are its subgoals (TODO model) or tasks (DO model);
+- indent-2 `>` lines belong to the item above them.
+
+The goal's own blockquotes go directly under `**Goal**:`, before the first item, so that
+they read first.
+
+**The backlink**: `  > **Branch:** <branch>`, inserted after the last line of the
+subgoal's block in the master file. The block is the item line plus every following line
+that is indented and non-blank, up to the next indent-0 line, heading or blank line. The
+master file is the legacy master plan, or the revision's `_F`.
+
+## `scripts/propose-branch-plan.sh`
+
+A read-only script. It proposes, and `/new-branch` writes. It sits alongside
+`open-revision.sh`, `file-plans.sh` and `close-revision.sh`, and follows `locate-plan.sh`'s
+guarantees: fails loudly, deterministic, Bash 3.2, BSD and GNU, no clock.
+
+```
+propose-branch-plan.sh <TODO.md|DO.md> <branch> [--subgoal <file:line> | --standalone] [--] [title]...
+```
+
+**Report.** Always these keys, in this order, `—` when empty, with continuation lines
+indented two spaces:
+
+```
+result:     propose | ask | error
+layout:     per-goal | legacy
+revision:   <label> | —
+subgoal:    <master file>:<line> <the line, verbatim> | standalone
+dir:        the branch plan's directory
+index:      <dir>/F
+goals:      <goal file> <its index line>, one per title (per-goal only)
+backlink:   <master file>:<line>, the line to insert after | —
+candidates: <master file>:<line> <the line>, one per open subgoal (ask only)
+warnings:   one per line
+problem:    which convention broke, and where (error only)
+fix:        the command or edit that repairs it (error only)
+message:    one sentence for the user
+```
+
+**Rules.**
+- **The layout** comes from `docs/plan/F`, read with the reader's own functions: a
+  revisions index (validated: E5, E6, E7) → per-goal; otherwise legacy.
+- **The subgoal.**
+  - `--subgoal` names the master file's line. It must be an open (`[ ]` or `[~]`)
+    indent-0 item, in `_F` of an open revision or in the legacy master plan; otherwise
+    an error.
+  - `--standalone` takes none.
+  - With neither, the candidates are every open indent-0 item in those files that has no
+    `> **Branch:**` line yet. One or more → `ask`, and the command asks the user, offering
+    standalone as well. None → `propose` standalone, with a warning saying why.
+  - A `--subgoal` that already has a `> **Branch:**` line gets a warning: the subgoal may
+    have been branched before.
+- **The directory.** A directory named `<flat>` anywhere under `docs/plan/` is an error.
+  That branch name has a plan already, and a second copy would be rung 2's stale
+  duplicate. The fix names the existing plan, so the user can resume it, or says to pick
+  another name.
+- **The goals.** The titles come in order and are numbered `01…`. A title that is empty
+  after trimming is an error. Two titles with one slug are fine, since the numbers
+  differ.
+- **Read-only.** It writes nothing. The command writes exactly the paths it lists, and
+  the date, which the script never reads.
+
+## One home for the rules
+
+The rules that more than one script applies live in one sourced file,
+`scripts/lib/plan-rules.sh`, which `locate-plan.sh`, `propose-branch-plan.sh` and
+`check-plan-index.sh` all source. Those rules are:
+- `slug()`, `title()` and `num()`;
+- the revision-line and `**Layout**:` checks;
+- the goal-file reading;
+- the status read.
+
+Copies would drift, and a slug that drifts names a file the reader can't find (E10).
+
+Two things follow, and are part of the work:
+- the `locate-plan` suite and its mutants must still pass, with the mutants also covering
+  the shared file;
+- `dev/locate-plan/trial/build-arms.py` moves the script out of the plugin root for its
+  fault copies (`core.sh`), so it must take the shared file along.
+
+## `/step` and `/hitl-step` on a per-goal plan
+
+Step 1's text stays byte-identical across the two commands. The legacy path is unchanged
+unless a line below says otherwise.
+
+- **Step 1.** The "cannot yet edit goal files" stop goes. When the selected goal carries
+  W11 (its index marker differs from its `**Goal**:`), the command offers to correct the
+  index line to match the goal file, and re-runs the script once it is corrected. W11
+  can occur because an interrupted Step 3 or Step 4 leaves the goal file ahead of the
+  index.
+- **Step 2.** The command reads the index and `goal-file:` whole. Both are small. A goal
+  named out of order is found in the index the command has just read, and passed as
+  `--goal`. No `Grep`.
+- **Step 3.** On a flip to `[~]`, the command edits `**Goal**:` first, then the index
+  line (D2). The goal file takes the Q&A, notes and subgoal markers. Escape hatch 3f:
+  - a split goal becomes `NNa`, as a new index line right after NN plus a new goal file;
+  - a descoped goal is flipped in both files, goal file first.
+- **Step 4.** The parent rules read the goal file's items. The command edits
+  `**Goal**:` first, then the index line. `> **Done:**` goes in the goal file, because
+  that is where the PR drafter will read it.
+- **Step 5.** The command re-runs `locate-plan.sh` to find the next goal, rather than
+  re-reading or `Grep`ping. A per-goal plan's index is a few lines and the script takes
+  about 60 ms. Moving the legacy path to the same mechanism belongs to the next subgoal
+  (`Grep` and `Glob` can be missing).
+- **Step 6.** The completion check runs `check-plan-index.sh`. It reads the index and
+  every goal file, and reports open items and drift. A per-goal plan has no `##` sections
+  inside its goals, so "section complete" becomes "plan complete".
+- **DO model (`/step`).** The unit is one task: the first `[ ]` in `subgoals:`, or the
+  goal itself if its file has no tasks. When the last task is ticked, the command sets
+  `**Goal**: [x]`, then the index line.
+
+## `scripts/check-plan-index.sh`
+
+A read-only drift report for a per-goal plan, given the index (or nothing, resolving as
+`locate-plan.sh` does). Per goal it reports:
+- the index marker against `**Goal**:`;
+- a missing goal file, a duplicate, or an orphan (a file no index line claims);
+- numbering;
+- open items.
+
+Each finding comes with a `fix:` line read from the evidence, as `locate-plan.sh`'s are.
+Its callers: Step 6 of both step commands; later, `/smart-merge` step 2's
+unfinished-items warning (the merge subgoal). The details are goal 3's.
+
+## Not on this branch
+
+These follow R1's order:
+- `/smart-merge` stamping the branch index and editing `_TODO.md` (subgoal 5);
+- `/master-plan` creating the index and `_TODO.md`, and `/close-revision` as a stamp
+  (subgoal 6).
+
+Until then a revisions index exists only in fixtures. `open-revision.sh` still writes the
+old layout.
