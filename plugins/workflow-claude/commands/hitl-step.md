@@ -58,15 +58,28 @@ resolve the plan yourself.
      run the script again with it as the path. Never pick a candidate yourself.
    - `none`: say there is no plan, and stop.
    - `error`: the repository breaks a convention resolution relies on. Relay
-     each `problem:` line with its `fix:` line, and stop. The fix is the user's to make;
-     do not work around it.
+     each `problem:` line with its `fix:` line, offer to investigate (below), and stop.
+     The fix is the user's to make; do not work around it.
    - no `result:` line (a usage error, or the script itself failed), or no `message:`
-     line (the report's last key, so the report was cut short): show the output and
-     stop. Never act on part of a report. There is no second resolution path in this
-     command.
+     line (the report's last key, so the report was cut short): show the output, offer
+     to investigate (below), and stop. Never act on part of a report. There is no second
+     resolution path in this command.
 3. **Check before trusting.** Confirm the `next:` line matches the file verbatim, within
    the read Step 2 makes or with a one-line `Read`. A mismatch means the file changed
    after the script read it: run the script once more, and stop if it still disagrees.
+
+**Investigating, only when asked.** The offer is one line, ending the reply: that you can
+look into it, read-only. Investigate only if the user then asks. When they do:
+- Stay inside the repository, with `Read`, `Grep`, `Glob`, and `git status`, `git log`,
+  `git diff` and `ls`, each run alone. Never read or search outside it, even where a path
+  hints at another repository, and never edit, move, create or delete anything; any other
+  command needs the user's approval.
+- Look for evidence that makes each `fix:` exact, or shows it wrong: the lines the report
+  names, the history (`git log --stat --follow -- <path>`), near-miss names. For a failed
+  run, start from its stderr and any `hint:` line.
+- Report each finding with its evidence (file:line, commit, output), then a fix, marked as
+  yours rather than the script's. If you find nothing beyond the script's own `fix:`, say
+  so. Applying a fix is the user's call; once they have, start again from step 1.
 
 A master plan (`kind: legacy-master` or `revision-master`) grows without bound, and past
 ~500 subgoals a whole-file read silently truncates. Never read one whole: read bounded

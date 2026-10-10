@@ -227,9 +227,26 @@
     > file; the E7 path from 68 to 121 ms, from the three `git` calls only it makes. Size
     > went from 23.5 KB to 38.1 KB. None of this reaches the model's context: Step 1 runs
     > the script and reads only its report.
-- [ ] `/step` and `/hitl-step` offer a read-only investigation in the main session on an
+- [x] `/step` and `/hitl-step` offer a read-only investigation in the main session on an
       `error` or a failed run, and run it only when the user asks. The lockstep `sed`
       diff stays empty.
+  > **Q:** The draft adds "offer to investigate (below)" to Step 1's `error` and failed-run
+  > bullets. A new paragraph, "Investigating, only when asked", says the offer is one line
+  > ending the reply. The investigation stays inside the repository, with the read-only
+  > tools `allowed-tools` already grants, and reports findings with evidence, marked as
+  > the session's own. Applying a fix stays the user's. Write it?
+  > **A:** Yes.
+  > **Done:** both commands carry the same text, and the lockstep diff is empty. The
+  > plugin's `CLAUDE.md` contract paragraph now says the command offers once to
+  > investigate before it stops.
+  > **Note:** the rule against reading outside the repository is an instruction, not an
+  > enforcement. `allowed-tools` cannot scope `Read`, `Grep` or `Glob` to a directory.
+  > The trial is why it is written out: Haiku decoded a scratchpad path into this
+  > repository and read its master plan. Any command outside `allowed-tools`, such as
+  > `command -v` for a broken `PATH`, prompts the user rather than running.
+  > **Note:** no headless test was run for this goal. The offer appears only after an
+  > `error` or a failed run, and goal 4's re-grade runs the real commands on such cases,
+  > so it will show the offer line in practice.
 - [ ] Re-grade against the goal-10 answer key: 40/40. On every case, at least the best
       wrapper run; the full fix on e07, e08, e08b and e09; no case lower than today. The
       user runs the headless sessions. f03 is scored through the real `/hitl-step` and
