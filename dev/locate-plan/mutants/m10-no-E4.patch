@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -514,7 +514,7 @@
+   esac
+   o="$(list_named "$OTHER")" || exit 3
+   o="$(by_name "$o")" || exit 3
+-  if [ -n "$o" ]; then
++  if false; then
+     violation "the plan for $BRANCH exists only as $OTHER:$NL$o" "run $OTHER_CMD instead; $CMD drives $MODEL plans"
+     fail 2
+   fi

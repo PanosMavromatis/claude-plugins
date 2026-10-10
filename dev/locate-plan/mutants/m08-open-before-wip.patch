@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -297,7 +297,7 @@
+       for (j = 1; j <= k; j++) if (T[j] == "I" && L[j] == goal) sel = j
+       if (!sel || (todo && I[sel])) { print "GOALERR"; exit }
+     } else if (todo) {
+-      for (j = 1; j <= k && !sel; j++) if (T[j] == "I" && !I[j] && M[j] == "~") sel = j
++      for (j = 1; j <= k && !sel; j++) if (T[j] == "I" && !I[j] && M[j] == "#") sel = j
+       for (j = 1; j <= k && !sel; j++) if (T[j] == "I" && !I[j] && M[j] == " ") sel = j
+     } else {
+       for (j = 1; j <= k && !sel; j++) if (T[j] == "I" && M[j] == " ") sel = j

@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -504,7 +504,7 @@
+     return 0
+   fi
+   NAME="${BRANCH//\//-}"
+-  m="$(by_name "$ALL_F")" || exit 3
++  m="$(by_name "$ALL_F" | head -1)" || exit 3
+   n="$(count_items "$m")" || exit 3
+   case "$n" in
+     0) ;;

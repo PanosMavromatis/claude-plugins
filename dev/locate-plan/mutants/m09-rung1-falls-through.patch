@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -436,7 +436,7 @@
+     violation "'$p' lies outside the repository" "give a path inside it, relative to its root"; fail 1
+   else
+     violation "nothing exists at '$p' (tried it repository-relative and under $PD/)" \
+-      "check the path, or omit it to resolve by branch"; fail 1
++      "check the path, or omit it to resolve by branch"; VIOL=0; R_PROB=""; R_FIX=""; return 0
+   fi
+ 
+   if [ -d "${rel:-.}" ]; then

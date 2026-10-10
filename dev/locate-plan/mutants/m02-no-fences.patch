@@ -1,0 +1,38 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -216,7 +216,7 @@
+   LAYOUT_V=legacy
+   need_file "$f" "$2"
+   out="$(awk '
+-    /^[ \t]*```/ { fence = !fence; next }
++    /^NEVER$/ { }
+     !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }
+   ' "$f")" || die "awk failed reading the **Layout** header of $f"
+   if [ -z "$out" ]; then return 0; fi
+@@ -238,7 +238,7 @@
+   OPEN_LIST=""; OPEN_N=0
+   need_file "$idx" "$rung"
+   out="$(awk '
+-    /^[ \t]*```/ { fence = !fence; next }
++    /^NEVER$/ { }
+     fence { next }
+     /^## / { insec = ($0 ~ /^## Revisions[ \t\r]*$/); if (insec) sec = 1; next }
+     insec && (/^[-*+][ \t]/ || /^[-*+]\[/ || /^[-*+]$/) {
+@@ -280,7 +280,7 @@
+ # Item lines outside fenced code blocks, and the selection rules of both models.
+ SELECT_AWK='
+   function item(s) { return s ~ /^[ \t]*- \[[ ~x!-]\] / || s ~ /^[ \t]*- \[[ ~x!-]\]$/ }
+-  /^[ \t]*```/ { fence = !fence; next }
++  /^NEVER$/ { }
+   fence { next }
+   /^## / { k++; T[k] = "H"; L[k] = NR; next }
+   item($0) {
+@@ -312,7 +312,7 @@
+ 
+ # Every item line of a goal file, at any indent.
+ GOALFILE_AWK='
+-  /^[ \t]*```/ { fence = !fence; next }
++  /^NEVER$/ { }
+   fence { next }
+   /^[ \t]*- \[[ ~x!-]\] / || /^[ \t]*- \[[ ~x!-]\]$/ { print "SUB\t" NR; next }
+   /^[-*+][ \t]*\[(.|..)?\]/ { print "W6\t" NR "\t" $0 }

@@ -1,0 +1,11 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -218,7 +218,7 @@
+   out="$(awk '
+     /^[ \t]*```/ { fence = !fence; next }
+     !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }
+-  ' "$f")" || die "awk failed reading the **Layout** header of $f"
++  ' "$f")"
+   if [ -z "$out" ]; then return 0; fi
+   n="${out%%"$TAB"*}"; v="${out#*"$TAB"}"
+   case "$v" in

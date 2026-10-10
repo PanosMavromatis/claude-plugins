@@ -1,0 +1,10 @@
+--- a/locate-plan.sh
++++ b/locate-plan.sh
+@@ -548,7 +548,6 @@
+   local f st active="" merged="" na nm IFS="$NL"
+   for f in $ALL_F; do
+     if [ "$f" = "$ROOT_PLAN" ]; then continue; fi
+-    need_file "$f" 4
+     st="$(status_of "$f")" || exit 3
+     case "$st" in
+       merged*) merged="${merged:+$merged$NL}$f" ;;

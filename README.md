@@ -104,6 +104,17 @@ their imports, each command plus what it reads whole, `docs/agents/**`, the bran
 and the master plan. **It measures the main session only**: a subagent's own reads are
 not in it, so total usage is judged separately.
 
+Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it:
+
+```bash
+export LOCATE_PLAN_WORK=/tmp/lp-suite   # outside this repository; fixtures are built here
+python3 -I dev/locate-plan/suite.py              # 71 cases, no model, ~20 s
+python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~90 s
+```
+
+`dev/locate-plan/README.md` covers the answer key and the headless trial that compares
+Step 1 with a subagent wrapping the script.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one
