@@ -1,6 +1,6 @@
 # feat/locate-plan-diagnostics
 
-**Status**: active
+**Status**: merged — PR #6 — 2026-10-10
 **Created**: 2026-10-09
 **Subgoal**: revision 06-subagent-refactor-R1 — sharper diagnostics from `scripts/locate-plan.sh`
 

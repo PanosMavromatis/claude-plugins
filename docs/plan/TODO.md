@@ -33,7 +33,7 @@ ends with. Settled, and not to be reopened:
   > **Done:** `locate-plan.sh` resolves the plan, and Step 1 of both commands runs it alone,
   > relays its diagnostics and refuses a report cut short. A 246-session trial found a
   > subagent wrapping the script adds cost but no correctness, so none ships — PR #5
-- [ ] Sharper diagnostics from `scripts/locate-plan.sh`. Its `fix:` lines say what the
+- [x] Sharper diagnostics from `scripts/locate-plan.sh`. Its `fix:` lines say what the
       repository already shows:
       - create a file that was never committed, rather than restore it;
       - `git mv` a plan written under the other model;
@@ -51,6 +51,10 @@ ends with. Settled, and not to be reopened:
       `feat-plan-locator` goal 10; the validation gate was added on
       `feat-locate-plan-diagnostics`.
   > **Branch:** feat/locate-plan-diagnostics
+  > **Done:** `locate-plan.sh`'s fix lines read the repository's evidence and score 40/40
+  > against the goal-10 answer key (28 before). The held-out validation set scored 22 of 22
+  > at 2. `/step` and `/hitl-step` offer a read-only investigation on an error. The suite
+  > lives in `dev/locate-plan/` — PR #6
 - [ ] Per-goal layout. `/new-branch` writes it inside the revision directory, and
       `/step` and `/hitl-step` read and write it. It adds a `**Layout**:` header and
       `scripts/check-plan-index.sh`, and keeps the legacy path.
