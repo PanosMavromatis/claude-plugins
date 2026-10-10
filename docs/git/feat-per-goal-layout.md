@@ -45,3 +45,7 @@ repository's own plans stay legacy until R2 step 0.
 - 2026-10-10: goal 1 wrote the write-side spec (`per-goal-layout-spec.md`, beside the
   plan). The root plan decides the layout, and a proposing script decides placement,
   which added the shared rules file and `propose-branch-plan.sh` to the scope.
+- 2026-10-10: goal 2 moved the shared rules into `scripts/lib/plan-rules.sh`, verbatim.
+  The suite now has 83 cases (`e10c` is new, for the slug cap), and the mutants were
+  re-anchored to the two-file tree. A new `q11-slug-cap` mutant survived until `e10c`
+  existed. The final count is 27 mutants: 26 killed, n05 equivalent.

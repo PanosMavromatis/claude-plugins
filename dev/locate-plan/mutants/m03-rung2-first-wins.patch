@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -504,7 +504,7 @@
+@@ -399,7 +399,7 @@
      return 0
    fi
    NAME="${BRANCH//\//-}"

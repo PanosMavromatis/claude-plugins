@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -241,7 +241,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -110,7 +110,7 @@
      st=$?; if [ "$st" -eq 1 ]; then return 0; fi   # no commits yet: nothing was committed
      die "git rev-parse --verify HEAD failed with status $st" "$st"
    fi

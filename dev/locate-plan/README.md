@@ -22,8 +22,8 @@ it nothing to decode.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite
-python3 -I dev/locate-plan/suite.py              # 82 cases, twice under each Bash found (~30 s)
-python3 -I dev/locate-plan/suite.py --mutants    # 26 mutants: 25 must be caught, n05 is equivalent (~3 min)
+python3 -I dev/locate-plan/suite.py              # 83 cases, twice under each Bash found (~30 s)
+python3 -I dev/locate-plan/suite.py --mutants    # 27 mutants: 26 must be caught, n05 is equivalent (~4 min)
 python3 -I dev/locate-plan/answer-key.py         # each mechanical full fix clears its case
 ```
 
@@ -57,9 +57,12 @@ python3 -I dev/locate-plan/answer-key.py --validation
   fixtures are left untouched. It also checks the script statically for Bash 3.2
   hazards. `-v` prints each report; `--script PATH` tests another copy.
   `/opt/homebrew/bin/bash` is skipped if absent. Only BSD userland has been tested.
-- **`mutants/`** holds one unified diff per mutant, applied fresh to today's script with
-  fuzz 0. If an edit to the script stops a patch applying, it is reported as `STALE`
-  rather than quietly testing old code. Re-anchor it, or drop it if its rule has gone.
+- **`mutants/`** holds one unified diff per mutant, applied fresh with fuzz 0 to a copy
+  of today's script and its library, `scripts/lib/plan-rules.sh`, the rules it shares
+  with the other plan scripts. Each patch names its file relative to `scripts/`
+  (`a/locate-plan.sh` or `a/lib/plan-rules.sh`); 13 of the 27 target the library. If an
+  edit stops a patch applying, it is reported as `STALE` rather than quietly testing old
+  code. Re-anchor it, or drop it if its rule has gone.
 - **`answer-key.py`** holds `KEY`: for every error and fault case, the full fix (scores
   2), the weaker fix (1), and the over-reach to watch for (−1). It was written before
   any trial arm ran. `verify()` applies each mechanical full fix to a clone of its

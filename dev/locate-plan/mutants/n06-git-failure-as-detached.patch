@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -168,7 +168,7 @@
+@@ -137,7 +137,7 @@
    if BRANCH="$(git symbolic-ref --short -q HEAD 2>/dev/null)"; then :
    else
      st=$?

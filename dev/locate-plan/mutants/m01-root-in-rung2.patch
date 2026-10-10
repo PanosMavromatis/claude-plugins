@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -484,7 +484,7 @@
+@@ -379,7 +379,7 @@
  
  by_name() {  # entries of a list whose parent directory is named $NAME (never the root plan)
    printf '%s\n' "$1" | NAME="$NAME" ROOT_PLAN="$ROOT_PLAN" awk '

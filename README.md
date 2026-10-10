@@ -104,12 +104,13 @@ their imports, each command plus what it reads whole, `docs/agents/**`, the bran
 and the master plan. **It measures the main session only**: a subagent's own reads are
 not in it, so total usage is judged separately.
 
-Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it:
+Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it or
+to `scripts/lib/plan-rules.sh`, the rules it shares with the other plan scripts:
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite   # outside this repository; fixtures are built here
-python3 -I dev/locate-plan/suite.py              # 82 cases, no model, ~30 s
-python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~3 min
+python3 -I dev/locate-plan/suite.py              # 83 cases, no model, ~30 s
+python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~4 min
 ```
 
 `dev/locate-plan/README.md` covers the answer key and the headless trial that compares

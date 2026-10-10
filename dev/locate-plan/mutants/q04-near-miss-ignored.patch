@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -538,7 +538,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -407,7 +407,7 @@
          b = F[i]; sub(/.*\//, "", b)
          if (!match(b, /^[0-9]+[a-z]?/)) continue
          id = substr(b, 1, RLENGTH); after = substr(b, RLENGTH + 1)

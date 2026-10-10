@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -129,7 +129,7 @@
+ SLUG_AWK='
+   function slug(s) {
+     s = tolower(s); gsub(/[^a-z0-9]+/, "-", s); sub(/^-+/, "", s); sub(/-+$/, "", s)
+-    if (40 < length(s)) { s = substr(s, 1, 40); sub(/-+$/, "", s) }
++    if (30 < length(s)) { s = substr(s, 1, 30); sub(/-+$/, "", s) }
+     return s == "" ? "goal" : s
+   }
+   function title(s) {

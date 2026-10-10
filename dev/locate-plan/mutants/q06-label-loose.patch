@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -360,7 +360,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -229,7 +229,7 @@
        if ($0 ~ /^- \[[ ~x!-]\] /) {
          rest = substr($0, 7); split(rest, a, /[ \t]+/); lab = a[1]
          after = trim(substr(rest, length(lab) + 1))

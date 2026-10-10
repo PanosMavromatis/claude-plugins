@@ -1,6 +1,6 @@
---- a/locate-plan.sh
-+++ b/locate-plan.sh
-@@ -218,7 +218,7 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -148,7 +148,7 @@
    out="$(awk '
      /^[ \t]*```/ { fence = !fence; next }
      !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }

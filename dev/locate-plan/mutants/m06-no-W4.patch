@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -500,7 +500,7 @@
+@@ -395,7 +395,7 @@
  rung2() {
    local m o n
    if [ -z "$BRANCH" ]; then

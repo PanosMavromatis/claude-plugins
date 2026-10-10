@@ -43,12 +43,43 @@
         and numbering rules `locate-plan.sh` already checks
   - [x] Steps 2–6 of `/step` and `/hitl-step` on a per-goal plan, from the fields
         `locate-plan.sh` reports; the goal file is edited before the index (D2)
-- [ ] Move the rules more than one script applies into `scripts/lib/plan-rules.sh`,
+- [x] Move the rules more than one script applies into `scripts/lib/plan-rules.sh`,
       sourced by `locate-plan.sh`
-  - [ ] `slug()`, `title()`, `num()`, the revision-line and `**Layout**:` checks, the
+  > **Q:** The plan: move the code verbatim, with `die`'s prefix as `$PROG`; teach
+  > `suite.py` a script-plus-library tree; re-anchor the 26 mutants mechanically; add a
+  > slug-cap mutant; copy the library beside `core.sh` in `build-arms.py`. Go ahead?
+  > **A:** Go ahead.
+  > **Done:** `locate-plan.sh` is 487 lines and `lib/plan-rules.sh` 419. A scratchpad
+  > splitter moved exact line ranges and checked that every original line landed once.
+  > The script sources the library behind a guard: a lone copy exits 3 with
+  > `cannot read …/lib/plan-rules.sh`.
+  - [x] `slug()`, `title()`, `num()`, the revision-line and `**Layout**:` checks, the
         goal-file reading and the status read, each defined once
-  - [ ] The `locate-plan` suite passes unchanged, and the mutants cover the shared file
-  - [ ] `dev/locate-plan/trial/build-arms.py`'s fault copies carry the shared file
+    > **Note:** the library also holds what those rules call: `die`, `warn`,
+    > `violation`, `emit`, `need_file`, `scan_dirs`, `list_named`, `count_items`,
+    > `history_of` and `SELECT_AWK`. The script keeps only the report shape, the
+    > arguments and the rungs. The library's header names the caller's side of the
+    > interface: `PROG`, `MODEL`, `OTHER`, `ROOT_PLAN`, the report accumulators and
+    > `fail <rung>`.
+  - [x] The `locate-plan` suite passes unchanged, and the mutants cover the shared file
+    > **Note:** the baseline before the move was 82/82, with 25 mutants killed and n05
+    > equivalent. After the move, the suite passes under both shells, the validation
+    > set passes, and so does the answer key on both sets. The static checks now scan
+    > both files. A scratchpad tool re-anchored every mutant: it applied each one to
+    > the old script, placed its region uniquely in the new tree, and regenerated it
+    > against that file, so 12 now target the library. All 27 apply with no offset and
+    > no fuzz.
+    > **Note:** the new `q11-slug-cap` (cap 40 → 30) **survived** at first: no case had a
+    > title long enough for the cap to matter, so the rule three scripts are about to
+    > share was untested. The new `e10c` gives a 64-character title whose cut at 40
+    > ends on a `-` that must be trimmed, and kills it. The final count is 27 mutants:
+    > 26 killed, n05 equivalent, 0 stale.
+  - [x] `dev/locate-plan/trial/build-arms.py`'s fault copies carry the shared file
+    > **Note:** every arm and fault copy was built in a separate scratch directory, and
+    > each wrapper ran on `fx` `case/r2-flat`. f03 cuts the report to 5 lines with no
+    > `message:`, f04 lands on the legacy root at rung 3, and f05 swaps the path. None
+    > exits 3, and lockstep is empty in every arm. No headless sessions were run,
+    > since the goal changes no behaviour.
 - [ ] `scripts/check-plan-index.sh`: a read-only drift report, on the shared rules
   - [ ] Index marker against `**Goal**:`, a missing, duplicate or orphan goal file,
         numbering, open items; each finding with a `fix:` line read from the evidence

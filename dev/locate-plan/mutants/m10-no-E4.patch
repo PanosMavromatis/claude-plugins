@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -514,7 +514,7 @@
+@@ -409,7 +409,7 @@
    esac
    o="$(list_named "$OTHER")" || exit 3
    o="$(by_name "$o")" || exit 3

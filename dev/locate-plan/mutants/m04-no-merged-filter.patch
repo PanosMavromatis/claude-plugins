@@ -1,6 +1,6 @@
 --- a/locate-plan.sh
 +++ b/locate-plan.sh
-@@ -551,7 +551,7 @@
+@@ -446,7 +446,7 @@
      need_file "$f" 4
      st="$(status_of "$f")" || exit 3
      case "$st" in
