@@ -41,8 +41,14 @@ committed file:
 
 `claude plugin marketplace add PanosMavromatis/claude-plugins` followed by `claude plugin
 install workflow-coding@mavromatis-ai-labs --scope project` writes the same keys
-imperatively. Prefer the declaration: it is what a fresh clone reproduces from, and what a
-reviewer sees in a diff. The same file is where you disable `commit-commands`, below.
+imperatively. In a session, on Claude Code 2.1.275 or later, one command does both:
+
+```
+/plugin install workflow-coding --marketplace PanosMavromatis/claude-plugins
+```
+
+Prefer the declaration: it is what a fresh clone reproduces from, and what a reviewer sees
+in a diff. The same file is where you disable `commit-commands`, below.
 
 **`--plugin-dir` is the development path, not the install path.** `claude --plugin-dir
 <path-to>/workflow-coding` loads a directory for a single session with no marketplace

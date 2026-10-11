@@ -79,6 +79,13 @@ One path cannot reach the absence message at all. This plugin's manifest declare
 too and enabling one enables the other. The runtime detection survives for `--plugin-dir`
 sessions, where nothing enforces co-loading.
 
+On Claude Code 2.1.275 or later, one command installs it, and `workflow-coding` with it as a
+dependency:
+
+```
+/plugin install dp-compile --marketplace PanosMavromatis/claude-plugins
+```
+
 **Absence is not fatal, and is not uniform either.** `/phase-check` and `/benchmark`
 delegate nothing, so they print one line and produce their full output. `/next-phase` and
 `/new-algorithm` do every step that needs nothing from `workflow-coding` and then stop at

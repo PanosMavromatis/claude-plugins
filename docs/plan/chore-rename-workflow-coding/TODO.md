@@ -68,9 +68,27 @@
     > `0.4.1`, in `plugin.json` and the example manifest at `CLAUDE.md:101`. All 13
     > `@references/` imports resolve, the smoke test's 22 expected paths exist, the
     > dependency is listed in `marketplace.json`, and no old name is left in `dp-compile`.
-- [ ] Add the one-step install line, and update the expected validate warnings
-  - [ ] The plugin README gains the one-step `/plugin install` line
-  - [ ] The plugin `CLAUDE.md`'s expected-validate-warnings entry drops the name warning
+- [x] Add the one-step install line, and update the expected validate warnings
+  > **Note:** "One step" is the validator's own template, from its 2026-10-08 advice:
+  > `/plugin install <name> --marketplace <owner>/<repo>`, on Claude Code 2.1.275 or later. The
+  > same run gave `dp-compile`'s README the same advice, which nothing had tracked.
+  > **Q:** Should `dp-compile`'s README get the matching line in this goal, since it is in
+  > this PR at 0.4.1 anyway?
+  > **A:** Yes.
+  - [x] The plugin README gains the one-step `/plugin install` line
+    > **Result:** `/plugin install workflow-coding --marketplace PanosMavromatis/claude-plugins`,
+    > after the two-step CLI form; and `dp-compile`'s README gains
+    > `/plugin install dp-compile --marketplace PanosMavromatis/claude-plugins`, which brings
+    > `workflow-coding` as its dependency.
+  - [x] The plugin `CLAUDE.md`'s expected-validate-warnings entry drops the name warning
+    > **Result:** The user ran `claude plugin validate` on both plugins, 2026-10-11.
+    > `workflow-coding`: one warning, the plugin-root `CLAUDE.md`; the name warning and the
+    > install advice are gone, and the entry now says one. `dp-compile`: four warnings, the
+    > root `CLAUDE.md` and the three `commands/references/` fragments without frontmatter,
+    > exactly the four its `CLAUDE.md:117` already expects; its install advice is gone too.
+    > **Note:** `dp-compile`'s `CLAUDE.md:119` still says "the repo root and the plugin root
+    > are the same directory", untrue since it joined the marketplace as `plugins/dp-compile/`;
+    > its conclusion holds. Left for the R2 handoff, as outside the rename.
 - [ ] Pass the suites and a full e2e run, then switch `settings.json` last
   - [ ] The six script suites pass, with the propose-revision and close-revision mutants
   - [ ] A full e2e run, run by the user, has 0 failing

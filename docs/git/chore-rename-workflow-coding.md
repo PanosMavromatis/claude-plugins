@@ -21,7 +21,7 @@ R4's contract file are each written once, under the new name (D-N8).
   the `run.sh` prompts); `version` `0.10.0`
 - `dp-compile`: `"dependencies"`, its `/workflow-claude:*` references,
   `commands/references/workflow-claude.md` → `workflow-coding.md`; `version` `0.4.1`
-- The one-step `/plugin install` line in the plugin README, and the expected-validate-warnings
+- The one-step `/plugin install` line in both plugins' READMEs, and the expected-validate-warnings
   entry in the plugin `CLAUDE.md` (the name warning goes)
 - The six script suites and a full e2e run pass; `.claude/settings.json` switches in the last
   commit before the merge
