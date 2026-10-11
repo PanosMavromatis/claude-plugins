@@ -68,5 +68,12 @@
   > extraction, in the same diagram as `CLAUDE.md`; "The filing sweep" became "Where plans
   > live", with an example revisions tree and the legacy close's filing; the branch doc is
   > the flattened name, and lookups go through the scripts.
-- [ ] `/new-branch`: drop "always flat", settle the branch-doc path, add an `argument-hint`
+- [x] `/new-branch`: drop "always flat", settle the branch-doc path, add an `argument-hint`
+  > **Done:** The branch doc is `docs/git/<flattened-branch>.md` in `/new-branch` (steps 6, 8,
+  > 9) and `/smart-merge`, whose step 2 falls back to the unflattened path earlier versions
+  > wrote and step 4 removes whichever it found; `check.py` expects the flattened name; and
+  > `/new-branch` has `argument-hint: "[<type>/<slug>] [purpose]"`.
+  > **Note:** "Always flat" was already gone from `new-branch.md`: `feat-per-goal-layout`
+  > rewrote that paragraph (line 111) when the revision directory became a placement; only
+  > the docs still said it, fixed in goals 2 and 3.
 - [ ] Check the rewritten prose against the commands and scripts it describes

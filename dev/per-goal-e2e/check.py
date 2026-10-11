@@ -134,7 +134,7 @@ def per_goal(scen, repo, branch, model, files):
     first = git(repo, "log", "--reverse", "--format=%H", f"main..{branch}").split()
     got = set(git(repo, "show", "--name-only", "--format=", first[0]).split()) if first else set()
     gfs = sorted(f"docs/plan/07-rev/{flat}/{gd}/{f}" for f in os.listdir(f"{E}/{repo}/docs/plan/07-rev/{flat}/{gd}")) if os.path.isdir(f"{E}/{repo}/docs/plan/07-rev/{flat}/{gd}") else []
-    want = {f"docs/git/{branch}.md", idx, master, *gfs}   # as /new-branch says: the branch name, unflattened
+    want = {f"docs/git/{flat}.md", idx, master, *gfs}   # as /new-branch says: the branch name, flattened
     check(f"{repo}: /new-branch committed the doc, index, {len(gfs)} goal files and the backlink", got == want and len(gfs) == 2,
           f"committed {sorted(got)}; want {sorted(want)}")
     master_plan_change(repo, master, branch, 9, 10)
@@ -249,7 +249,7 @@ def merged(scen, repo, branch, idx, master, item, after):
     files = [sorted(git(rm, "show", "--name-only", "--format=", c).split()) for c in shas]
     check(f"{rm}: one commit records the merge, touching exactly the index and the master file",
           sorted([idx, master]) in files, f"{len(shas)} commits: {files}")
-    check(f"{rm}: one commit removes the branch doc", [f"docs/git/{branch}.md"] in files, f"{files}")
+    check(f"{rm}: one commit removes the branch doc", [f"docs/git/{branch.replace('/', '-')}.md"] in files, f"{files}")
     gfd = idx[:-len(os.path.basename(idx))] + os.path.basename(idx)[:-3]
     if os.path.isdir(f"{E}/{repo}/{gfd}"):
         check(f"{rm}: goal files untouched by the merge", not git(rm, "diff", "--name-only", f"{pre}..{branch}", "--", gfd).strip())

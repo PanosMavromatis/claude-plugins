@@ -82,11 +82,11 @@ Because Claude Code only forces `/<plugin>:<command>` disambiguation when **file
 | Dimension | `/smart-merge` | `/commit-push-pr` |
 |-----------|----------------|-------------------|
 | Interaction model | Interactive; **confirm before every write** (push, PR create, merge, branch/doc delete) | Fully autonomous; **"MUST do all of the above in a single message"** |
-| PR body source | `docs/git/<branch>.md` branch doc + thematically grouped commit log | Generated ad hoc from the diff |
+| PR body source | `docs/git/<flattened-branch>.md` branch doc + thematically grouped commit log | Generated ad hoc from the diff |
 | End state | Creates **and merges** the PR (`gh pr merge`), syncs local `main` | Creates the PR only; stops there |
 | Branch creation | Assumes branch already exists (made by `/new-branch`) | Creates the branch itself if on `main` |
 
-**Why this is a conflict:** they partition the same "branch → PR" surface differently and assume different upstream state. Used together they can **double up** — e.g. `/commit-push-pr` opens a PR, then `/smart-merge` (expecting to drive PR creation itself) opens a second one or operates on an unexpected branch. Their confirmation philosophies are also directly opposed (HITL-everything vs. one-shot-no-text), so mixing them in one session produces inconsistent, jarring UX. Critically, `/commit-push-pr` never consumes or deletes the `docs/git/<branch>.md` artifact, so the whole `new-branch → smart-merge` doc lifecycle is bypassed.
+**Why this is a conflict:** they partition the same "branch → PR" surface differently and assume different upstream state. Used together they can **double up** — e.g. `/commit-push-pr` opens a PR, then `/smart-merge` (expecting to drive PR creation itself) opens a second one or operates on an unexpected branch. Their confirmation philosophies are also directly opposed (HITL-everything vs. one-shot-no-text), so mixing them in one session produces inconsistent, jarring UX. Critically, `/commit-push-pr` never consumes or deletes the `docs/git/<flattened-branch>.md` artifact, so the whole `new-branch → smart-merge` doc lifecycle is bypassed.
 
 ### 3.3 `/clean_gone` ⟷ `/smart-merge`'s `--delete-branch` — mild overlap, mostly complementary
 
