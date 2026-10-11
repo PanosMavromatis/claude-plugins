@@ -1,6 +1,6 @@
 # propose-merge-record.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/propose-merge-record.sh`, which
+These are the tests for `plugins/workflow-coding/scripts/propose-merge-record.sh`, which
 `/smart-merge` runs in step 7 to find what recording a merge edits: the branch plan's status
 line, and the master-plan item that backlinks the branch, with the line its `> **Done:**`
 goes after. They live here, outside the plugin, so they don't ship with it. The contract

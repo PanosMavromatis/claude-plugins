@@ -18,29 +18,29 @@ RUN="${RUN:?set RUN=<tag>}"
 E="$P/e2e"; OUT="$E/out-$RUN"
 
 python3 -I "$HERE/build.py"
-PLUGIN="$(printf '%s' "e2e/plugin" | shasum | cut -c1-8)"; PLUGIN="$E/p/$PLUGIN/workflow-claude"
+PLUGIN="$(printf '%s' "e2e/plugin" | shasum | cut -c1-8)"; PLUGIN="$E/p/$PLUGIN/workflow-coding"
 GHBIN="$(printf '%s' "e2e/gh" | shasum | cut -c1-8)"; GHBIN="$E/bin/$GHBIN"
 mkdir -p "$OUT"
 
 # id | fixture | prompt. Each scenario's sessions run in order, on the state the one
 # before left; a scenario is all lines whose id starts with its name.
 SESSIONS=(
-  'e1|r1|/workflow-claude:new-branch feat/plan-dirs. Purpose: subgoal 2 of revision 07-rev, the plan directory structure. Scope: (1) Create notes/structure.txt containing the word structure. (2) Create notes/layout.txt containing the word layout. Context: none. This branch executes subgoal 2, "Plan directory structure", in docs/plan/07-rev/_TODO.md.'
-  'e1-step|r1|/workflow-claude:hitl-step 2'
-  'e1-merge|r1m|/workflow-claude:smart-merge'
-  'e3|r3|/workflow-claude:new-branch fix/do-tasks. Purpose: subgoal 2 of revision 07-rev. Scope: (1) Create a.txt containing the letter a. (2) Create b.txt containing the letter b. Context: none. This branch executes subgoal 2, "Plan directory structure", in docs/plan/07-rev/_DO.md.'
-  'e3-step|r3|/workflow-claude:step 2'
-  'e3-merge|r3m|/workflow-claude:smart-merge'
-  'e4|r4|/workflow-claude:new-branch feat/legacy-notes. Purpose: the legacy notes subgoal. Scope: (1) Create notes/legacy.txt containing the word legacy. Context: none. This branch executes the subgoal "Write the legacy notes" in docs/plan/TODO.md.'
-  'e4-step|r4|/workflow-claude:hitl-step 1'
-  'e4-merge|r4m|/workflow-claude:smart-merge'
-  'e5|r5|/workflow-claude:hitl-step 1'
-  'm1|m1|/workflow-claude:master-plan 08-next docs/spec/08-next.md'
-  'm2|m2|/workflow-claude:open-revision 04-next docs/spec/04-next.md'
-  'm3|m3|/workflow-claude:master-plan 04-next docs/spec/04-next.md --dry-run dry-run'
-  'c1|c1|/workflow-claude:close-revision 07-rev'
-  'c2|c2|/workflow-claude:close-revision 03-old'
-  'c3|c3|/workflow-claude:close-revision 07-rev'
+  'e1|r1|/workflow-coding:new-branch feat/plan-dirs. Purpose: subgoal 2 of revision 07-rev, the plan directory structure. Scope: (1) Create notes/structure.txt containing the word structure. (2) Create notes/layout.txt containing the word layout. Context: none. This branch executes subgoal 2, "Plan directory structure", in docs/plan/07-rev/_TODO.md.'
+  'e1-step|r1|/workflow-coding:hitl-step 2'
+  'e1-merge|r1m|/workflow-coding:smart-merge'
+  'e3|r3|/workflow-coding:new-branch fix/do-tasks. Purpose: subgoal 2 of revision 07-rev. Scope: (1) Create a.txt containing the letter a. (2) Create b.txt containing the letter b. Context: none. This branch executes subgoal 2, "Plan directory structure", in docs/plan/07-rev/_DO.md.'
+  'e3-step|r3|/workflow-coding:step 2'
+  'e3-merge|r3m|/workflow-coding:smart-merge'
+  'e4|r4|/workflow-coding:new-branch feat/legacy-notes. Purpose: the legacy notes subgoal. Scope: (1) Create notes/legacy.txt containing the word legacy. Context: none. This branch executes the subgoal "Write the legacy notes" in docs/plan/TODO.md.'
+  'e4-step|r4|/workflow-coding:hitl-step 1'
+  'e4-merge|r4m|/workflow-coding:smart-merge'
+  'e5|r5|/workflow-coding:hitl-step 1'
+  'm1|m1|/workflow-coding:master-plan 08-next docs/spec/08-next.md'
+  'm2|m2|/workflow-coding:open-revision 04-next docs/spec/04-next.md'
+  'm3|m3|/workflow-coding:master-plan 04-next docs/spec/04-next.md --dry-run dry-run'
+  'c1|c1|/workflow-coding:close-revision 07-rev'
+  'c2|c2|/workflow-coding:close-revision 03-old'
+  'c3|c3|/workflow-coding:close-revision 07-rev'
 )
 
 want=" ${*:-e1 e3 e4 e5 m1 m2 m3 c1 c2 c3} "

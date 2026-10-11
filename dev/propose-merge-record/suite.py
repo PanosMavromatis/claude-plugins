@@ -18,7 +18,7 @@ import hashlib, os, re, shutil, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-SD = REPO + "/plugins/workflow-claude/scripts"
+SD = REPO + "/plugins/workflow-coding/scripts"
 SCRIPT = SD + "/propose-merge-record.sh"
 if "--script" in sys.argv:
     SCRIPT = os.path.abspath(sys.argv[sys.argv.index("--script") + 1])

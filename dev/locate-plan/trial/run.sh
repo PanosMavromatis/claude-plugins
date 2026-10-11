@@ -16,7 +16,7 @@ ARM="${ARM:?set ARM=baseline, haiku or sonnet}"; RUN="${RUN:?set RUN=<tag>}"
 OUT="$P/out-$ARM-$RUN"
 
 h() { printf '%s' "$1" | shasum | cut -c1-8; }   # as build-arms.py and build-fixtures.sh
-arm_dir() { printf '%s/p/%s/workflow-claude' "$P" "$(h "arm/$ARM/$1")"; }
+arm_dir() { printf '%s/p/%s/workflow-coding' "$P" "$(h "arm/$ARM/$1")"; }
 [ -d "$(arm_dir '')" ] || { echo "no arm at $(arm_dir ''): run build-arms.py" >&2; exit 1; }
 for r in fx fx-diag; do [ -d "$P/$r" ] || { echo "no fixture $P/$r: run suite.py" >&2; exit 1; }; done
 mkdir -p "$OUT"
@@ -80,9 +80,9 @@ run_case() {
   local id="$1" repo="$2" br="$3" kind="$4" args="$5" fault="${6:-}" prompt dir="$P/$2" env=() wc
   wc="$(arm_dir '')"
   case "$kind" in
-    probe) prompt="/workflow-claude:probe-resolver $args" ;;
-    hitl)  prompt="/workflow-claude:hitl-step" ;;
-    step)  prompt="/workflow-claude:step" ;;
+    probe) prompt="/workflow-coding:probe-resolver $args" ;;
+    hitl)  prompt="/workflow-coding:hitl-step" ;;
+    step)  prompt="/workflow-coding:step" ;;
   esac
   if [ -n "$br" ]; then
     git -C "$dir" checkout -q "$br"

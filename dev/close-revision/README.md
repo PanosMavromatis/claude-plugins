@@ -1,6 +1,6 @@
 # close-revision.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/close-revision.sh`, the read-only
+These are the tests for `plugins/workflow-coding/scripts/close-revision.sh`, the read-only
 proposal `/close-revision` runs before it closes a revision, and again with `--check` before
 it commits. They live here, outside the plugin, so they don't ship with it. The contract is
 `close-revision-spec.md` in the `feat-master-plan` branch plan, and the reasoning is that

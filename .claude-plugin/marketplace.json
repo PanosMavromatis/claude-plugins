@@ -9,15 +9,15 @@
   },
   "plugins": [
     {
-      "name": "workflow-claude",
-      "source": "./plugins/workflow-claude",
+      "name": "workflow-coding",
+      "source": "./plugins/workflow-coding",
       "description": "Branch, plan, commit and merge workflow commands with agent-docs hooks. Applicable to most projects.",
       "category": "development"
     },
     {
       "name": "dp-compile",
       "source": "./plugins/dp-compile",
-      "description": "Staged translation of dynamic-programming kernels from pseudocode through Python, Cython and Numba backends. Requires dp-compile.toml; depends on workflow-claude.",
+      "description": "Staged translation of dynamic-programming kernels from pseudocode through Python, Cython and Numba backends. Requires dp-compile.toml; depends on workflow-coding.",
       "category": "development"
     }
   ]

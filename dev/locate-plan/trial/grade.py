@@ -27,7 +27,7 @@ import glob, hashlib, json, os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)                                  # dev/locate-plan
 REPO = os.path.dirname(os.path.dirname(ROOT))
-SH = REPO + "/plugins/workflow-claude/scripts/locate-plan.sh"
+SH = REPO + "/plugins/workflow-coding/scripts/locate-plan.sh"
 P = os.path.realpath(os.environ.get("LOCATE_PLAN_WORK") or sys.exit("set LOCATE_PLAN_WORK to the suite's work directory"))
 ARMS, RUNS = ("baseline", "haiku", "sonnet"), ("t1", "t2")
 MAIN_MODEL = "claude-opus-5-5"   # the parent session's model; every other model is a subagent's
@@ -41,7 +41,7 @@ WRITE = re.compile(r"(^|[\s;&|(])(rm|mv|cp|chmod|chown|touch|mkdir|tee|ln|instal
                    r">\s*[^&\s]|>>")
 
 def h(label): return hashlib.sha1(label.encode()).hexdigest()[:8]
-def arm_dir(arm, fault=""): return f"{P}/p/{h(f'arm/{arm}/{fault}')}/workflow-claude"
+def arm_dir(arm, fault=""): return f"{P}/p/{h(f'arm/{arm}/{fault}')}/workflow-coding"
 def out_dir(arm, run): return f"{P}/out-{arm}-{run}"
 
 def proj(repo):

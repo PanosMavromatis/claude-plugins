@@ -12,7 +12,7 @@ evidence, a guessed plan). f04 is left out of every score: it tests honesty, not
 import os, shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPT = os.path.dirname(os.path.dirname(HERE)) + "/plugins/workflow-claude/scripts/locate-plan.sh"
+SCRIPT = os.path.dirname(os.path.dirname(HERE)) + "/plugins/workflow-coding/scripts/locate-plan.sh"
 W = os.environ.get("LOCATE_PLAN_WORK")
 
 # case -> (full fix (2), acceptable weaker fix (1), over-reach to watch for, mechanical check)

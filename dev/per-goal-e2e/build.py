@@ -1,5 +1,5 @@
 """Build the per-goal end-to-end fixtures under $LOCATE_PLAN_WORK/e2e/: a copy of the working
-tree's workflow-claude at a neutral path, and one consumer repository per scenario.
+tree's workflow-coding at a neutral path, and one consumer repository per scenario.
 
   LOCATE_PLAN_WORK=<dir> python3 -I build.py
 
@@ -14,13 +14,13 @@ os.makedirs(W, exist_ok=True); W = os.path.realpath(W)
 if (W + "/").startswith(os.path.realpath(REPO) + "/"): sys.exit(f"refusing: {W} is inside the repository")
 E = W + "/e2e"
 def h(label): return hashlib.sha1(label.encode()).hexdigest()[:8]
-PLUGIN = f"{E}/p/{h('e2e/plugin')}/workflow-claude"   # run.sh and check.py derive the same path
+PLUGIN = f"{E}/p/{h('e2e/plugin')}/workflow-coding"   # run.sh and check.py derive the same path
 
 # Every fixture carries this, and sessions obey a fixture's CLAUDE.md: the approvals the
 # commands wait for are given here, so the commands themselves run unmodified.
 CLAUDE_MD = """# Test repository
 
-This repository is a test fixture for the workflow-claude plugin's commands. It has no
+This repository is a test fixture for the workflow-coding plugin's commands. It has no
 remote, so never push.
 
 The user has approved every step of every command in advance. Do not stop to ask for
@@ -179,7 +179,7 @@ for d in ("p", "r1", "r3", "r4", "r5", "r1m", "r3m", "r4m", "bin", "m1", "m2", "
     shutil.rmtree(f"{E}/{d}", ignore_errors=True)
 os.makedirs(E, exist_ok=True)
 os.makedirs(GHBIN); open(GHBIN + "/gh", "w").write(GH); os.chmod(GHBIN + "/gh", 0o755)
-shutil.copytree(REPO + "/plugins/workflow-claude", PLUGIN)
+shutil.copytree(REPO + "/plugins/workflow-coding", PLUGIN)
 repo("r1", {"docs/plan/TODO.md": INDEX("TODO.md"), "docs/plan/07-rev/_TODO.md": REVMASTER,
             "docs/plan/05-old/_TODO.md": REVMASTER.replace("07-rev", "05-old")})
 repo("r3", {"docs/plan/DO.md": INDEX("DO.md"), "docs/plan/07-rev/_DO.md": REVMASTER,

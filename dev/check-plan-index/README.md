@@ -1,6 +1,6 @@
 # check-plan-index.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/check-plan-index.sh`, the
+These are the tests for `plugins/workflow-coding/scripts/check-plan-index.sh`, the
 read-only drift report for a per-goal plan: does each index line agree with its goal
 file? They live here, outside the plugin, so they don't ship with it. The contract they
 test is `per-goal-layout-spec.md` in the `feat-per-goal-layout` branch plan, and the

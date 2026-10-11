@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Measure what a Claude Code session, and each workflow-claude command, loads into
+# Measure what a Claude Code session, and each workflow-coding command, loads into
 # context in a consuming repository.
 #
 # The subagent refactor exists to shrink these numbers, so it is judged against them
@@ -15,14 +15,14 @@
 #
 # Usage: measure-context.sh [--plugin <dir>] [<repo>]
 #   <repo>    the consuming repository (default: the current git toplevel)
-#   --plugin  the workflow-claude directory whose commands to measure
-#             (default: plugins/workflow-claude beside this script's repository)
+#   --plugin  the workflow-coding directory whose commands to measure
+#             (default: plugins/workflow-coding beside this script's repository)
 # Exit:  0 = report printed. 2 = usage error.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN="${SCRIPT_DIR}/../plugins/workflow-claude"
+PLUGIN="${SCRIPT_DIR}/../plugins/workflow-coding"
 REPO=""
 while [ $# -gt 0 ]; do
   case "$1" in

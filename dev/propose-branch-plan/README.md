@@ -1,6 +1,6 @@
 # propose-branch-plan.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/propose-branch-plan.sh`, which
+These are the tests for `plugins/workflow-coding/scripts/propose-branch-plan.sh`, which
 `/new-branch` runs to decide where a new branch's plan goes, what its goal files are
 called, and where its master-plan backlink is inserted. They live here, outside the
 plugin, so they don't ship with it. The contract they test is `per-goal-layout-spec.md`
