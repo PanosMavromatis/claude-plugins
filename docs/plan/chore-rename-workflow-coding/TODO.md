@@ -6,8 +6,15 @@
 
 ## Tasks
 
-- [ ] Ignore Python bytecode repo-wide, as its own commit
-  - [ ] `__pycache__/` and `*.py[cod]` move to the root `.gitignore`; `plugins/dp-compile/.gitignore` is removed
+- [x] Ignore Python bytecode repo-wide, as its own commit
+  > **Note:** An oversight, not a choice: `2670b6f` (2026-10-08) consolidated the plugin
+  > `.gitignore`s into the root but kept the bytecode rules in `dp-compile`, whose hook was
+  > then the only Python. The repo now tracks Python in `plugins/workflow-claude/hooks/` and
+  > 13 files under `dev/`. It went unseen because `python3 -I x.py` caches only imported
+  > modules, and no `dev/` script imports another: the one stray cache came from a `py_compile`.
+  - [x] `__pycache__/` and `*.py[cod]` move to the root `.gitignore`; `plugins/dp-compile/.gitignore` is removed
+    > **Result:** `git check-ignore -v` matches `.gitignore:29` for bytecode under `dev/` and
+    > `plugins/dp-compile/`; nothing referenced the removed file.
 - [ ] Rename the plugin to `workflow-coding` and release `0.10.0`
   - [ ] Inventory every live reference, and separate it from the records that keep the old name
   - [ ] `git mv` the plugin directory; `plugin.json` (name, `version` `0.10.0`) and `marketplace.json`
