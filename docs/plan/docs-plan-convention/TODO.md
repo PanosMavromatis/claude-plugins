@@ -62,6 +62,11 @@
   > all six plan scripts sourcing `lib/plan-rules.sh`, each with a suite in `dev/`, and the
   > library's anchored backlink match (`plan-rules.sh:385`).
   - [x] "Do not reintroduce the split" gains the §4.2 distinction: a revision's file is located, not read whole, and a goal file is read whole because it is the unit
-- [ ] Rewrite the README: "What's in here" with `agents/` and `references/`, `/master-plan` in the loop diagram, and the lifecycle without `/file-plans`
+- [x] Rewrite the README: "What's in here" with `agents/` and `references/`, `/master-plan` in the loop diagram, and the lifecycle without `/file-plans`
+  > **Done:** "What's in here" lists `agents/` and `references/` and says which command runs
+  > each plan script; the lifecycle opens with `/master-plan` and closes by stamp or
+  > extraction, in the same diagram as `CLAUDE.md`; "The filing sweep" became "Where plans
+  > live", with an example revisions tree and the legacy close's filing; the branch doc is
+  > the flattened name, and lookups go through the scripts.
 - [ ] `/new-branch`: drop "always flat", settle the branch-doc path, add an `argument-hint`
 - [ ] Check the rewritten prose against the commands and scripts it describes
