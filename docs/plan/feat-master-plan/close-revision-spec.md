@@ -73,7 +73,10 @@ directory, `<name>` with `/` flattened to `-`, matched whole:
 - flat and not stamped `merged`: a warning, left flat;
 - not flat, but found by name elsewhere under `docs/plan/`: already grouped, nothing to do;
 - not found at all: a warning;
-- `docs/plan/<label>/<plan>` already there: an error, naming both.
+- `docs/plan/<label>/<plan>` already there: an error, naming both;
+- flat, but not a plain name, `[A-Za-z0-9._+-]` and not `.` or `..`: an error, and no move
+  is printed. The command runs each move as printed, and a backlink is text from the plan:
+  `$( )` or `;` in it would be run by the shell.
 
 `--render archive` is the section, verbatim, LF. `--render root` is the root plan without
 the section, with the pointer after the last `- **Revision ` line under `## Closed

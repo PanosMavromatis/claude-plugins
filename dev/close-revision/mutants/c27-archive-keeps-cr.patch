@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -372,7 +372,7 @@
+@@ -380,7 +380,7 @@
  
  # --- the files as closing writes them ---------------------------------------------------
  

@@ -199,7 +199,13 @@
     > plugin README's `scripts/` line and command table name the new command and script; the
     > rest of the lifecycle prose goes to the plan-convention subgoal, where it is listed.
     > The five library suites' cases are unchanged after the removal.
-- [~] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
+- [x] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
+  > **Done:** `close-revision.sh` is rewritten on the library for both layouts: a stamp of
+  > two named lines under a revisions index, and under a legacy root plan the verbatim cut,
+  > the pointer, and moves that file the revision's merged branch plans. `--check`
+  > recomputes the writes from `HEAD` before the commit. `/close-revision` drives both, and
+  > `/file-plans` is removed rather than kept legacy-only (Q3). A move is printed only for a
+  > plain name, after a reproduced injection. `dev/close-revision/`: 56 cases, 38 mutants.
   > **Note:** `close-revision.sh` passes the heading through `awk -v h=…`, the flaw goal 2
   > fixed in `open-revision.sh`: a backslash in a label is read as an escape, so that
   > revision can never be found to close. Neither it nor `file-plans.sh` has a suite.
@@ -249,6 +255,29 @@
     > `--check` verified, and with one word of the archive changed it failed, naming it.
     > `propose-revision.sh` then proposed converting the closed root plan for R2, with R1's
     > archive as `previous:`: the lifecycle composes.
-  - [ ] `commands/close-revision.md`: both paths, the moves, `--check` before the commit, `argument-hint: "<label>"`
-  - [ ] `/file-plans` removed: its command and script, with the README's command table and `scripts/` line
+    > **Note:** A background security review of `61abf5b` flagged command injection, and it
+    > reproduced: a backlink `feat/a$(touch${IFS}PWNED)` with a merged plan directory of
+    > that flattened name printed `moves: git mv docs/plan/feat-a$(touch${IFS}PWNED) …`,
+    > which the command runs as printed. The script ran nothing; `git mv`'s permission
+    > prompt was the only gate. Fixed after the commit: a move is printed only for a name in
+    > `[A-Za-z0-9._+-]`, not `.` or `..`, else an error. Case `x20` and mutant `c35` pin it:
+    > 56 cases, 38 mutants, all killed. `file-plans.sh` printed its moves the same way; it is
+    > removed in subgoal 4. Labels were left as they are: they come from the user's own
+    > argument, not from the plan.
+  - [x] `commands/close-revision.md`: both paths, the moves, `--check` before the commit, `argument-hint: "<label>"`
+    > **Note:** Six steps: propose (today's `--date` on every run), branch, write, `--check`,
+    > commit, report. A cut renders both files before writing either: once the archive
+    > exists the script refuses, and once the root plan is cut there is no section to render;
+    > the R1 rehearsal ran in that order. `allowed-tools` loses `mkdir` (`Write` creates the
+    > directory), `Glob`, `Grep` and `locate-plan.sh` (subsumed by `--check`); `git mv`
+    > stays off it. Body 5,749 characters. The plugin README's command row says what it now
+    > does; the lifecycle prose is the plan-convention subgoal's.
+  - [x] `/file-plans` removed: its command and script, with the README's command table and `scripts/` line
+    > **Note:** `commands/file-plans.md` and `scripts/file-plans.sh` removed with `git rm`.
+    > The plugin README loses the command's row, and its `scripts/` line, which named four
+    > plan scripts and one now deleted, names all six. The library comment on `status_of`
+    > now names `close-revision.sh`, edited in place (no mutant hunk covers lines 86-99).
+    > The rest of the lifecycle prose, in `CLAUDE.md` and the README, is listed with its
+    > line numbers under the master plan's plan-convention subgoal. All six library suites'
+    > cases are unchanged: 83, 39, 32, 37, 72 and 56.
 - [ ] Verify end to end: the user runs it, I grade

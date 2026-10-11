@@ -89,8 +89,8 @@ list_named() {  # every file of that name under docs/plan/, sorted; scan_dirs ru
   return 0
 }
 
-# A plan's status is the first **Status** line anywhere in it: the rule file-plans.sh
-# applies, and the two readers must agree.
+# A plan's status is the first **Status** line anywhere in it: the rule close-revision.sh
+# applies to the plans it moves, and every reader must agree.
 status_of() {
   awk '/^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$1" \
     || die "awk failed reading the status of $1"

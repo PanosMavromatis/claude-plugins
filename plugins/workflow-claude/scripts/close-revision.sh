@@ -341,6 +341,14 @@ extract() {
   for b in $seen; do
     flat="$(printf '%s' "$b" | tr / -)" || die "tr failed flattening $b"
     if has "$PD/$flat"; then
+      # The command runs each move as printed, so a move is printed only for a plain name: a
+      # backlink is text from the plan, and $( ) or ; in it would be run by the shell.
+      case "$flat" in
+        .|..|*[!A-Za-z0-9._+-]*)
+          violation "the backlink \`$b\` names a plan directory that is not a plain name, so no move is printed for it" \
+            "check the backlink; move the directory by hand if it is genuine (your call)"
+          continue ;;
+      esac
       if has "$PD/$LABEL/$flat"; then
         violation "both $PD/$flat and $PD/$LABEL/$flat exist, so one is a copy" \
           "compare them and remove the stale one (your call), then run this again"

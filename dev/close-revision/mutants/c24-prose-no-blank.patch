@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -378,7 +378,7 @@
+@@ -386,7 +386,7 @@
    local after=0 blank=0 before=0 atend=0
    if [ "$CLOSED" -gt 0 ]; then
      if [ "$LASTPTR" -gt 0 ]; then after="$LASTPTR"

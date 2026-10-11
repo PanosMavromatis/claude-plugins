@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -354,7 +354,7 @@
+@@ -362,7 +362,7 @@
          *) warn "$PD/$flat is not stamped merged (${s:-no status}), so it stays flat: file it by hand once it merges" ;;
        esac
      else

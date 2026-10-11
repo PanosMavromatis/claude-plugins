@@ -1,82 +1,131 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Bash(mkdir:*), Read, Write, Edit, Glob, Grep
-argument-hint: "<revision-number>"
-description: Extract a finished revision's section from the master plan into its revision directory.
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit
+argument-hint: "<label>"
+description: Close a finished revision: stamp it, or archive a legacy one and file its branch plans.
 ---
 
 # /close-revision
 
-Extract the `## Subgoals — revision <label>` section out of the master plan and into `docs/plan/<label>/_DO.md`, leaving a one-line pointer where it was. The master plan then reads as an index of closed revisions plus whatever is currently open, and stays roughly constant in size instead of accumulating every subgoal the project has ever completed.
+Close a revision the user says is finished. How depends on the root plan's layout:
 
-Revision label: `$ARGUMENTS` — e.g. `03-subgoal-plan-management`. If none was given, list the revisions present in the master plan with their open-item counts and ask which to close. A revision is identified by its **label**, not by a number: the label names the heading and the directory alike.
+- **A revisions index** — the revision's master plan, `docs/plan/<label>/_TODO.md` (or
+  `_DO.md`), already is the archive, and its branch plans already sit inside it. Closing
+  is a stamp: `**Status**: open` becomes `**Status**: closed — <date>`, and the index
+  line's `[~]` becomes `[x]`.
+- **A legacy root plan** — the revision's `## Subgoals — revision <label>` section is cut,
+  verbatim, into `docs/plan/<label>/_TODO.md`, a pointer takes its place under
+  `## Closed revisions`, and the revision's merged branch plans, still flat under
+  `docs/plan/`, are moved into its directory.
 
-**You do not decide that a revision is finished — the user does.** A revision is closed when they say so, not when its last checkbox ticks, because subgoals can still be added to a revision whose earlier items have all merged. This plugin's own revision 3 took three more subgoals after its first three had shipped. The script refuses on unchecked items as a safety net, not as the judgement.
+Revision label: `$ARGUMENTS`. If none was given, ask for it; do not guess. A revision is
+identified by its **label**, which names its directory and its line in the root plan.
 
-## Workflow
+**You do not decide that a revision is finished — the user does.** A revision is closed
+when they say so, not when its last checkbox ticks: subgoals can still be added to a
+revision whose earlier items have all merged. The script refuses on open items as a safety
+net, not as the judgement.
 
-### 1. Propose
+**Run every command alone**: one `Bash` call per command, never chained with `&&`, `;` or
+a pipe, so each is matched against `allowed-tools` and its failure is seen. Pass today's
+date, `YYYY-MM-DD`, as `--date` to every run of the script, the same date each time.
+
+## 1. Propose
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh <label>
+${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh <label> --date <YYYY-MM-DD>
 ```
 
-Read-only: it prints the section it would extract, the destination, and the pointer that would replace it, then stops. Show the user its output.
+Read-only. It reports in twelve `key: value` lines: `result`, `layout`, `root`,
+`revision`, `change`, `edits`, `section`, `pointer`, `moves`, `warnings`, `problem`,
+`fix`. Show the user the report.
 
-If the script refuses, relay the reason and stop — do not work around it:
+- **`result: error`** or **`result: refused`** — relay `problem:` and `fix:` and stop.
+  Never edit the plan to satisfy a refusal: an open item is the user's to finish, descope
+  (`[-]`) or move, and a closed revision stays closed.
+- **`result: proposed`** — say what closing will do:
+  - **`change: stamp`** — the two lines in `edits:`, each `<path>:<line>: <new text>`;
+  - **`change: extract`** — the `section:` that moves to `revision:`, the `pointer:` that
+    replaces it, and each `moves:` line.
 
-- **unfinished items** — it lists them. The user closes, descopes, or moves them to another revision first. `[x]` and `[-]` are finished; `[ ]`, `[~]` and `[!]` are not.
-- **no such section** — the label is wrong, or the heading is a bare `## Subgoals` with no revision label (this project's revision 1 predates the convention and cannot be closed).
-- **destination exists** — that revision is already closed.
+  Show `warnings:` if there are any: a branch plan not yet merged stays where it is, and
+  the user may want to merge it before closing.
 
-### 2. Branch — CONFIRM FIRST
+## 2. Branch — CONFIRM FIRST
 
-The master plan lives on `main`, where branch protection commonly forbids direct commits. If the current branch is `main`, propose one:
+The root plan lives on `main`, where branch protection commonly forbids direct commits. On
+`main`, propose:
 
-> I'll run `git checkout -b chore/close-revision-<N>` and make the change there. Proceed?
+> I'll run `git checkout -b chore/close-<label>` and make the change there. Proceed?
 
-Say which branch the commit will land on either way.
+On another branch, say which, and ask whether to write there or branch from `main` first.
 
-### 3. Extract — CONFIRM FIRST
+## 3. Write — CONFIRM FIRST
 
-On approval:
+**A stamp.** For each `edits:` line, `Edit` that line of that file to the new text: the
+whole line, and nothing else in the file.
 
-1. `mkdir -p docs/plan/<label>/` if it does not exist — a revision with no branch plans filed into it will not have the directory yet.
-2. Write the section verbatim to `docs/plan/<label>/_DO.md` (or `_TODO.md` for a `TODO.md` master), preserving it exactly as it appeared, including every `> **Branch:**` and `> **Done:**` blockquote. Add nothing and reword nothing — this is an archive, not a summary.
-3. Delete those same lines from the master plan.
-4. Add the pointer line under a `## Closed revisions` heading, creating that section if it does not exist yet. Put it immediately before `## Deferred` if there is one, otherwise at the end. Pointers accumulate there in revision order, so the master plan ends with a short index of finished revisions rather than a scatter of orphan bullets where sections used to be.
-
-Watch the blank lines: a pointer left flush against the following `## ` heading breaks Markdown rendering, and collapsing consecutive newlines while removing the section is an easy way to cause exactly that. Check the result.
-
-**The extraction is a cut, not a copy.** If the section survives in both files, the master plan keeps growing — the one thing this command exists to prevent — and the two copies drift. Verify after writing that the section appears in exactly one file.
-
-**The archive is `_DO.md`, never `DO.md`.** Plan resolution globs `docs/plan/**/DO.md` and matches on filename, so an archive named `DO.md` would be indistinguishable from a branch plan and would surface in the disambiguation prompt as a place to do work. The underscore keeps a finished revision out of resolution entirely, which is the correct behaviour; it stays reachable by explicit path. Do not "normalize" the name.
-
-### 4. Commit — CONFIRM FIRST
+**A cut.** Render both files first, before writing either: once the archive exists the
+script refuses, and once the root plan is cut there is no section left to render.
 
 ```bash
-git add docs/plan/DO.md docs/plan/<label>/_DO.md
+${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh <label> --date <YYYY-MM-DD> --render archive
+${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh <label> --date <YYYY-MM-DD> --render root
+```
+
+Then:
+
+1. write the archive's output, exactly, to `revision:`. This creates
+   `docs/plan/<label>/`, which the moves need;
+2. write the root plan's output, exactly, to `root:`;
+3. run each `moves:` line exactly as printed, one at a time. The script prints a move only
+   for a plain directory name, `[A-Za-z0-9._+-]`, since a backlink is text from the plan and
+   shell syntax in it would run. `git mv` is deliberately not allow-listed, so each also asks
+   for permission: a second gate on a move.
+
+The archive is the section **verbatim** — a closed revision is a record, so summarising it
+destroys what the plan convention exists to keep — and the cut is a **cut**, not a copy:
+the section must not survive in the root plan.
+
+## 4. Check, before committing
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/close-revision.sh <label> --date <YYYY-MM-DD> --check
+```
+
+It recomputes from `HEAD` what closing must have written and compares it with the working
+tree: the two edited lines, or the archive, the root plan and every move. It must report
+`result: verified`. If not, relay `problem:` and `fix:`, put the file right, and check
+again. Never commit a close the check has not verified.
+
+## 5. Commit — CONFIRM FIRST
+
+```bash
+git add <root> <revision>
 git commit -m "<subject>"
 ```
+
+The moves are already staged by `git mv`.
 
 > **Subject.** The wording below is the message's *content*; its **form** is the
 > repository's, not this plugin's. Before committing, read `git log --oneline -20` and
 > match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
 > including why subjects matching this plugin's own templates must be discounted.
 >
-> Content: revision `<label>` is being closed and its section archived.
+> Content: revision `<label>` is being closed.
 
-### 5. Verify and report
+## 6. Report
 
-Confirm, and report:
-
-- The section is now in exactly one place. Run the script again, exactly as in step 1: it must now refuse with **no such section**, which shows the master plan no longer holds it. The archive holds it because step 3 wrote it there verbatim.
-- The pointer landed: `Read` the `## Closed revisions` lines you edited in step 3, and confirm the pointer is there once, with a blank line before the next `## ` heading.
-- Plan resolution is unaffected: run, alone, `${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <DO.md|TODO.md> --`, matching the master plan's name. It must resolve the master plan, never the archive: `_DO.md` and `_TODO.md` are not names resolution matches.
-- Which branch the commit landed on, and that it still needs a PR.
+- The label, and how it closed: stamped, or archived with its pointer.
+- The branch plans moved, and any `warnings:` left: a plan not yet merged stays flat, and
+  is moved by hand with `git mv` once it merges.
+- The branch the commit landed on, and that it still needs a PR (`/smart-merge`).
 
 ## Guidelines
 
-- **Never infer that a revision is done.** The number comes from the user. If they ask you to close a revision the script refuses, relay the refusal rather than editing the plan to satisfy it.
-- **The archive is verbatim.** Summarizing a closed revision destroys the record the two-tier plan convention exists to keep.
-- **Cut, never copy.**
-- **Filing comes first.** Run `/file-plans` before closing a revision, or the revision's directory ends up holding an archive describing branch plans that are still sitting flat elsewhere.
+- **Never infer that a revision is done.** The label comes from the user. If the script
+  refuses, relay the refusal rather than editing the plan to satisfy it.
+- **Never retype a file the script renders.** The archive and the cut root plan come from
+  `--render`, so their rules live in one script, and `--check` confirms the copy.
+- **Cut, never copy; the archive is verbatim.**
+- **The close files the plans.** The legacy close moves the revision's merged branch plans;
+  there is no separate filing command.

@@ -248,6 +248,12 @@ C = [
  ("x19", {"docs/plan/DO.md": NOCLOSED_END}, ["01-a"] + D, dict(exit=0, rep=rep(result="proposed", layout="legacy", root="docs/plan/DO.md",
      revision="docs/plan/01-a/_DO.md", change="extract", section="docs/plan/DO.md:5-7",
      pointer="- **Revision 01-a** — closed. See `docs/plan/01-a/_DO.md`."))),
+ # The command runs each move as printed: a backlink holding shell syntax, with a merged plan
+ # directory of that name, is an error, and no move is printed for it.
+ ("x20", {"docs/plan/TODO.md": "# M\n\n## Subgoals — revision 01-a\n\n- [x] a\n  > **Branch:** feat/a$(touch${IFS}PWNED)\n\n## Closed revisions\n",
+          "docs/plan/feat-a$(touch${IFS}PWNED)/TODO.md": MERGED}, ["01-a"] + D, dict(exit=1, rep=rep(result="error",
+     problem="the backlink `feat/a$(touch${IFS}PWNED)` names a plan directory that is not a plain name, so no move is printed for it",
+     fix="check the backlink; move the directory by hand if it is genuine (your call)"), any=["layout", "root", "revision"])),
  # tool failures: every awk, then only the matcher named by the label it is passed
  ("t01", LG, "awk127", dict(exit=3, err="awk failed")),
  ("t02", LG, "awk-section", dict(exit=3, err="awk failed reading /dev/stdin")),

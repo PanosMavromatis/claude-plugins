@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -365,7 +365,7 @@
+@@ -373,7 +373,7 @@
  
  case "$MLAYOUT" in
    none)      violation "there is no root plan, so there is no revision to close" "a revision is opened with /master-plan"; fail "" ;;

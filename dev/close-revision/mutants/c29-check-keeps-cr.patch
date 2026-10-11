@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -410,7 +410,7 @@
+@@ -418,7 +418,7 @@
    local want
    want="$(cat; echo .)" || die "cat failed reading what closing writes"
    [ -f "$1" ] || return 1

@@ -108,9 +108,9 @@ ends with. Settled, and not to be reopened:
         that `/smart-merge` step 7 Greps, "Six commands are backed by a bundled script"
         (`/smart-merge` is one too), and "every artifact is a Markdown command"
         (there are agents and references now);
-      - README "What's in here" names no `agents/` or `references/`, counts four plan
-        scripts where there are seven, and has `locate-plan.sh` serve only the step
-        commands; a later line says to Grep for the backlink;
+      - README "What's in here" names no `agents/` or `references/`, and has
+        `locate-plan.sh` serve only the step commands; a later line says to Grep for the
+        backlink (its plan-script count was corrected to six on `feat-master-plan`);
       - `/new-branch` is no longer "always flat", and the branch-doc path differs between
         practice here (`docs/git/<flattened>.md`) and the e2e (`docs/git/<branch>.md`);
       - `/new-branch` has no `argument-hint`;
@@ -118,9 +118,13 @@ ends with. Settled, and not to be reopened:
         the skills docs say it grants permission and does not restrict. Verify before
         rewording (`feat-master-plan` goal 4);
       - the revision lifecycle still describes `/open-revision` writing a legacy section
-        (`CLAUDE.md` lines 27, 35, 73, 75 and 202; README lines 140-143;
-        `file-plans.md:45`), and neither file describes `/master-plan` or shows it in the
-        loop diagram (`feat-master-plan` goal 4).
+        (`CLAUDE.md` lines 27, 35, 73, 75 and 202; README lines 140-143), and neither file
+        describes `/master-plan` or shows it in the loop diagram (`feat-master-plan` goal 4);
+      - `/file-plans` is gone and `/close-revision` stamps or cuts and files, but the prose
+        still describes the filing sweep and the old cut: `CLAUDE.md` lines 31, 41, 42, 55,
+        69, 73, 75, 81, 103 (the status-stamp contract names `/file-plans` as a reader; it is
+        now `close-revision.sh`) and 202; README lines 147-151, 164-170 and 216
+        (`feat-master-plan` goal 5).
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its

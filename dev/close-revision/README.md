@@ -13,7 +13,9 @@ The suite tests both kinds of close:
   warning for a branch plan inside the revision still stamped `active`;
 - **a cut, under a legacy root plan**: the section, the pointer, and the moves that file the
   revision's merged branch plans (the job `/file-plans` did), with `--render archive` and
-  `--render root` byte for byte, including CRLF plans and every place the pointer can go;
+  `--render root` byte for byte, including CRLF plans and every place the pointer can go,
+  and a backlink holding shell syntax, for which no move is printed (`x20`): the command
+  runs each move as printed;
 - **`--check`**: a correct close verifies, and a changed word, a skipped move, an uncut root
   plan, or an extra edit does not; a check run after the commit is an error.
 
@@ -25,8 +27,8 @@ The script uses `scripts/lib/plan-rules.sh`, so run this suite after a change to
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite              # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/close-revision/suite.py             # 55 cases, twice under each Bash found (~40 s)
-python3 -I dev/close-revision/suite.py --mutants   # 37 mutants, every one must be caught (~8 min)
+python3 -I dev/close-revision/suite.py             # 56 cases, twice under each Bash found (~40 s)
+python3 -I dev/close-revision/suite.py --mutants   # 38 mutants, every one must be caught (~8 min)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy, with the library beside it.

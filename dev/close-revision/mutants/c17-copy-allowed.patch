@@ -1,9 +1,9 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -341,7 +341,7 @@
-   for b in $seen; do
-     flat="$(printf '%s' "$b" | tr / -)" || die "tr failed flattening $b"
-     if has "$PD/$flat"; then
+@@ -349,7 +349,7 @@
+             "check the backlink; move the directory by hand if it is genuine (your call)"
+           continue ;;
+       esac
 -      if has "$PD/$LABEL/$flat"; then
 +      if false; then
          violation "both $PD/$flat and $PD/$LABEL/$flat exist, so one is a copy" \

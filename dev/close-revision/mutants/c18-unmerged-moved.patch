@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -350,7 +350,7 @@
+@@ -358,7 +358,7 @@
        if has "$PD/$flat/$MODEL"; then pf="$PD/$flat/$MODEL"; elif has "$PD/$flat/$OTHER"; then pf="$PD/$flat/$OTHER"; fi
        s=""; [ -z "$pf" ] || s="$(status_src "$pf")"
        case "$s" in

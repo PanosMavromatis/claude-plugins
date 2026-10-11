@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -379,7 +379,7 @@
+@@ -387,7 +387,7 @@
    if [ "$CLOSED" -gt 0 ]; then
      if [ "$LASTPTR" -gt 0 ]; then after="$LASTPTR"
      elif [ "$LASTNB" -gt 0 ]; then after="$LASTNB"; blank=1
