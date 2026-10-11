@@ -17,7 +17,7 @@
 # /open-revision runs this, confirms, and performs the write.
 #
 # Usage: open-revision.sh <label>   e.g. 04-revision-lifecycle
-# Exit:  0 = proposal printed. 1 = refused, with a reason. 2 = usage error.
+# Exit:  0 = proposal printed. 1 = refused, with a reason. 2 = usage error. 3 = a tool failed.
 
 set -euo pipefail
 
@@ -40,16 +40,28 @@ done
 
 HEADING="## Subgoals — revision ${LABEL}"
 
-if grep -qF "$HEADING" "$MASTER"; then
-  echo "refused: ${MASTER} already has a section for revision '${LABEL}'" >&2
+# Each check compares whole labels, literally. A substring match lets one label refuse every
+# label it begins (07-rev for 07-rev-2), and a label may hold regex metacharacters. A section
+# heading is the label alone or the label then ": <subtitle>", the forms close-revision.sh
+# matches. A closed revision is the pointer close-revision.sh writes, "- **Revision <label>**"
+# then " — closed" or a subtitle: the closing ** ends the label. The label reaches awk through
+# the environment, since -v would read a backslash in it as an escape, and a trailing CR is
+# dropped so a CRLF master plan reads the same.
+AWKERR="error: awk failed reading ${MASTER}"
+SECTION="$(L="$HEADING" awk '{ sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }' "$MASTER")" \
+  || { echo "$AWKERR" >&2; exit 3; }
+if [ -n "$SECTION" ]; then
+  echo "refused: ${MASTER}:${SECTION} already has a section for revision '${LABEL}'" >&2
+  exit 1
+fi
+CLOSED="$(L="- **Revision ${LABEL}**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$MASTER")" \
+  || { echo "$AWKERR" >&2; exit 3; }
+if [ -n "$CLOSED" ]; then
+  echo "refused: revision '${LABEL}' is listed under Closed revisions (${MASTER}:${CLOSED})" >&2
   exit 1
 fi
 if [ -e "${PLAN_DIR}/${LABEL}" ]; then
   echo "refused: ${PLAN_DIR}/${LABEL} already exists — that revision has been opened before" >&2
-  exit 1
-fi
-if grep -qF "revision ${LABEL} — closed" "$MASTER" 2>/dev/null; then
-  echo "refused: revision '${LABEL}' appears under Closed revisions in ${MASTER}" >&2
   exit 1
 fi
 

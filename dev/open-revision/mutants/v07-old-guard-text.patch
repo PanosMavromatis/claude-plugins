@@ -1,0 +1,11 @@
+--- a/open-revision.sh
++++ b/open-revision.sh
+@@ -54,7 +54,7 @@
+   echo "refused: ${MASTER}:${SECTION} already has a section for revision '${LABEL}'" >&2
+   exit 1
+ fi
+-CLOSED="$(L="- **Revision ${LABEL}**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$MASTER")" \
++CLOSED="$(L="revision ${LABEL} — closed" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$MASTER")" \
+   || { echo "$AWKERR" >&2; exit 3; }
+ if [ -n "$CLOSED" ]; then
+   echo "refused: revision '${LABEL}' is listed under Closed revisions (${MASTER}:${CLOSED})" >&2

@@ -131,6 +131,14 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 ```
 
+Test the proposal `/open-revision` runs, `scripts/open-revision.sh`, after any change to it.
+It does not use the library:
+
+```bash
+python3 -I dev/open-revision/suite.py                    # 15 cases, no model, ~6 s
+python3 -I dev/open-revision/suite.py --mutants          # the suite must catch each mutant, ~20 s
+```
+
 `dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge`
 headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
 runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,
