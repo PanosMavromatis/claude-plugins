@@ -1,6 +1,6 @@
 # docs/plan-convention
 
-**Status**: active
+**Status**: merged — PR #11 — 2026-10-11
 **Created**: 2026-10-11
 **Subgoal**: revision 06-subagent-refactor-R1 — rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README
 
