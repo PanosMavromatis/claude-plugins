@@ -76,4 +76,26 @@
   > **Note:** "Always flat" was already gone from `new-branch.md`: `feat-per-goal-layout`
   > rewrote that paragraph (line 111) when the revision directory became a placement; only
   > the docs still said it, fixed in goals 2 and 3.
-- [ ] Check the rewritten prose against the commands and scripts it describes
+- [x] Check the rewritten prose against the commands and scripts it describes
+  > **Note:** Form checks pass. The Step 1 lockstep `sed` diff from `CLAUDE.md` is empty over 65
+  > extracted lines. A reference check (scratchpad `check_refs.py`) finds every `/command`,
+  > script and plugin path the two docs name, and reports all three faults planted in a
+  > scratch copy (a removed command, a missing script, an unknown command).
+  > **Note:** A sonnet reviewer ran the scripts on fixtures against every added claim and found
+  > none false; of its four overstatements, three were right (a standalone branch under an
+  > index goes flat, so "its subgoals' branch plans"; the drafter reads the root plan whole,
+  > so "no command reads … whole to find its line"; "the plan scripts are read-only") and
+  > one half right: the 1.x promise is sourced, at `docs/plan/TODO.md:23`, but the plugin did
+  > not say whose decision it is, so it now cites it.
+  > **Note:** The root README's line 91 said each plugin's `CLAUDE.md` lists the validate
+  > warnings it expects; `dp-compile`'s did (lines 117-118), this one did not. It now has the
+  > entry, from the goal 1 run.
+  > **Q:** Re-run the per-goal e2e before merge, to confirm a real `/new-branch` writes
+  > `docs/git/<flattened>.md` and `/smart-merge` removes it?
+  > **A:** Yes, before merge.
+  - [x] The per-goal e2e passes on this branch's plugin (the user runs `run.sh`)
+    > **Result:** Run `r7` (`LOCATE_PLAN_WORK=/tmp/lp-suite`, scenarios e1, e3, e4, e5, from
+    > the working tree with goal 5's rewordings uncommitted): every check passed, 0 failing,
+    > 10 sessions, $4.42. `/new-branch` wrote `docs/git/feat-plan-dirs.md` and `/smart-merge`
+    > deleted that path, seen in the `r1m` fixture's log, not only in `check.py`. Each merge's
+    > one denial is the documented `rm /tmp/pr-body-<branch>.md` gate.

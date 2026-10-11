@@ -160,7 +160,7 @@ A **revision** is a milestone: `/master-plan <label>` opens one, its subgoals ea
 
 #### Where plans live
 
-Branch plans are never deleted — they land on `main` as the durable record of how each subgoal was executed. Under a **revisions index**, the layout `/master-plan` creates, each revision has its own directory, holding its master plan and its branch plans from the start:
+Branch plans are never deleted — they land on `main` as the durable record of how each subgoal was executed. Under a **revisions index**, the layout `/master-plan` creates, each revision has its own directory, holding its master plan and its subgoals' branch plans from the start:
 
 ```
 docs/plan/
