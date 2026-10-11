@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -128,7 +128,7 @@
+ 
+ # --- the model: the root plan's file, or --model, or DO.md as /new-branch defaults ------
+ 
+-if [ -e "$PD/DO.md" ] && [ -e "$PD/TODO.md" ]; then
++if false; then
+   violation "both $PD/DO.md and $PD/TODO.md exist, so which one is the root plan is ambiguous" \
+     "keep the one the project's plans use, and move or remove the other (your call)"
+   fail ""

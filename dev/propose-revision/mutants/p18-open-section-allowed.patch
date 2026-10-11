@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -276,7 +276,7 @@
+       esac
+     done
+     unset IFS
+-    if [ -n "$open" ]; then
++    if false; then
+       refuse "$ROOT_PLAN:${open%%"$TAB"*} has a section still open, \`${open#*"$TAB"}\`, which a revisions index has no place for" \
+         "close that revision first (/close-revision), or convert the root plan to a revisions index by hand"
+     fi

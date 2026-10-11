@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -308,7 +308,7 @@
+         }
+         { sub(/\r$/, "") }
+         ly && NR == ly { print "**Layout**: revisions"; next }
+-        NR == head { print "## Revisions"; if (!last) { print ""; print ENVIRON["NEWLINE"] }; next }
++        NR == head { print "## Revisions"; if (1) { print ""; print ENVIRON["NEWLINE"] }; next }
+         NR in ptr { s = substr($0, 14); p = index(s, "**"); print "- [x] " substr(s, 1, p - 1) substr(s, p + 2) }
+         !(NR in ptr) { print }
+         !ly && st && NR == st { print "**Layout**: revisions" }

@@ -1,0 +1,10 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -302,7 +302,6 @@
+     }
+     incl && !f && index($0, "- **Revision ") == 1 { print "LASTPTR\t" NR }
+     incl && $0 !~ /^[ \t]*$/ { print "LASTNB\t" NR }
+-    END { if (insec) print "END\t" NR }
+   ')" || die "awk failed reading the sections of $ROOT_PLAN"
+   IFS="$NL"
+   for rec in $out; do

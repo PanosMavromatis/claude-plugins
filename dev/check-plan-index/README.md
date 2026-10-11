@@ -13,8 +13,8 @@ so a change to the library means running both this suite and `dev/locate-plan/`'
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite            # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/check-plan-index/suite.py              # 33 cases, twice under each Bash found (~10 s)
-python3 -I dev/check-plan-index/suite.py --mutants    # 18 mutants, every one must be caught (~1 min)
+python3 -I dev/check-plan-index/suite.py              # 39 cases, twice under each Bash found (~10 s)
+python3 -I dev/check-plan-index/suite.py --mutants    # 24 mutants, every one must be caught (~1 min)
 ```
 
 `-v` prints each report. `--script PATH` tests another copy, which must have

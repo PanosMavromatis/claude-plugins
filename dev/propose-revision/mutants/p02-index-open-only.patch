@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -203,7 +203,7 @@
+       /^[ \t]*```/ { fence = !fence; next }
+       fence { next }
+       /^## / { insec = ($0 ~ /^## Revisions[ \t]*$/); if (insec && !head) { head = NR; print "HEAD\t" NR }; next }
+-      insec && /^- \[[ ~x!-]\] / { split(substr($0, 7), a, /[ \t]+/); print "REV\t" NR "\t" a[1] }
++      insec && /^- \[~\] / { split(substr($0, 7), a, /[ \t]+/); print "REV\t" NR "\t" a[1] }
+     ' "$ROOT_PLAN")" || die "awk failed reading the revisions of $ROOT_PLAN"
+     prev=""
+     IFS="$NL"

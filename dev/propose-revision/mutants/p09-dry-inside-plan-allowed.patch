@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -159,7 +159,7 @@
+   canon="$(cd "$p" && pwd -P)" || die "cannot resolve the dry-run path"
+   canon="${canon%/}$rest"
+   case "$canon/" in
+-    "$RP/$PD/"*)
++    "$RP/$PD/nothing/"*)
+       violation "the dry-run path is inside $PD/, where its files would be read as plans" \
+         "give a path outside $PD/, such as one in a scratch directory"
+       fail "" ;;

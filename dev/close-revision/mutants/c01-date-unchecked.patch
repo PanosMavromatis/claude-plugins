@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -76,7 +76,7 @@
+ esac
+ [ -n "$DATE" ] || usage "--date is required: the closing date, YYYY-MM-DD"
+ case "$DATE" in
+-  [0-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]) ;;
++  *) ;;
+   *) usage "--date takes YYYY-MM-DD, got '$DATE'" ;;
+ esac
+ case "$RENDER" in ''|root|archive) ;; *) usage "--render takes root or archive, got '$RENDER'" ;; esac

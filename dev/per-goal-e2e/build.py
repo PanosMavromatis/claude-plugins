@@ -101,6 +101,60 @@ HALF_INDEX = """# feat/half-done
 """
 GOAL = lambda nn, t, m: f"# {nn} — {t}\n\n**Goal**: [{m}]\n"
 
+# The revision sessions (m*, c*). A spec the drafter reads, and the root plans it opens a
+# revision under: an index (m1), a legacy plan with nothing open (m2) and with a revision
+# open (m3). Then the closes: an index whose revision is finished (c1) or not (c3), and a
+# finished legacy section with two merged flat plans and one still active (c2).
+SPEC = """# A changelog for the fixture
+
+Why: users cannot tell what changed between releases, and every release note is written
+from memory.
+
+Settled: the changelog is one file, `CHANGELOG.md`, in the Keep a Changelog form. Nothing
+is generated from commits.
+
+The work, in order:
+1. Add `CHANGELOG.md` with an Unreleased section and the past releases' entries.
+2. Add a section to `CLAUDE.md` saying every user-visible change adds an Unreleased line.
+3. Add a check script, `scripts/check-changelog.sh`, that fails when Unreleased is empty
+   on a release branch.
+"""
+LEGACY_CLOSED = """# Master plan
+
+**Status**: active
+
+## Closed revisions
+
+- **Revision 03-old** — closed. See `docs/plan/03-old/_TODO.md`.
+"""
+ARCHIVE = """## Subgoals — revision 03-old
+
+- [x] Done already
+  > **Branch:** feat/old
+"""
+DONE_REV = REVMASTER.replace("- [ ] 2.", "- [x] 2.").replace("- [ ] 3.", "- [-] 3.")
+LEGACY_DONE = """# Master plan
+
+**Status**: active
+
+## Subgoals — revision 03-old
+
+Notes for the revision, kept verbatim in its archive.
+
+- [x] Write the legacy notes
+  > **Branch:** feat/old-a
+- [x] Write the other notes
+  > **Branch:** feat/old-b
+- [-] Something else
+  > **Branch:** feat/old-c
+  > **Descoped:** not needed.
+
+## Closed revisions
+
+- **Revision 02-older** — closed. See `docs/plan/02-older/_TODO.md`.
+"""
+FLAT = lambda b, st: f"# {b}\n\n**Status**: {st}\n**Created**: 2026-10-01\n\n## Tasks\n\n- [x] The work\n"
+
 def git(cwd, *a):
     r = subprocess.run(["git", *a], cwd=cwd, capture_output=True, text=True)
     if r.returncode: sys.exit(f"git {' '.join(a)} in {cwd}: {r.stderr}")
@@ -121,7 +175,8 @@ def repo(name, files, branch=None, branch_files=None):  # branch_files goes with
     return d
 
 # the fixtures and the plugin copy are rebuilt; earlier runs' out-*/ results are kept
-for d in ("p", "r1", "r3", "r4", "r5", "r1m", "r3m", "r4m", "bin"): shutil.rmtree(f"{E}/{d}", ignore_errors=True)
+for d in ("p", "r1", "r3", "r4", "r5", "r1m", "r3m", "r4m", "bin", "m1", "m2", "m3", "c1", "c2", "c3", "_main"):
+    shutil.rmtree(f"{E}/{d}", ignore_errors=True)
 os.makedirs(E, exist_ok=True)
 os.makedirs(GHBIN); open(GHBIN + "/gh", "w").write(GH); os.chmod(GHBIN + "/gh", 0o755)
 shutil.copytree(REPO + "/plugins/workflow-claude", PLUGIN)
@@ -138,6 +193,16 @@ repo("r5", {"docs/plan/TODO.md": INDEX("TODO.md"),
             "docs/plan/07-rev/feat-half-done/TODO.md": HALF_INDEX,
             "docs/plan/07-rev/feat-half-done/TODO/01-create-notes-half-txt-containing-the-wor.md": GOAL("01", "Create notes/half.txt containing the word half", "~"),
             "docs/plan/07-rev/feat-half-done/TODO/02-create-notes-done-txt-containing-the-wor.md": GOAL("02", "Create notes/done.txt containing the word done", " ")})
-for r in ("r1", "r3", "r4", "r5"):
+OLD05 = {"docs/plan/05-old/_TODO.md": REVMASTER.replace("07-rev", "05-old").replace("**Status**: open", "**Status**: closed — 2026-09-01")}
+repo("m1", {"docs/plan/TODO.md": INDEX("TODO.md"), "docs/plan/07-rev/_TODO.md": REVMASTER, **OLD05, "docs/spec/08-next.md": SPEC})
+repo("m2", {"docs/plan/TODO.md": LEGACY_CLOSED, "docs/plan/03-old/_TODO.md": ARCHIVE, "docs/spec/04-next.md": SPEC})
+repo("m3", {"docs/plan/TODO.md": LEGACY, "docs/spec/04-next.md": SPEC})
+repo("c1", {"docs/plan/TODO.md": INDEX("TODO.md"), "docs/plan/07-rev/_TODO.md": DONE_REV, **OLD05,
+            "docs/plan/07-rev/feat-first/TODO.md": FLAT("feat/first", "merged — PR #3 — 2026-10-02")})
+repo("c2", {"docs/plan/TODO.md": LEGACY_DONE, "docs/plan/02-older/_TODO.md": "## Subgoals — revision 02-older\n",
+            **{f"docs/plan/feat-old-{x}/TODO.md": FLAT(f"feat/old-{x}", st) for x, st in
+               (("a", "merged — PR #4 — 2026-10-03"), ("b", "merged — PR #5 — 2026-10-04"), ("c", "active"))}})
+repo("c3", {"docs/plan/TODO.md": INDEX("TODO.md"), "docs/plan/07-rev/_TODO.md": REVMASTER, **OLD05})
+for r in ("r1", "r3", "r4", "r5", "m1", "m2", "m3", "c1", "c2", "c3"):
     print(f"{r}: {E}/{r} on {git(E + '/' + r, 'branch', '--show-current').strip()} at {git(E + '/' + r, 'rev-parse', '--short', 'HEAD').strip()}")
 print(f"plugin copy: {PLUGIN}")

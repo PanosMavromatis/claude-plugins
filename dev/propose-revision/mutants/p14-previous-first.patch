@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -270,7 +270,7 @@
+         LAYOUT) LAYLINE="$n" ;;
+         OPEN)   open="$n$TAB$val" ;;
+         HEAD)   HEAD="$n" ;;
+-        PTR)    PTRS="${PTRS:+$PTRS }$n"; LAST="$n"; prev="$val" ;;
++        PTR)    PTRS="${PTRS:+$PTRS }$n"; LAST="$n"; prev="${prev:-$val}" ;;
+         BAD)    violation "$ROOT_PLAN:$n is a closed pointer that would not convert to an index line: \`$val\`" \
+                   "write it as \`- **Revision <label>** — <note>\`, with a label holding no space or \`/\`" ;;
+       esac

@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -508,7 +508,7 @@
+ # first matching line's number, or nothing.
+ section_line() {  # section_line <file> <label>: the heading alone, or then `: <subtitle>`
+   L="## Subgoals — revision $2" awk '
+-    { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }
++    { sub(/\r$/, "") } $0 == ENVIRON["L"] { print NR; exit }
+   ' "$1" || die "awk failed reading $1"
+ }
+ pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label

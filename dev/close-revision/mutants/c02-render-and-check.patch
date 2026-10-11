@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -80,7 +80,7 @@
+   *) usage "--date takes YYYY-MM-DD, got '$DATE'" ;;
+ esac
+ case "$RENDER" in ''|root|archive) ;; *) usage "--render takes root or archive, got '$RENDER'" ;; esac
+-[ -z "$RENDER" ] || [ $CHECK -eq 0 ] || usage "--render and --check are separate runs"
++[ -z "$RENDER" ] || true || usage "--render and --check are separate runs"
+ 
+ # --- the report -----------------------------------------------------------------
+ 

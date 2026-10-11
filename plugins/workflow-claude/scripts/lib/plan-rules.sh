@@ -1,5 +1,5 @@
-# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-plan-index.sh,
-# propose-branch-plan.sh and propose-merge-record.sh. Sourced, never run. A rule that more than one of them
+# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-plan-index.sh, close-revision.sh,
+# propose-branch-plan.sh, propose-merge-record.sh and propose-revision.sh. Sourced, never run. A rule that more than one of them
 # applies is defined here once, because copies drift: a slug computed one way by the
 # writer and another by the reader names a goal file the reader cannot find (E10).
 #
@@ -89,8 +89,8 @@ list_named() {  # every file of that name under docs/plan/, sorted; scan_dirs ru
   return 0
 }
 
-# A plan's status is the first **Status** line anywhere in it: the rule file-plans.sh
-# applies, and the two readers must agree.
+# A plan's status is the first **Status** line anywhere in it: the rule close-revision.sh
+# applies to the plans it moves, and every reader must agree.
 status_of() {
   awk '/^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' "$1" \
     || die "awk failed reading the status of $1"
@@ -496,4 +496,22 @@ e10_fix() {  # e10_fix <goal dir> <NN> <index line text>; reads FILES
         print "these carry goal " nn "'"'"'s number in another form: " l "; git mv the right one to " g "/" nn "-" s ".md" }
       else print "create " g "/" nn "-" s ".md"
     }' </dev/null || die "awk failed working out the goal file for $2"
+}
+
+# --- legacy revisions -----------------------------------------------------------------
+
+# Whole-label, literal matchers for the revisions of a legacy master plan, in the forms
+# close-revision.sh writes. A substring match would let one label refuse every label it
+# begins (07-rev for 07-rev-2), and a label may hold regex metacharacters. The label
+# reaches awk through the environment, since -v would read a backslash in it as an
+# escape, and a trailing CR is dropped so a CRLF plan reads the same. Each prints the
+# first matching line's number, or nothing.
+section_line() {  # section_line <file> <label>: the heading alone, or then `: <subtitle>`
+  L="## Subgoals — revision $2" awk '
+    { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }
+  ' "$1" || die "awk failed reading $1"
+}
+pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label
+  L="- **Revision $2**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
+    || die "awk failed reading $1"
 }

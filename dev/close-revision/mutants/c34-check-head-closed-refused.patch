@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -206,7 +206,7 @@
+   fi
+   IDX_N="${out%%"$TAB"*}"; IDX_LINE="${out#*"$TAB"}"; mk="${IDX_LINE:3:1}"
+   if [ "$mk" != "~" ]; then
+-    if [ $CHECK -eq 1 ]; then
++    if false; then
+       violation "$ROOT_PLAN:$IDX_N at HEAD marks revision $LABEL [$mk], not [~]" "$BEFORE"; fail ""
+     fi
+     case "$mk" in

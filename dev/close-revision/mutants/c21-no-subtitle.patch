@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -335,7 +335,7 @@
+     fi
+     refuse "$REV already exists, so revision $LABEL looks closed already" "nothing to do, or remove a stale $REV first (your call)"
+   fi
+-  R_POINTER="- **Revision $LABEL**${SUBTITLE:+ $DASH $SUBTITLE} $DASH closed. See \`$REV\`."
++  R_POINTER="- **Revision $LABEL** $DASH closed. See \`$REV\`."
+   # The moves: each backlinked branch's plan directory, matched whole by its flattened name.
+   dirs="$(plan_dirs)"
+   for b in $seen; do

@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -306,7 +306,6 @@
+           head = ENVIRON["HEAD"] + 0; last = ENVIRON["LAST"] + 0; st = ENVIRON["ST"] + 0; ly = ENVIRON["LY"] + 0
+           n = split(ENVIRON["PTRS"], a, " "); for (i = 1; i <= n; i++) ptr[a[i]] = 1
+         }
+-        { sub(/\r$/, "") }
+         ly && NR == ly { print "**Layout**: revisions"; next }
+         NR == head { print "## Revisions"; if (!last) { print ""; print ENVIRON["NEWLINE"] }; next }
+         NR in ptr { s = substr($0, 14); p = index(s, "**"); print "- [x] " substr(s, 1, p - 1) substr(s, p + 2) }

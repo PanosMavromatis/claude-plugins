@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -349,7 +349,7 @@
+             "check the backlink; move the directory by hand if it is genuine (your call)"
+           continue ;;
+       esac
+-      if has "$PD/$LABEL/$flat"; then
++      if false; then
+         violation "both $PD/$flat and $PD/$LABEL/$flat exist, so one is a copy" \
+           "compare them and remove the stale one (your call), then run this again"
+         continue

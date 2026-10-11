@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -138,7 +138,7 @@
+ else MODEL="${MODEL_ARG:-DO.md}"; fi
+ case "$MODEL" in TODO.md) OTHER=DO.md ;; *) OTHER=TODO.md ;; esac
+ ROOT_PLAN="$PD/$MODEL"; R_ROOT="$ROOT_PLAN"; R_REV="$PD/$LABEL/_$MODEL"
+-if [ -n "$MODEL_ARG" ] && [ "$MODEL_ARG" != "$MODEL" ]; then
++if false; then
+   violation "--model $MODEL_ARG names the other file: the root plan is $ROOT_PLAN" \
+     "leave --model out, or pass --model $MODEL"
+   fail ""

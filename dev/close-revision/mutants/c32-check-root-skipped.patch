@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -436,7 +436,7 @@
+     extract)
+       render_archive | same "$REV" \
+         || violation "$REV is not the section, verbatim" "write it again from \`$PROG $LABEL --date $DATE --render archive\`, run before the cut"
+-      render_root | same "$ROOT_PLAN" \
++      true || render_root | same "$ROOT_PLAN" \
+         || violation "$ROOT_PLAN is not the root plan with the section cut and the pointer added" \
+              "write it again from \`$PROG $LABEL --date $DATE --render root\`, run before the cut"
+       IFS="$NL"

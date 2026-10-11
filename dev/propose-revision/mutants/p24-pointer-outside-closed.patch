@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -248,7 +248,6 @@
+       /^\*\*Layout\*\*:/ && !ly { ly = NR; print "LAYOUT\t" NR }
+       /^## / {
+         if (!op && index($0, "## Subgoals") == 1) { op = 1; print "OPEN\t" NR "\t" $0 }
+-        insec = 0
+         if ($0 ~ /^## Closed revisions[ \t]*$/ && !head) { head = NR; insec = 1; print "HEAD\t" NR }
+         next
+       }

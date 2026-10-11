@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -99,7 +99,7 @@
+     if [ $RENDER -eq 1 ]; then render; else report; fi
+     exit 0
+   fi
+-  if [ $RENDER -eq 1 ]; then report >&2; else report; fi
++  report
+   exit 1
+ }
+ 

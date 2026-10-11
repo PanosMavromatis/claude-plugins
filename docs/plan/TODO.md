@@ -21,7 +21,9 @@ the new layout but does not **adopt** it. This repository's own plans stay in th
 old form until the first step of R2, which runs on the 0.10.0 release this revision
 ends with. Settled, and not to be reopened:
 - Legacy single-file branch plans stay readable through 1.x.
-- `/file-plans` becomes legacy-only and `/open-revision` becomes an alias. Neither is removed.
+- `/open-revision` becomes an alias and is not removed. (Amended on `feat-master-plan`,
+  goal 5 Q3: `/file-plans` was to become legacy-only; it is removed instead, its filing
+  folded into the legacy `/close-revision`, a revision earlier than the agreed plan had it.)
 - Every agent is written with plugin-dev's `agent-development` and checked by
   `plugin-validator` before the bump.
 
@@ -93,13 +95,41 @@ ends with. Settled, and not to be reopened:
   > it to, the root plan or an open revision's `_TODO.md`, and stamps a per-goal plan's
   > index; `master_files` is shared through the library. A fourth suite and e2e merge
   > sessions on a stub `gh` verify it, and every command now runs alone — PR #9
-- [ ] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
+- [x] `/master-plan`, `agents/plan-drafter.md` and `references/subdividing.md`, with a
       `--dry-run` that writes to a given path. `/close-revision` stamps, `/file-plans`
       becomes legacy-only and `/open-revision` becomes an alias. Fix the reopen guard:
       it must match `**Revision <label>** — closed`, which is what `/close-revision`
       writes, and today it never does.
+  > **Branch:** feat/master-plan
+  > **Done:** `/master-plan` drafts a revision through `plan-drafter` and the read-only
+  > `propose-revision.sh`, creating, appending to or converting the root plan; `/open-revision`
+  > is its alias, and the reopen guard matches whole labels. `close-revision.sh` stamps an
+  > index or cuts a legacy section and files its merged plans, checked from `HEAD` before the
+  > commit, so `/file-plans` is removed. Two suites and six e2e sessions verify it — PR #10
 - [ ] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
-      "do not reintroduce the split" paragraph gains the §4.2 distinction.
+      "do not reintroduce the split" paragraph gains the §4.2 distinction. Known drift,
+      found on earlier branches:
+      - `CLAUDE.md` says "`Grep` is allow-listed … `Bash(grep:*)` deliberately is not",
+        that `/smart-merge` step 7 Greps, "Six commands are backed by a bundled script"
+        (`/smart-merge` is one too), and "every artifact is a Markdown command"
+        (there are agents and references now);
+      - README "What's in here" names no `agents/` or `references/`, and has
+        `locate-plan.sh` serve only the step commands; a later line says to Grep for the
+        backlink (its plan-script count was corrected to six on `feat-master-plan`);
+      - `/new-branch` is no longer "always flat", and the branch-doc path differs between
+        practice here (`docs/git/<flattened>.md`) and the e2e (`docs/git/<branch>.md`);
+      - `/new-branch` has no `argument-hint`;
+      - `CLAUDE.md` says `allowed-tools` "restricts which tools the command can call", where
+        the skills docs say it grants permission and does not restrict. Verify before
+        rewording (`feat-master-plan` goal 4);
+      - the revision lifecycle still describes `/open-revision` writing a legacy section
+        (`CLAUDE.md` lines 27, 35, 73, 75 and 202; README lines 140-143), and neither file
+        describes `/master-plan` or shows it in the loop diagram (`feat-master-plan` goal 4);
+      - `/file-plans` is gone and `/close-revision` stamps or cuts and files, but the prose
+        still describes the filing sweep and the old cut: `CLAUDE.md` lines 31, 41, 42, 55,
+        69, 73, 75, 81, 103 (the status-stamp contract names `/file-plans` as a reader; it is
+        now `close-revision.sh`) and 202; README lines 147-151, 164-170 and 216
+        (`feat-master-plan` goal 5).
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its

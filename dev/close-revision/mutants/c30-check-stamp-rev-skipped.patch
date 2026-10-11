@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -427,7 +427,7 @@
+ if [ $CHECK -eq 1 ]; then
+   case "$R_CHANGE" in
+     stamp)
+-      replaced "$REV" "$ST_N" "**Status**: closed $DASH $DATE" | same "$REV" \
++      true || replaced "$REV" "$ST_N" "**Status**: closed $DASH $DATE" | same "$REV" \
+         || violation "$REV does not read as stamped: line $ST_N should be \`**Status**: closed $DASH $DATE\`, and nothing else should change" \
+              "edit line $ST_N to that, and undo any other change"
+       replaced "$ROOT_PLAN" "$IDX_N" "- [x]${IDX_LINE:5}" | same "$ROOT_PLAN" \

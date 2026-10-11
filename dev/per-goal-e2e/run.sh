@@ -35,9 +35,15 @@ SESSIONS=(
   'e4-step|r4|/workflow-claude:hitl-step 1'
   'e4-merge|r4m|/workflow-claude:smart-merge'
   'e5|r5|/workflow-claude:hitl-step 1'
+  'm1|m1|/workflow-claude:master-plan 08-next docs/spec/08-next.md'
+  'm2|m2|/workflow-claude:open-revision 04-next docs/spec/04-next.md'
+  'm3|m3|/workflow-claude:master-plan 04-next docs/spec/04-next.md --dry-run dry-run'
+  'c1|c1|/workflow-claude:close-revision 07-rev'
+  'c2|c2|/workflow-claude:close-revision 03-old'
+  'c3|c3|/workflow-claude:close-revision 07-rev'
 )
 
-want=" ${*:-e1 e3 e4 e5} "
+want=" ${*:-e1 e3 e4 e5 m1 m2 m3 c1 c2 c3} "
 for s in "${SESSIONS[@]}"; do
   IFS='|' read -r id fx prompt <<< "$s"
   case "$want" in *" ${id%%-*} "*) ;; *) continue ;; esac
@@ -66,6 +72,9 @@ for s in "${SESSIONS[@]}"; do
         # GitHub server's tools are denied as well, so a server that loads anyway is inert.
         extra=(--strict-mcp-config --disallowedTools mcp__plugin_github_github --add-dir /tmp
                --allowedTools "Bash(git rm:*)" "Bash(gh pr merge:*)" "Bash(rm /tmp/pr-body-:*)") ;;
+    c2) # /close-revision leaves git mv off its allowed-tools, so each move asks: the
+        # documented second gate on a printed move, opened here for this session only.
+        extra=(--allowedTools "Bash(git mv:*)") ;;
   esac
   ( cd "$E/$fx" && PATH="$GHBIN:$PATH" GH_LOG="$OUT/$id.gh" \
       claude -p "$prompt" --plugin-dir "$PLUGIN" ${extra[@]+"${extra[@]}"} --output-format stream-json --verbose </dev/null ) \

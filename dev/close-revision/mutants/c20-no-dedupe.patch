@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -317,7 +317,7 @@
+       OPEN)     opn=$((opn + 1)); items="$items$NL$ROOT_PLAN:$n ${val#*"$TAB"}" ;;
+       BRANCH)
+         b="${val#*"$TAB"}"
+-        case " $seen " in *" $b "*) ;; *) seen="${seen:+$seen }$b" ;; esac ;;
++        case " $seen " in *" $b "*) seen="$seen $b" ;; *) seen="${seen:+$seen }$b" ;; esac ;;
+     esac
+   done
+   unset IFS

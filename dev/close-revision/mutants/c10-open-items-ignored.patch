@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -244,7 +244,7 @@
+     esac
+   done
+   unset IFS
+-  if [ $n -gt 0 ]; then
++  if false; then
+     v="$(printf '%s' "$v" | awk '{ sub(/\r$/, ""); print }')" || die "awk failed listing open items"
+     refuse "revision $LABEL still has $n unfinished item(s):$v" \
+       "finish each, descope it ([-]), or move it to another revision; whether the revision is finished is your call"

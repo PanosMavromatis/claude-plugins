@@ -1,0 +1,10 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -395,7 +395,6 @@
+   else atend=1; fi
+   src "$ROOT_PLAN" | S="$START" E="$END" P="$R_POINTER" A="$after" B="$blank" D="$before" Z="$atend" awk '
+     BEGIN { s = ENVIRON["S"] + 0; e = ENVIRON["E"] + 0; a = ENVIRON["A"] + 0; d = ENVIRON["D"] + 0; p = ENVIRON["P"] }
+-    { sub(/\r$/, "") }
+     NR >= s && NR <= e { next }
+     NR == d { if (prev != "") print ""; print "## Closed revisions"; print ""; print p; print "" }
+     { print; prev = $0 }

@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -274,7 +274,7 @@
+       violation "$ROOT_PLAN at HEAD has no section for revision $LABEL" "$BEFORE"; fail ""
+     fi
+     n="$(src "$ROOT_PLAN" | pointer_line /dev/stdin "$LABEL")"
+-    if [ -n "$n" ]; then
++    if false; then
+       refuse "revision $LABEL is already closed: $ROOT_PLAN:$n is its pointer" "nothing to do"
+     fi
+     refuse "$ROOT_PLAN has no \`## Subgoals $DASH revision $LABEL\` section" \

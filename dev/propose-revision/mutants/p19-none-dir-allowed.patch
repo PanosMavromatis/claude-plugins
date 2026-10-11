@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -192,7 +192,6 @@
+ HEAD=0; LAST=0; STATUS=0; LAYLINE=0; PTRS=""
+ case "$MLAYOUT" in
+   none)
+-    taken_dir
+     R_CHANGE=create ;;
+ 
+   revisions)

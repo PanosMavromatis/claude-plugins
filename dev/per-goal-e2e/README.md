@@ -1,16 +1,18 @@
 # Per-goal layout: end-to-end sessions
 
-These run the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge` headless on
-fresh consumer repositories, and grade what they leave behind. The script suites
+These run the real `/new-branch`, `/hitl-step`, `/step`, `/smart-merge`, `/master-plan`,
+`/open-revision` and `/close-revision` headless on fresh consumer repositories, and grade what
+they leave behind. The script suites
 (`dev/locate-plan/`, `dev/check-plan-index/`, `dev/propose-branch-plan/`,
 `dev/propose-merge-record/`) test the scripts. This tests the command text that drives
 them. The reasoning is in the `feat-per-goal-layout` branch plan, goal 6, and for the
-merge sessions in the `feat-smart-merge-locate-plan` branch plan, goal 6.
+merge sessions in the `feat-smart-merge-locate-plan` branch plan, goal 6, and for the
+revision sessions in the `feat-master-plan` branch plan, goal 6.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite           # outside this repository, as the suites require
-RUN=r1 dev/per-goal-e2e/run.sh [e1 e3 e4 e5]    # real sessions, which cost money (~$2.75 for all, before the merge sessions)
-RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 e3 e4 e5]
+RUN=r1 dev/per-goal-e2e/run.sh [e1 … c3]         # real sessions, which cost money ($4.18 for e1, e3, e4 in r5; $2.39 for m*, c* in r6)
+RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
 ```
 
 | Scenario | Fixture | Sessions |
@@ -19,6 +21,12 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 e3 e4 e5]
 | e3 | the same, on the DO model | `/new-branch`, then `/step 2`, then `/smart-merge` |
 | e4 | a legacy master plan | `/new-branch`, then `/hitl-step 1`, then `/smart-merge` |
 | e5 | an index line behind its goal file | `/hitl-step 1`, which should offer the repair |
+| m1 | a revisions index, `07-rev` open, and a spec | `/master-plan 08-next docs/spec/08-next.md`: an appended index line |
+| m2 | a legacy root plan with nothing open | `/open-revision 04-next …`, the alias: the root plan converted |
+| m3 | a legacy root plan with a revision open | `/master-plan 04-next … --dry-run dry-run`: refused, drafted anyway |
+| c1 | a revisions index, `07-rev` finished | `/close-revision 07-rev`: the stamp |
+| c2 | a finished legacy section, two merged flat plans and one active | `/close-revision 03-old`: the cut, the archive, the moves |
+| c3 | a revisions index, `07-rev` unfinished | `/close-revision 07-rev`: refused |
 
 - **`build.py`** rebuilds the fixtures and a copy of the working tree's plugin, at a
   path that names nothing. Earlier runs' `out-*/` are kept. Each fixture's `CLAUDE.md`
@@ -63,8 +71,30 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 e3 e4 e5]
   Done line after its block, in one commit of exactly those two files, and that the PR
   body names the plan.
 
+- **The revision sessions** (`m*`, `c*`) take what a session should have written from the
+  copy's own scripts, run on a clone of the fixture at `main` (`_main/`): the root plan is
+  `--render`'s for the note the session chose, the stamp is the proposal's `edits:`, the
+  cut is `--render archive` and `root`. Each must also have proposed before `git checkout -b`,
+  spawned `workflow-claude:plan-drafter` (the drafter's own calls, `parent_tool_use_id` set,
+  are not counted as the session's), left the spec to the drafter, written the root plan
+  from `--render`, and run its checks after the last write and before the one commit. `c2`
+  alone is allowed `git mv`, the gate `/close-revision` leaves to the prompt.
+- **What they do not test: the review.** `/master-plan` step 4 is where a user reads the draft,
+  and the fixture's `CLAUDE.md` approves it in advance. So the draft is graded on form
+  (`subdividing.md`'s), on the spec's settled decision being copied, and on a tripwire: each
+  spec unit names one file, and each must reach a subgoal, in order. That catches a dropped
+  unit, never an invented one, since nearly any extra subgoal names `CHANGELOG.md`. Read the
+  drafts after a run (`git -C m1 show chore/open-08-next:docs/plan/08-next/_TODO.md`). A
+  scenario that spawns an agent needs a content check or a named reader, not a form check
+  alone.
+
 Run `r1`, 2026-10-10:
 - e1, e3 and e5 passed every check, with no `Grep`, `Glob` or shell searches.
 - e4 found that `/hitl-step`'s legacy Step 6 awk was refused by Claude Code's safety
   check, because of a `|` inside an awk string. Once fixed (run `r2`), the awk is still
   not allow-listed. That is recorded in the master plan's next subgoal.
+
+Run `r6`, 2026-10-11, the revision sessions: 102 checks, 0 failing, $2.39. The three drafts,
+read by hand, are faithful to the spec. Reading the sessions found what no check had: `c2`'s
+first `--check` failed, because tool output drops the section's trailing blank line and the
+archive's `Write` came out a line short. The archive now drops trailing blank lines.

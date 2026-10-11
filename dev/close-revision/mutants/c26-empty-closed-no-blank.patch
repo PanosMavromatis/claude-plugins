@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -390,7 +390,7 @@
+   if [ "$CLOSED" -gt 0 ]; then
+     if [ "$LASTPTR" -gt 0 ]; then after="$LASTPTR"
+     elif [ "$LASTNB" -gt 0 ]; then after="$LASTNB"; blank=1
+-    else after="$CLOSED"; blank=1; fi
++    else after="$CLOSED"; fi
+   elif [ "$DEFERRED" -gt 0 ]; then before="$DEFERRED"
+   else atend=1; fi
+   src "$ROOT_PLAN" | S="$START" E="$END" P="$R_POINTER" A="$after" B="$blank" D="$before" Z="$atend" awk '

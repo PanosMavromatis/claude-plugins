@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -225,7 +225,7 @@
+       l="${p#"$PD"/}"; l="${l%/_"$MODEL"}"
+       R_OPEN="${R_OPEN:+$R_OPEN, }$l"
+     done
+-    if [ -n "$R_OPEN" ]; then
++    if false; then
+       warn "already open: $R_OPEN; with $LABEL open too, /new-branch and the step commands will ask which revision a branch belongs to"
+     fi
+     previous "$prev"
