@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -317,7 +317,6 @@
+         { prior = $0 }
+         END {
+           if (!ly && !st && NR == 0) print "**Layout**: revisions"
+-          if (!head) { if (prior != "") print ""; print "## Revisions"; print ""; print ENVIRON["NEWLINE"] }
+         }
+       ' "$ROOT_PLAN" || die "awk failed rendering $ROOT_PLAN" ;;
+   esac

@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -232,6 +232,7 @@
+     R_CHANGE=append ;;
+ 
+   legacy)
++    taken_dir
+     n="$(section_line "$ROOT_PLAN" "$LABEL")"
+     [ -z "$n" ] || refuse "$ROOT_PLAN:$n already has a section for revision $LABEL" "$TAKEN"
+     n="$(pointer_line "$ROOT_PLAN" "$LABEL")"

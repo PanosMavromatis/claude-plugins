@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -220,7 +220,6 @@
+       esac
+     done
+     unset IFS
+-    taken_dir
+     for p in $OPEN_LIST; do
+       l="${p#"$PD"/}"; l="${l%/_"$MODEL"}"
+       R_OPEN="${R_OPEN:+$R_OPEN, }$l"

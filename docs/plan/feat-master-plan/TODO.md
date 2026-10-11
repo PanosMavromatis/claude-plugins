@@ -161,7 +161,26 @@
     > equivalent; `check-plan-index` 39 and 24; `propose-branch-plan` 32 and 18;
     > `propose-merge-record` 37 and 18. The header's caller list gains `propose-revision.sh`
     > with the script, in subgoal 3.
-  - [ ] `scripts/propose-revision.sh` and `dev/propose-revision/`, with `open-revision`'s cases ported and every mutant caught
+  - [x] `scripts/propose-revision.sh` and `dev/propose-revision/`, with `open-revision`'s cases ported and every mutant caught
+    > **Note:** `dev/propose-revision/`: 72 cases (~28 s), 36 mutants (~404 s), each killed by
+    > the case aimed at its rule. `open-revision`'s `o01`–`o11` and `o15` are `l01`–`l12`, and
+    > its nine mutants `v01`–`v09`. The four other library suites' cases are unchanged.
+    > **Note:** The mutants found two blind spots in the suite, not the script. A fake `awk`
+    > failing every call dies in `check_layout` before a matcher runs, so `l14` and `l15` use
+    > one that fails only when `$L` is a heading or a pointer. Python's `text=True` turns
+    > `\r\n` into `\n`, so the CRLF render cases could not see a kept carriage return; output
+    > is now decoded from bytes.
+    > **Note:** On `tmp/pfsmgraph`, read-only, the conversion's diff is exactly the spec's: the
+    > header, the heading, four pointers, one line. In a scratch copy, `locate-plan.sh`
+    > resolved the converted index at rung 3, `next:` on subgoal 1, and a re-run refused the
+    > label as listed: Q4's write check, on a real consumer. On this repository it refuses:
+    > line 9 is R1's open section.
+    > **Note:** The spec gained what the implementation exposed: `--render`'s report on stderr;
+    > dry-run paths resolved through symlinks, with no `.` or `..`; `**Layout**` stacked under
+    > `**Status**`, and an existing `**Layout**:` line rewritten, since only the first is read;
+    > only pointers under `## Closed revisions` convert, and one that would not is an error;
+    > the label refusals read fenced lines, as `open-revision.sh` did, while the open-section
+    > check and the conversion skip them.
   - [ ] `commands/master-plan.md`, `commands/open-revision.md` as its alias, `open-revision.sh` and `dev/open-revision/` removed, README run lines
 - [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
 - [ ] Verify end to end: the user runs it, I grade

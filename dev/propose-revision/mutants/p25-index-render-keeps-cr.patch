@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -296,7 +296,7 @@
+     revisions)
+       NEWLINE="$line" HEAD="$HEAD" LAST="$LAST" awk '
+         BEGIN { head = ENVIRON["HEAD"] + 0; last = ENVIRON["LAST"] + 0 }
+-        { sub(/\r$/, ""); print }
++        { print }
+         last && NR == last { print ENVIRON["NEWLINE"] }
+         !last && NR == head { print ""; print ENVIRON["NEWLINE"] }
+       ' "$ROOT_PLAN" || die "awk failed rendering $ROOT_PLAN" ;;

@@ -1,0 +1,10 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -243,7 +243,6 @@
+     out="$(awk '
+       { sub(/\r$/, "") }
+       /^[ \t]*```/ { fence = !fence; next }
+-      fence { next }
+       /^\*\*Status\*\*:/ && !st { st = NR; print "STATUS\t" NR }
+       /^\*\*Layout\*\*:/ && !ly { ly = NR; print "LAYOUT\t" NR }
+       /^## / {

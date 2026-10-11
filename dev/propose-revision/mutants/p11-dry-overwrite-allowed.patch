@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -165,7 +165,7 @@
+       fail "" ;;
+   esac
+   for f in "_$MODEL" "$MODEL"; do
+-    if [ -e "$canon/$f" ] || [ -L "$canon/$f" ]; then
++    if false; then
+       violation "the dry-run path already holds $f, which a dry run would overwrite" "remove it, or give another path"
+     fi
+   done

@@ -12,11 +12,12 @@ writes nothing; `/master-plan` writes, after the user confirms.
 - `<label>`: non-empty; no space, `/` or `—`; does not start with `#` or `-`.
 - `--model`: only matters with no root plan, where the default is `DO.md`, as in
   `/new-branch`. With a root plan, naming the other file is an error.
-- `--dry-run <path>`: also check the path, taken relative to the repository root. A path
-  inside `docs/plan/`, or one where `<path>/_<model>` or `<path>/<model>` exists, is an error.
+- `--dry-run <path>`: also check the path, taken relative to the repository root, with no
+  `.` or `..` component, and resolved through symlinks. A path inside `docs/plan/`, one that
+  runs through a file, or one where `<path>/_<model>` or `<path>/<model>` exists, is an error.
 - `--render <note>`: print only the root plan as it would read after the change. Exit 1
-  unless the result would be `proposed`. `<note>` is the new index line's note: one line,
-  non-empty, no tab.
+  unless the result would be `proposed`, with the report on stderr and nothing on stdout.
+  `<note>` is the new index line's note: one line, non-empty, no tab.
 
 Exit: 0 proposed or rendered; 1 refused or error; 2 usage; 3 a tool failed.
 
@@ -61,16 +62,21 @@ non-empty `open:` warns that `/new-branch` and the step commands will ask which 
 with `: <subtitle>`); a line starting `- **Revision <label>**`; `docs/plan/<label>`
 existing; and any other `## Subgoals` heading, named with its line ("close that revision
 first, or convert by hand"). Otherwise `change: convert`, rendered as the root plan with:
-1. `**Layout**: revisions` and a blank line after the first `**Status**:` line, or after
-   line 1 if there is none;
+1. `**Layout**: revisions` directly after the first `**Status**:` line, as headers stack,
+   or after line 1 and a blank line if there is none. An existing `**Layout**:` line is
+   rewritten instead, since only the first is read;
 2. `## Closed revisions` renamed `## Revisions`, or a `## Revisions` section appended if
    there is no such heading;
-3. each `- **Revision <l>**<rest>` line as `- [x] <l><rest>`;
+3. each `- **Revision <l>**<rest>` line under `## Closed revisions` as `- [x] <l><rest>`;
+   one quoted in another section is left alone. A pointer that would not convert to a line
+   `index_open` accepts (a label, then nothing or ` — <note>`) is `result: error`, naming it;
 4. the new line after the last revision line;
 5. every other line unchanged.
 
 Matching is whole-label and literal throughout (`ENVIRON`, never `-v`), and a trailing CR
-is dropped on read. Rendered output is LF.
+is dropped on read. Rendered output is LF. The label refusals read fenced lines too, as
+`open-revision.sh` did: refusing a label an example mentions errs safe. The open-section
+check and the conversion skip fenced blocks, and must.
 
 **previous**: the last revision line listed (revisions) or the last `- **Revision …**`
 pointer (legacy), as `docs/plan/<that>/_<model>` when that file exists, else `—`. Last

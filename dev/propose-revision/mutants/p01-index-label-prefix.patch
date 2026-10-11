@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -213,7 +213,7 @@
+         HEAD) HEAD="$n" ;;
+         REV)
+           l="${rest#*"$TAB"}"
+-          if [ "$l" = "$LABEL" ]; then
++          if [ "${l#"$LABEL"}" != "$l" ]; then
+             unset IFS; refuse "$ROOT_PLAN:$n already lists revision $LABEL" "$TAKEN"
+           fi
+           LAST="$n"; prev="$l" ;;
