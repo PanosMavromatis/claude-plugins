@@ -89,8 +89,24 @@
     > **Note:** `dp-compile`'s `CLAUDE.md:119` still says "the repo root and the plugin root
     > are the same directory", untrue since it joined the marketplace as `plugins/dp-compile/`;
     > its conclusion holds. Left for the R2 handoff, as outside the rename.
-- [ ] Pass the suites and a full e2e run, then switch `settings.json` last
-  - [ ] The six script suites pass, with the propose-revision and close-revision mutants
-  - [ ] A full e2e run, run by the user, has 0 failing
+- [~] Pass the suites and a full e2e run, then switch `settings.json` last
+  > **Q:** r8 has 2 failing checks, both "no permission denials" and neither from the rename;
+  > a rerun of e5 and m2 (r8b) clears e5 but m2 is denied a different call. How should the
+  > e2e subgoal close?
+  > **A:** Accept, and note it for R2 where `/master-plan` is next exercised: a sub-bullet
+  > under R2 step 0 in `tmp/subagent-refactor-plan.md`.
+  - [x] The six script suites pass, with the propose-revision and close-revision mutants
+    > **Result:** All six at their full counts from the renamed tree (83, 39, 32, 37, 72, 58
+    > passing), and every mutant killed: propose-revision 36 of 36, close-revision 40 of 40.
+    > Run back to back, the two mutant suites exceed a 600 s tool timeout; run them alone.
+  - [x] A full e2e run, run by the user, has 0 failing
+    > **Result:** r8, all 10 scenarios and 16 sessions, $6.71 (the estimate from r6 + r7
+    > was $6.80): every functional check passes; 2 fail "no permission denials", e5 and m2,
+    > each a `git -C <cwd>` call that `allowed-tools` prefixes cannot match. r8b, e5 and m2
+    > alone, $0.88: e5 passes clean; m2 is denied a shell `grep` at an invented
+    > `skills/master-plan/references/` path, its main session checking the drafter's draft.
+    > Neither traces to the rename: `hitl-step.md` is a pure rename, and `master-plan.md`'s
+    > one changed line, the drafter's `subagent_type`, is what m1 checks and passes. m2's
+    > denials (0 in r6, 1 in r8, 1 in r8b) go to R2 step 0.
   - [ ] No live `workflow-claude` reference remains outside the records
   - [ ] `.claude/settings.json` switches to `workflow-coding@mavromatis-ai-labs` in the last commit before the merge
