@@ -1,6 +1,6 @@
 # feat/master-plan
 
-**Status**: active
+**Status**: merged — PR #10 — 2026-10-11
 **Created**: 2026-10-10
 **Subgoal**: revision 06-subagent-refactor-R1 — `/master-plan`, `plan-drafter` and `subdividing.md`
 
