@@ -100,7 +100,18 @@ ends with. Settled, and not to be reopened:
       writes, and today it never does.
   > **Branch:** feat/master-plan
 - [ ] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
-      "do not reintroduce the split" paragraph gains the §4.2 distinction.
+      "do not reintroduce the split" paragraph gains the §4.2 distinction. Known drift,
+      found on earlier branches:
+      - `CLAUDE.md` says "`Grep` is allow-listed … `Bash(grep:*)` deliberately is not",
+        that `/smart-merge` step 7 Greps, "Six commands are backed by a bundled script"
+        (`/smart-merge` is one too), and "every artifact is a Markdown command"
+        (there are agents and references now);
+      - README "What's in here" names no `agents/` or `references/`, counts four plan
+        scripts where there are seven, and has `locate-plan.sh` serve only the step
+        commands; a later line says to Grep for the backlink;
+      - `/new-branch` is no longer "always flat", and the branch-doc path differs between
+        practice here (`docs/git/<flattened>.md`) and the e2e (`docs/git/<branch>.md`);
+      - `/new-branch` has no `argument-hint`.
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its

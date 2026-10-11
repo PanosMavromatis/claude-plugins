@@ -57,8 +57,39 @@
   > **Note:** `dev/check-plan-index/README.md` said 33 cases and 18 mutants; measured 39
   > and 24, and corrected here. The other suite READMEs' mutant counts match their
   > `mutants/` directories.
-- [ ] `references/subdividing.md` and `agents/plan-drafter.md`
-  - [ ] Written with plugin-dev's `agent-development`, checked by `plugin-validator`
+- [x] `references/subdividing.md` and `agents/plan-drafter.md`
+  > **Done:** `agents/plan-drafter.md`, the plugin's first shipped agent (`opus`, `Read,
+  > Grep, Glob`, magenta; description 321 characters, body 2,322), returns `## Draft`,
+  > `## Left out` and `## Questions` and never writes. `references/subdividing.md` (4,195
+  > characters) holds the agreed plan's §4.5 rules with their reasons, the version field,
+  > and the exact `_TODO.md` form, which matches what the scripts read.
+  > **Note:** The agreed plan's §4.1 row gives `opus`, `Read, Grep, Glob, Bash(git log:*)`.
+  > `feat-plan-locator`'s probe found a Bash pattern in a plugin agent's `tools:` is not
+  > enforced (it grants all of Bash), which is why `plan-locator` shipped without Bash.
+  > **Q:** Tools and context: (A) `Read, Grep, Glob`, no Bash (`/master-plan` passes the
+  > spec, the root index and the previous revision), `model: opus`, and the consumer's
+  > `CLAUDE.md` kept, since the agent runs once per revision and project conventions are
+  > the judgement it is for; (B) as A with `omitClaudeMd: true`; or (C) the §4.1 row as
+  > written, `Bash(git log:*)` granting all of Bash?
+  > **A:** A.
+  - [x] Written with plugin-dev's `agent-development`, checked by `plugin-validator`
+    > **Note:** plugin-dev's `validate-agent.sh` (the scratch copy with its `set -e`
+    > counter fixed) passes with the one expected warning, no `<example>` blocks; a first
+    > draft also warned that the body did not open "You are". `claude plugin validate`
+    > passes with the three items it gave before this branch: the plugin name, the root
+    > `CLAUDE.md`, and no install line in the README.
+    > **Note:** `plugin-validator` passed with no critical issue. Its findings, each
+    > checked against the files: four were fixed here (name the `~~~markdown` fence; put
+    > the more-than-eight split in `## Questions`; `subdividing.md` said the body "only
+    > points here"; settled decisions are plain bullets, since `SUBGOALS_AWK` counts any
+    > indent-0 `- [ ] ` line as a subgoal). `/master-plan` not existing yet is goal 4.
+    > `close-revision.md`'s `argument-hint: "<revision-number>"` is goal 5. The README's
+    > "What's in here" (no `agents/`, `references/`, or three of the seven plan scripts),
+    > the plugin `CLAUDE.md:7` ("every artifact is a Markdown command") and `/new-branch`'s
+    > missing `argument-hint` go to the plan-convention subgoal, recorded there in the
+    > master plan. `Bash(find:*)` and `Bash(cat:*)` in four commands' `allowed-tools`
+    > match destructive forms; that goes to R2, with the "run alone" follow-up. The
+    > `**Spec**:` path stays: it records provenance and no command resolves it.
 - [ ] `/master-plan <label> [spec]`, with `--dry-run <path>`; `/open-revision` is its alias
 - [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
 - [ ] Verify end to end: the user runs it, I grade
