@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""SessionStart hook: if commit-commands is still enabled while workflow-claude
+"""SessionStart hook: if commit-commands is still enabled while workflow-coding
 is loaded (i.e. this hook ran at all), recommend disabling it. Silent otherwise.
 
-This hook ships inside workflow-claude, so it only runs when workflow-claude is
+This hook ships inside workflow-coding, so it only runs when workflow-coding is
 loaded -- by a marketplace install, or `claude --plugin-dir` while developing it.
-The hook firing IS the "workflow-claude is loaded" signal; no need to inspect argv.
+The hook firing IS the "workflow-coding is loaded" signal; no need to inspect argv.
 """
 import json
 import os
@@ -62,7 +62,7 @@ def main():
     # not surface). "additionalContext" is added alongside so the model also
     # knows to prefer the /smart-* commands. See the plugin conflict report, §8.
     user_msg = (
-        "⚠️  workflow-claude is loaded, but commit-commands is still enabled. "
+        "⚠️  workflow-coding is loaded, but commit-commands is still enabled. "
         "/smart-commit and /smart-merge supersede /commit and /commit-push-pr "
         "(the commit-commands versions skip doc-sync, version tagging, and the "
         "branch-doc PR flow). Disable it for this project by adding "
@@ -71,7 +71,7 @@ def main():
         "This reminder disappears once commit-commands is disabled."
     )
     model_ctx = (
-        "commit-commands is enabled alongside workflow-claude. Prefer "
+        "commit-commands is enabled alongside workflow-coding. Prefer "
         "/smart-commit and /smart-merge over /commit and /commit-push-pr."
     )
     print(

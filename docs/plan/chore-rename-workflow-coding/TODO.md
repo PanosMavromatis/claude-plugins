@@ -15,11 +15,45 @@
   - [x] `__pycache__/` and `*.py[cod]` move to the root `.gitignore`; `plugins/dp-compile/.gitignore` is removed
     > **Result:** `git check-ignore -v` matches `.gitignore:29` for bytecode under `dev/` and
     > `plugins/dp-compile/`; nothing referenced the removed file.
-- [ ] Rename the plugin to `workflow-coding` and release `0.10.0`
-  - [ ] Inventory every live reference, and separate it from the records that keep the old name
-  - [ ] `git mv` the plugin directory; `plugin.json` (name, `version` `0.10.0`) and `marketplace.json`
-  - [ ] Command and agent names, both READMEs and `CLAUDE.md`s, the hook messages
-  - [ ] `dev/`: `build.py`'s plugin path, `check.py`, the `run.sh` prompts
+- [x] Rename the plugin to `workflow-coding` and release `0.10.0`
+  > **Q:** `docs/plan/workflow-claude/`, the plugin's archived history that the root plan's
+  > Closed revisions and the propose-revision fixture point into: rename it, or keep it?
+  > **A:** Keep the name. It records the plugin under the name it had, and no pointer moves.
+  > **Q:** `_meta/plugin-conflict-report.md` (dated 2026-06-25, 40 references, quotes the old
+  > hook source): rewrite it, or treat it as a record?
+  > **A:** A record, with one note under its header saying the plugin was renamed
+  > `workflow-coding` at 0.10.0 and the report predates it.
+  > **Q:** `dev/locate-plan/trial/`, the finished 246-session trial: leave it, or update it?
+  > **A:** Update its scripts' paths and prompts so it would still run; leave
+  > `trial-evidence.json` untouched as data.
+  > **Q:** Should the live docs mention the old name?
+  > **A:** Yes: one line each in the plugin README and the root README, "Renamed from
+  > `workflow-claude` at 0.10.0." The final reference check allows exactly those.
+  - [x] Inventory every live reference, and separate it from the records that keep the old name
+    > **Note:** Measured 2026-10-11: 68 files and 280 lines name `workflow-claude`, plus the
+    > 34 paths under the plugin directory; no spelling variants. Live: the plugin (13 files,
+    > 40 lines, without the `_meta` report), `dp-compile` (15 files, 56 lines, plus renaming
+    > `references/workflow-claude.md`), `dev/` (23 files, 60 lines, less two record lines:
+    > `trial-evidence.json:8503` and the fixture at `propose-revision/suite.py:60`),
+    > `marketplace.json` and the root README (11 lines), and `.claude/settings.json`, which
+    > goes last. Records: `docs/plan/**` and the conflict report. Three things break with no
+    > error message if missed: the `Skill(workflow-claude:…)` grants in `allowed-tools`;
+    > `dp-compile`'s presence check, which looks for the `workflow-claude:` namespace in its
+    > tool list; and the hashed `p/<hash>/workflow-claude` paths, which must agree across
+    > `build.py`, `check.py` and `run.sh`, and across the trial's three scripts.
+  - [x] `git mv` the plugin directory; `plugin.json` (name, `version` `0.10.0`) and `marketplace.json`
+    > **Note:** `marketplace.json` also names the plugin in `dp-compile`'s description ("depends
+    > on workflow-claude"), so that line moved here rather than in the `dp-compile` goal.
+  - [x] Command and agent names, both READMEs and `CLAUDE.md`s, the hook messages
+    > **Result:** 51 references in 13 files, by a substitution that skips the record path
+    > `docs/plan/workflow-claude/` (kept at `CLAUDE.md:80`); the "Renamed from" lines and the
+    > conflict report's note added. The hook parses, and run where `commit-commands` is enabled
+    > it names `workflow-coding` in both `systemMessage` and `additionalContext`.
+  - [x] `dev/`: `build.py`'s plugin path, `check.py`, the `run.sh` prompts
+    > **Result:** 59 references in 22 files, `trial-evidence.json` excluded. The six suites pass
+    > at their full counts (83, 39, 32, 37, 72, 58); the harness and trial scripts parse
+    > (`ast`, `bash -n`); the doc-reference check finds 0 problems. What remains is
+    > `dp-compile`, `.claude/settings.json`, and the kept records and lines.
 - [ ] Move `dp-compile` to the new name and release `0.4.1`
   - [ ] `"dependencies"`, its `/workflow-claude:*` references, `commands/references/workflow-claude.md` → `workflow-coding.md`
 - [ ] Add the one-step install line, and update the expected validate warnings

@@ -92,7 +92,7 @@ Only after confirmation, for each approved target replace `<path>CLAUDE.md` with
      - Claude-Code-specific      → docs/agents/<path>claude.md
 
      The same sources feed AGENTS.md and AGENTS.override.md via
-     /agents-docs-build. A PreToolUse hook shipped by the workflow-claude
+     /agents-docs-build. A PreToolUse hook shipped by the workflow-coding
      plugin blocks direct Write/Edit/MultiEdit to this file. -->
 
 @docs/agents/<path>core.md

@@ -1,6 +1,8 @@
-# workflow-claude
+# workflow-coding
 
 A collection of Claude Code commands, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.
+
+Renamed from `workflow-claude` at 0.10.0, so that the name no longer reads as one of Anthropic's own plugins.
 
 ## What's in here
 
@@ -32,23 +34,23 @@ committed file:
     }
   },
   "enabledPlugins": {
-    "workflow-claude@mavromatis-ai-labs": true
+    "workflow-coding@mavromatis-ai-labs": true
   }
 }
 ```
 
 `claude plugin marketplace add PanosMavromatis/claude-plugins` followed by `claude plugin
-install workflow-claude@mavromatis-ai-labs --scope project` writes the same keys
+install workflow-coding@mavromatis-ai-labs --scope project` writes the same keys
 imperatively. Prefer the declaration: it is what a fresh clone reproduces from, and what a
 reviewer sees in a diff. The same file is where you disable `commit-commands`, below.
 
 **`--plugin-dir` is the development path, not the install path.** `claude --plugin-dir
-<path-to>/workflow-claude` loads a directory for a single session with no marketplace
+<path-to>/workflow-coding` loads a directory for a single session with no marketplace
 involved — what to reach for when editing this plugin rather than using it.
 
 The official `commit-commands` plugin (`/commit`, `/commit-push-pr`) overlaps with `/smart-commit` and `/smart-merge` — but with the opposite philosophy. Running the `commit-commands` versions silently skips doc-sync, version/tag handling, and the branch-doc PR flow. When both are active at once you risk reaching for the wrong, lossier command.
 
-The recommended policy is to keep `commit-commands` enabled globally (it's a fine minimal fallback in projects that don't load this plugin) but **disable it in every project that loads `workflow-claude`**. Do that with a git-committed project settings file, which overrides the global setting only here:
+The recommended policy is to keep `commit-commands` enabled globally (it's a fine minimal fallback in projects that don't load this plugin) but **disable it in every project that loads `workflow-coding`**. Do that with a git-committed project settings file, which overrides the global setting only here:
 
 ```jsonc
 // <consumer-project>/.claude/settings.json
@@ -59,7 +61,7 @@ The recommended policy is to keep `commit-commands` enabled globally (it's a fin
 }
 ```
 
-A ready-to-copy template lives at [`_meta/consumer-settings.template.json`](_meta/consumer-settings.template.json) — `cp` it to your project's `.claude/settings.json`. As a safety net, the bundled `SessionStart` hook prints this recommendation at launch whenever `workflow-claude` is loaded and `commit-commands` is still enabled, and goes silent once you've disabled it. A fuller analysis of the overlap is in [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md).
+A ready-to-copy template lives at [`_meta/consumer-settings.template.json`](_meta/consumer-settings.template.json) — `cp` it to your project's `.claude/settings.json`. As a safety net, the bundled `SessionStart` hook prints this recommendation at launch whenever `workflow-coding` is loaded and `commit-commands` is still enabled, and goes silent once you've disabled it. A fuller analysis of the overlap is in [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md).
 
 ### Loading it by symlink, and what that costs
 
@@ -70,7 +72,7 @@ first edit, and the failure is silent — a stale copy still loads and still wor
 the old text. A symlink makes that drift unrepresentable:
 
 ```bash
-ln -s ../../path/to/workflow-claude <consumer>/.claude/skills/workflow-claude
+ln -s ../../path/to/workflow-coding <consumer>/.claude/skills/workflow-coding
 ```
 
 Three costs come with it, and the third is the one that surprises people:
@@ -78,7 +80,7 @@ Three costs come with it, and the third is the one that surprises people:
 - **The clone becomes load-bearing.** Moving or deleting it breaks the consumer's plugin
   with a dangling symlink rather than an error that names the cause.
 - **A directory-shaped ignore rule stops matching.** A pattern with a trailing slash —
-  `/.claude/skills/workflow-claude/` in a `.gitignore` or `.git/info/exclude` — matches
+  `/.claude/skills/workflow-coding/` in a `.gitignore` or `.git/info/exclude` — matches
   directories only, so replacing the directory with a symlink silently un-ignores it and the
   path starts appearing as untracked. Drop the trailing slash.
 - **The consumer now loads whatever branch the clone has checked out.** A separate copy was
@@ -110,7 +112,7 @@ backend agrees with the reference. It owns that lifecycle and nothing else. Bran
 and never edits a plan file.
 
 **The dependency is one-directional, and nothing here maintains it.** `dp-compile` detects
-this plugin by reading its own tool list for anything namespaced `workflow-claude:` — the
+this plugin by reading its own tool list for anything namespaced `workflow-coding:` — the
 same judgement `/smart-merge` makes about MCP availability, and for the same reason: there
 is no shell command that reports which plugins are loaded. There is **no detection contract,
 no marker file and no hook handshake** between the two, which was a deliberate choice on

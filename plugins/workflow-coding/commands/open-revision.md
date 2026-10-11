@@ -1,5 +1,5 @@
 ---
-allowed-tools: Skill(workflow-claude:master-plan)
+allowed-tools: Skill(workflow-coding:master-plan)
 argument-hint: "<label> [spec] [--dry-run <path>]"
 description: Open a revision. An alias of /master-plan, kept for one revision.
 ---
@@ -11,6 +11,6 @@ master plan from a specification and listing it in the root plan. The alias is k
 revision, so the name keeps working where it is written down (`dp-compile`'s README names
 it), and is then removed.
 
-Invoke `/workflow-claude:master-plan` with the Skill tool (skill
-`workflow-claude:master-plan`), passing this command's `$ARGUMENTS` through unchanged, and
+Invoke `/workflow-coding:master-plan` with the Skill tool (skill
+`workflow-coding:master-plan`), passing this command's `$ARGUMENTS` through unchanged, and
 follow it to the end. Do nothing before it.

@@ -1,18 +1,18 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git fetch:*), Bash(git tag:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git branch --show-current:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, Skill(workflow-claude:agents-docs-update)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git fetch:*), Bash(git tag:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git branch --show-current:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Edit, Glob, Grep, Skill(workflow-coding:agents-docs-update)
 description: Update docs to match staged changes, commit with an appropriate message, sync component versions, tag any version bump, and push.
 argument-hint: "[extra doc paths...]"
 ---
 
 # Smart Commit
 
-End-to-end commit workflow: sync documentation with the staged diff via `/workflow-claude:agents-docs-update`, handle any version bump, then commit, tag, and push.
+End-to-end commit workflow: sync documentation with the staged diff via `/workflow-coding:agents-docs-update`, handle any version bump, then commit, tag, and push.
 
 This command delegates all documentation handling to that command with the Skill tool. Do not duplicate or override its steps here — let it run to completion, then resume with the steps below.
 
 ## Step 1: Sync Documentation
 
-Invoke `/workflow-claude:agents-docs-update` with the Skill tool (skill `workflow-claude:agents-docs-update`), passing this command's `$ARGUMENTS` through unchanged as its arguments. Wait for it to complete its Step 6 (Report) before proceeding.
+Invoke `/workflow-coding:agents-docs-update` with the Skill tool (skill `workflow-coding:agents-docs-update`), passing this command's `$ARGUMENTS` through unchanged as its arguments. Wait for it to complete its Step 6 (Report) before proceeding.
 
 The invoked command stops at staging — it stages any documentation updates it makes but does not commit. Continue with the steps below using the staged set it produced (the original staged changes plus any doc edits or regenerated artifacts).
 

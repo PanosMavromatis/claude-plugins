@@ -1,6 +1,7 @@
 # Plugin Conflict Report: `workflow-claude` vs. installed plugins
 
 **Date:** 2026-06-25
+**Note:** The plugin was renamed `workflow-coding` at 0.10.0. This report predates the rename and keeps the old name throughout, as a record of when it was written.
 **Scope:** All components of the `workflow-claude` plugin in this repo, checked against every plugin currently installed under the `claude-plugins-official` marketplace — with focus on `commit-commands` as requested.
 **Status:** Living document. Originally written as a review-first report; the §8 reminder hook it recommended has since been implemented (`hooks/remind-disable-commit-commands.py` + a `SessionStart` stanza in `hooks/hooks.json`), and the §6 coexistence policy is now the project's documented stance. Kept in-tree as a deliberately shared rationale/warning for other developers (see §5). It is a **point-in-time snapshot of one author's environment** — the installed-plugin inventory and precedence layers below are illustrative, not a config to copy verbatim.
 

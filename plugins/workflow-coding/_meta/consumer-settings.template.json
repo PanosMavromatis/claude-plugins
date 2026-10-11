@@ -5,7 +5,7 @@
     }
   },
   "enabledPlugins": {
-    "workflow-claude@mavromatis-ai-labs": true,
+    "workflow-coding@mavromatis-ai-labs": true,
     "commit-commands@claude-plugins-official": false
   }
 }

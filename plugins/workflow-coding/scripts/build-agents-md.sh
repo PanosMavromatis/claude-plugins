@@ -11,7 +11,7 @@
 # drawing from the same shared source files.
 #
 # Usage:
-#   /agents-docs-build                                       # via the workflow-claude plugin
+#   /agents-docs-build                                       # via the workflow-coding plugin
 #   bash scripts/build-agents-md.sh                          # direct
 #   DST_DIR=/tmp/out bash scripts/build-agents-md.sh         # used by check-agents-md.sh
 #
