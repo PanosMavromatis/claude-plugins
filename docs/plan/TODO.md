@@ -21,7 +21,9 @@ the new layout but does not **adopt** it. This repository's own plans stay in th
 old form until the first step of R2, which runs on the 0.10.0 release this revision
 ends with. Settled, and not to be reopened:
 - Legacy single-file branch plans stay readable through 1.x.
-- `/file-plans` becomes legacy-only and `/open-revision` becomes an alias. Neither is removed.
+- `/open-revision` becomes an alias and is not removed. (Amended on `feat-master-plan`,
+  goal 5 Q3: `/file-plans` was to become legacy-only; it is removed instead, its filing
+  folded into the legacy `/close-revision`, a revision earlier than the agreed plan had it.)
 - Every agent is written with plugin-dev's `agent-development` and checked by
   `plugin-validator` before the bump.
 

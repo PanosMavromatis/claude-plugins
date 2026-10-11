@@ -199,5 +199,43 @@
     > plugin README's `scripts/` line and command table name the new command and script; the
     > rest of the lifecycle prose goes to the plan-convention subgoal, where it is listed.
     > The five library suites' cases are unchanged after the removal.
-- [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
+- [~] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
+  > **Note:** `close-revision.sh` passes the heading through `awk -v h=…`, the flaw goal 2
+  > fixed in `open-revision.sh`: a backslash in a label is read as an escape, so that
+  > revision can never be found to close. Neither it nor `file-plans.sh` has a suite.
+  > **Q:** The script: (A) rewrite `close-revision.sh` on the library with a `key: value`
+  > report for both layouts: under an index, refuse a label not listed `[~]` or a `_TODO.md`
+  > with a `[ ]`, `[~]` or `[!]` subgoal (read by `SUBGOALS_AWK`), else propose the
+  > `**Status**` and index lines as line, old and new text; legacy, today's extraction with
+  > the section matched by `section_line`; a new `dev/close-revision/` suite with mutants;
+  > `argument-hint: "<label>"`; (B) a second script for the index, legacy untouched; or (C)
+  > `close-revision.sh` extended in place, its prose report kept?
+  > **A:** A.
+  > **Q:** `/file-plans` as legacy-only: (A) `file-plans.sh` exits 0 with "nothing to do" on a
+  > revisions index (`**Layout**: revisions`, outside fences), `file-plans.md` says it serves
+  > legacy root plans for one more revision, and a small `dev/file-plans/` suite checks it;
+  > (B) prose only; or (C) a refusal, exit 1?
+  > **A:** A.
+  > **Q:** (raised by the user) Withdraw `/file-plans` now, and fold its filing into
+  > `/close-revision`? This reopens the master plan's settled "Neither is removed".
+  > **A:** Yes: keep related refactorings together. Supersedes Q2. The legacy `extract`
+  > gains `moves:`, one `git mv` per merged flat plan backlinked inside the section; a
+  > backlinked plan not merged, or missing, is a warning and stays flat. The command does
+  > the cut, the archive and the moves in one commit. `commands/file-plans.md` and
+  > `scripts/file-plans.sh` are removed.
+  > **Note:** The agreed plan (§4.2, D-N3) kept `/file-plans` one revision only "as a legacy
+  > tool (flat plans created by an older `/new-branch`)". Folded into the close, that job is
+  > done at the one moment every plan it would move is final, which also ends the flaw the
+  > plugin `CLAUDE.md` records: a revision's last plan could never be filed before its close.
+  > The trap, a merged flat plan whose revision already closed, has no instance: pfsmgraph
+  > has nothing flat; here, R1's five plans (six with this branch) close with R1, and
+  > `workflow-claude/` has no backlink by design. `dp-compile` never names `/file-plans`.
+  - [x] The spec, `close-revision-spec.md`, beside this plan
+    > **Note:** Twelve report keys; `--render root|archive` for the legacy files and `--check`,
+    > which recomputes both layouts' writes, and the moves, from `HEAD` and compares them
+    > with the working tree before the commit. The stamp is two `Edit`s at named lines, not
+    > a rendered file: a 100-line `_TODO.md` retyped is where a word changes unnoticed.
+  - [ ] `close-revision.sh` rewritten on the library, with `dev/close-revision/` and every mutant caught
+  - [ ] `commands/close-revision.md`: both paths, the moves, `--check` before the commit, `argument-hint: "<label>"`
+  - [ ] `/file-plans` removed: its command and script, with the README's command table and `scripts/` line
 - [ ] Verify end to end: the user runs it, I grade

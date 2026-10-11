@@ -13,8 +13,8 @@ branch-sized subgoals `/new-branch` and `/hitl-step` then execute. This branch a
 `plan-drafter` agent (so the spec stays out of the main context), following the
 subdivision rules in `references/subdividing.md`, and has a `--dry-run` form that writes to
 a given path; R2 step 0 runs it on the agreed plan. It also moves the rest of the
-revision lifecycle onto the per-goal layout: `/close-revision` becomes a stamp,
-`/file-plans` becomes legacy-only, and `/open-revision` becomes an alias. And it fixes the
+revision lifecycle onto the per-goal layout: `/close-revision` becomes a stamp, its legacy
+path takes over filing so `/file-plans` is removed, and `/open-revision` becomes an alias. And it fixes the
 reopen guard, which never matches the closed-index line `/close-revision` writes.
 
 ## Scope
@@ -26,7 +26,8 @@ reopen guard, which never matches the closed-index line `/close-revision` writes
   `agent-development` and checked by `plugin-validator`.
 - `/master-plan <label> [spec] [--dry-run <path>]`; `/open-revision` becomes its alias.
 - `/close-revision` stamps `_TODO.md` and flips the index line, keeping the legacy path,
-  since R1 itself is still in the old form; `/file-plans` becomes legacy-only.
+  since R1 itself is still in the old form. The legacy close files the revision's merged
+  branch plans, so `/file-plans` is removed (goal 5, Q3).
 - Verify end to end. The user runs it; I grade.
 
 ## Context
