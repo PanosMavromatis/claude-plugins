@@ -16,7 +16,7 @@ The suite tests every layout the root plan can be in:
   `**Status**:` line, an existing `**Layout**:` line, and a missing `## Closed revisions`.
 
 Labels are compared **whole**: `07-rev-2` does not refuse `07-rev`. The cases `l01`–`l12`
-are `dev/open-revision/`'s `o01`–`o11` and `o15`, ported (its `o12`–`o14` became `n01` and
+are the removed `dev/open-revision/`'s `o01`–`o11` and `o15`, ported (its `o12`–`o14` became `n01` and
 the usage cases), and its nine mutants are `v01`–`v09`: the matchers they pin moved from
 `open-revision.sh` into `scripts/lib/plan-rules.sh` as `section_line` and `pointer_line`.
 

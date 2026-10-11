@@ -90,7 +90,14 @@
     > master plan. `Bash(find:*)` and `Bash(cat:*)` in four commands' `allowed-tools`
     > match destructive forms; that goes to R2, with the "run alone" follow-up. The
     > `**Spec**:` path stays: it records provenance and no command resolves it.
-- [~] `/master-plan <label> [spec]`, with `--dry-run <path>`; `/open-revision` is its alias
+- [x] `/master-plan <label> [spec]`, with `--dry-run <path>`; `/open-revision` is its alias
+  > **Done:** `/master-plan` proposes through the new read-only `propose-revision.sh`, drafts
+  > through `plan-drafter`, reviews in the main session, writes the root plan from `--render`
+  > and the revision from the approved draft, and commits only after `locate-plan.sh` and a
+  > re-run of the proposer both read the result. It creates an index, appends to one, or
+  > converts a legacy root plan with nothing open; `--dry-run` writes to a directory.
+  > `/open-revision` is its alias; `open-revision.sh` and its suite are gone, their matchers in
+  > the library and their cases in `dev/propose-revision/` (72 cases, 36 mutants).
   > **Q:** Where do the refusal and the proposal live: (A) a new read-only
   > `scripts/propose-revision.sh <label>` with a `key: value` report, which reads the root
   > plan's layout, refuses a label `## Revisions` lists under any marker or whose
@@ -181,6 +188,16 @@
     > only pointers under `## Closed revisions` convert, and one that would not is an error;
     > the label refusals read fenced lines, as `open-revision.sh` did, while the open-section
     > check and the conversion skip them.
-  - [ ] `commands/master-plan.md`, `commands/open-revision.md` as its alias, `open-revision.sh` and `dev/open-revision/` removed, README run lines
+  - [x] `commands/master-plan.md`, `commands/open-revision.md` as its alias, `open-revision.sh` and `dev/open-revision/` removed, README run lines
+    > **Note:** The write check passes the revision file explicitly, rung 1: on a branch with
+    > its own plan rung 2 would find that instead, and with two revisions open rung 3 asks.
+    > Measured on the converted scratch copy: rung 1 reports `kind: revision-master` with
+    > `next:` on subgoal 1. The re-run of `propose-revision.sh` must then refuse the label as
+    > listed, which proves the index reads and holds the line.
+    > **Note:** `master-plan.md`'s body is 7,493 characters; the alias's is 513, invoking
+    > `Skill(workflow-claude:master-plan)` as `/smart-commit` invokes its nested command. The
+    > plugin README's `scripts/` line and command table name the new command and script; the
+    > rest of the lifecycle prose goes to the plan-convention subgoal, where it is listed.
+    > The five library suites' cases are unchanged after the removal.
 - [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
 - [ ] Verify end to end: the user runs it, I grade

@@ -114,7 +114,11 @@ ends with. Settled, and not to be reopened:
       - `/new-branch` has no `argument-hint`;
       - `CLAUDE.md` says `allowed-tools` "restricts which tools the command can call", where
         the skills docs say it grants permission and does not restrict. Verify before
-        rewording (`feat-master-plan` goal 4).
+        rewording (`feat-master-plan` goal 4);
+      - the revision lifecycle still describes `/open-revision` writing a legacy section
+        (`CLAUDE.md` lines 27, 35, 73, 75 and 202; README lines 140-143;
+        `file-plans.md:45`), and neither file describes `/master-plan` or shows it in the
+        loop diagram (`feat-master-plan` goal 4).
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its
