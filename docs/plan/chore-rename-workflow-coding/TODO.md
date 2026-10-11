@@ -89,7 +89,7 @@
     > **Note:** `dp-compile`'s `CLAUDE.md:119` still says "the repo root and the plugin root
     > are the same directory", untrue since it joined the marketplace as `plugins/dp-compile/`;
     > its conclusion holds. Left for the R2 handoff, as outside the rename.
-- [~] Pass the suites and a full e2e run, then switch `settings.json` last
+- [x] Pass the suites and a full e2e run, then switch `settings.json` last
   > **Q:** r8 has 2 failing checks, both "no permission denials" and neither from the rename;
   > a rerun of e5 and m2 (r8b) clears e5 but m2 is denied a different call. How should the
   > e2e subgoal close?
@@ -108,5 +108,10 @@
     > Neither traces to the rename: `hitl-step.md` is a pure rename, and `master-plan.md`'s
     > one changed line, the drafter's `subagent_type`, is what m1 checks and passes. m2's
     > denials (0 in r6, 1 in r8, 1 in r8b) go to R2 step 0.
-  - [ ] No live `workflow-claude` reference remains outside the records
-  - [ ] `.claude/settings.json` switches to `workflow-coding@mavromatis-ai-labs` in the last commit before the merge
+  - [x] No live `workflow-claude` reference remains outside the records
+    > **Result:** Rerun after the `settings.json` switch, `git grep workflow-claude` outside
+    > `docs/plan/` and `docs/git/` finds only the allowed: the two "Renamed from" lines
+    > (`README.md:17`, the plugin README's line 5), the record path at `CLAUDE.md:80` and in
+    > the fixture `propose-revision/suite.py:60`, `trial-evidence.json:8503`, and the
+    > conflict report's 40.
+  - [x] `.claude/settings.json` switches to `workflow-coding@mavromatis-ai-labs` in the last commit before the merge
