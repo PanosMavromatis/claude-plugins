@@ -153,7 +153,14 @@
     > **Note:** `index_open` calls the caller's own `fail`, as it does for
     > `propose-branch-plan.sh` and `propose-merge-record.sh`, so the new script reuses it and
     > reports an index violation in its own ten-line shape.
-  - [ ] `lib/plan-rules.sh` gains the heading and closed-pointer matchers; the four library suites still pass
+  - [x] `lib/plan-rules.sh` gains the heading and closed-pointer matchers; the four library suites still pass
+    > **Note:** `section_line` and `pointer_line` are `open-revision.sh`'s two `awk` lines
+    > unchanged, appended after line 499 so that no existing mutant's hunk moves. A scratch
+    > probe passed 14 of 14: whole labels only, `\` and `.` literal, CRLF, exit 3 on an
+    > unreadable file. Suites unchanged: `locate-plan` 83 cases, 26 mutants killed plus `n05`
+    > equivalent; `check-plan-index` 39 and 24; `propose-branch-plan` 32 and 18;
+    > `propose-merge-record` 37 and 18. The header's caller list gains `propose-revision.sh`
+    > with the script, in subgoal 3.
   - [ ] `scripts/propose-revision.sh` and `dev/propose-revision/`, with `open-revision`'s cases ported and every mutant caught
   - [ ] `commands/master-plan.md`, `commands/open-revision.md` as its alias, `open-revision.sh` and `dev/open-revision/` removed, README run lines
 - [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only

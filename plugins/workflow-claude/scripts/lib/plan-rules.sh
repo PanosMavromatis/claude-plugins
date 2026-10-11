@@ -497,3 +497,21 @@ e10_fix() {  # e10_fix <goal dir> <NN> <index line text>; reads FILES
       else print "create " g "/" nn "-" s ".md"
     }' </dev/null || die "awk failed working out the goal file for $2"
 }
+
+# --- legacy revisions -----------------------------------------------------------------
+
+# Whole-label, literal matchers for the revisions of a legacy master plan, in the forms
+# close-revision.sh writes. A substring match would let one label refuse every label it
+# begins (07-rev for 07-rev-2), and a label may hold regex metacharacters. The label
+# reaches awk through the environment, since -v would read a backslash in it as an
+# escape, and a trailing CR is dropped so a CRLF plan reads the same. Each prints the
+# first matching line's number, or nothing.
+section_line() {  # section_line <file> <label>: the heading alone, or then `: <subtitle>`
+  L="## Subgoals — revision $2" awk '
+    { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }
+  ' "$1" || die "awk failed reading $1"
+}
+pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label
+  L="- **Revision $2**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
+    || die "awk failed reading $1"
+}
