@@ -38,12 +38,12 @@ Resolve every path, command and algorithm name through the manifest above. If th
 repository has no `dp-compile.toml`, stop and say so with the template — do not
 proceed against an assumed layout.
 
-## `workflow-claude` is assumed
+## `workflow-coding` is assumed
 
-@references/workflow-claude.md
+@references/workflow-coding.md
 
 **`/next-phase` takes the stop-at-the-delegation severity.** Print the one line at the head, do
-every step that needs nothing from `workflow-claude`, and stop when you reach the step that
+every step that needs nothing from `workflow-coding`, and stop when you reach the step that
 does — naming what is left undone. Do not substitute: no `git commit` run here, no branch
 created here, and no quiet finish as though the step had not existed.
 
@@ -114,7 +114,7 @@ created here, and no quiet finish as though the step had not existed.
 
    - **What was written**, by path, and what its provenance header records.
    - **What the suite did** — which backends ran, which were skipped and why.
-   - **The paste-ready plan line**, per `@references/workflow-claude.md`. Offer it; do not
+   - **The paste-ready plan line**, per `@references/workflow-coding.md`. Offer it; do not
      write it into any plan file, and do not ask whether to.
 
    Then name the commit as `/smart-commit`'s to make:

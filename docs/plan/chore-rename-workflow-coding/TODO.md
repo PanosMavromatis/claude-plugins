@@ -54,8 +54,20 @@
     > at their full counts (83, 39, 32, 37, 72, 58); the harness and trial scripts parse
     > (`ast`, `bash -n`); the doc-reference check finds 0 problems. What remains is
     > `dp-compile`, `.claude/settings.json`, and the kept records and lines.
-- [ ] Move `dp-compile` to the new name and release `0.4.1`
-  - [ ] `"dependencies"`, its `/workflow-claude:*` references, `commands/references/workflow-claude.md` → `workflow-coding.md`
+- [x] Move `dp-compile` to the new name and release `0.4.1`
+  > **Q:** Should `dp-compile` 0.4.1's presence check also accept the old `workflow-claude:`
+  > namespace during the transition, until R5 migrates the consumers?
+  > **A:** No, the one new name. Accepting both would hide a half-migrated consumer that
+  > loads both plugins.
+  > **Note:** So a consumer updates `dp-compile` to 0.4.1 only as part of migrating to
+  > `workflow-coding` (R5, `tmp/plugin-migration-runbook.md`). Updated alone, beside an
+  > installed `workflow-claude` 0.9.0, its dependency pulls in `workflow-coding` and every
+  > command loads twice under two namespaces.
+  - [x] `"dependencies"`, its `/workflow-claude:*` references, `commands/references/workflow-claude.md` → `workflow-coding.md`
+    > **Result:** 58 references in 15 files after a `git mv` of the reference file; `version`
+    > `0.4.1`, in `plugin.json` and the example manifest at `CLAUDE.md:101`. All 13
+    > `@references/` imports resolve, the smoke test's 22 expected paths exist, the
+    > dependency is listed in `marketplace.json`, and no old name is left in `dp-compile`.
 - [ ] Add the one-step install line, and update the expected validate warnings
   - [ ] The plugin README gains the one-step `/plugin install` line
   - [ ] The plugin `CLAUDE.md`'s expected-validate-warnings entry drops the name warning

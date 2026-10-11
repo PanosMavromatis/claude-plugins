@@ -20,12 +20,12 @@ Resolve every path, command and algorithm name through the manifest above. If th
 repository has no `dp-compile.toml`, stop and say so with the template — do not
 proceed against an assumed layout.
 
-## `workflow-claude` is assumed
+## `workflow-coding` is assumed
 
-@references/workflow-claude.md
+@references/workflow-coding.md
 
 **`/new-algorithm` takes the stop-at-the-delegation severity.** Print the one line at the head, do
-every step that needs nothing from `workflow-claude`, and stop when you reach the step that
+every step that needs nothing from `workflow-coding`, and stop when you reach the step that
 does — naming what is left undone. Do not substitute: no `git commit` run here, no branch
 created here, and no quiet finish as though the step had not existed.
 
@@ -176,7 +176,7 @@ Say which mode was used and why, where the formalization is or will be, what was
 was inferred rather than chosen** — a user who did not realise the reverse entrance had
 been selected will not understand why the resulting document cites their own code.
 
-Then hand the surrounding work back, per `@references/workflow-claude.md`:
+Then hand the surrounding work back, per `@references/workflow-coding.md`:
 
 - **A branch, if this is substantial work**, belongs to `/new-branch`. Say that bringing an
   algorithm under the lifecycle usually is, and let the user decide — do not run

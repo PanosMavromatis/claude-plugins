@@ -9,7 +9,7 @@ the encoder and the documents stating a kernel's invariants all come from a
 `dp-compile.toml` at the consumer's root, so the plugin works in any repository that
 carries one and in none that does not.
 
-**It assumes [`workflow-claude`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-claude) and
+**It assumes [`workflow-coding`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-coding) and
 delegates to it.** Branches, plans, commits, merges and documentation belong to that
 plugin; this one runs no `git` command of its own, opens no branch, and writes no plan
 file. **Install both.** Every command checks for the companion at its head, and when it is
@@ -54,7 +54,7 @@ rule is `commands/references/phase-detection.md`.
 
 ## Prerequisites
 
-**`dp-compile` assumes the [`workflow-claude`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-claude) plugin is loaded**, and
+**`dp-compile` assumes the [`workflow-coding`](https://github.com/PanosMavromatis/claude-plugins/tree/main/plugins/workflow-coding) plugin is loaded**, and
 delegates to it rather than duplicating it: branches through `/new-branch`, plans through
 `/step` or `/hitl-step`, commits through `/smart-commit`, merges through `/smart-merge`, and
 documentation through `/agents-docs-update`. This plugin owns the algorithm lifecycle and
@@ -65,9 +65,9 @@ assuming one:
 
 | Load path | What it looks like |
 |---|---|
-| Marketplace install | `workflow-claude@mavromatis-ai-labs`, declared in a project's `.claude/settings.json` or installed with `claude plugin install`. The usual path. |
-| Session flag | `claude --plugin-dir <path>/workflow-claude` — the development path, for editing that plugin rather than using it |
-| Project tree | the plugin's directories placed at `.claude/skills/workflow-claude/` in the consuming repository |
+| Marketplace install | `workflow-coding@mavromatis-ai-labs`, declared in a project's `.claude/settings.json` or installed with `claude plugin install`. The usual path. |
+| Session flag | `claude --plugin-dir <path>/workflow-coding` — the development path, for editing that plugin rather than using it |
+| Project tree | the plugin's directories placed at `.claude/skills/workflow-coding/` in the consuming repository |
 
 The third is neither a marketplace install nor a `--plugin-dir`, which is why a message
 naming only one path would send a user to fix something that is not how they loaded it.
@@ -75,13 +75,13 @@ pfsmgraph used that route until 2026-09-09 and now declares a marketplace instal
 remain supported, and this plugin has no way to tell which is in force.
 
 One path cannot reach the absence message at all. This plugin's manifest declares
-`workflow-claude` in `dependencies`, so a marketplace install of `dp-compile` installs it
+`workflow-coding` in `dependencies`, so a marketplace install of `dp-compile` installs it
 too and enabling one enables the other. The runtime detection survives for `--plugin-dir`
 sessions, where nothing enforces co-loading.
 
 **Absence is not fatal, and is not uniform either.** `/phase-check` and `/benchmark`
 delegate nothing, so they print one line and produce their full output. `/next-phase` and
-`/new-algorithm` do every step that needs nothing from `workflow-claude` and then stop at
+`/new-algorithm` do every step that needs nothing from `workflow-coding` and then stop at
 the step that does — a phase file written and left uncommitted costs one `git commit`, and
 is a better outcome than a command that refused to start.
 
@@ -159,9 +159,9 @@ Hooks from every loaded plugin **stack**, so this one composes rather than compe
 
 - **It fires inside `/smart-commit`.** That command runs `git commit`, so the gate applies
   exactly as it would to a hand-typed one. **Delegating the commit does not bypass the
-  check** — this plugin enforces deterministically through a hook while `workflow-claude`
+  check** — this plugin enforces deterministically through a hook while `workflow-coding`
   orchestrates advisorily through commands, so the two sit on different layers.
-- **It cannot collide with `workflow-claude`'s `PreToolUse` hook**, which matches
+- **It cannot collide with `workflow-coding`'s `PreToolUse` hook**, which matches
   `Write|Edit|MultiEdit` where this one matches `Bash`. No tool call matches both.
 - **A `PostToolUse` security review, where one is installed, is downstream of it.** If this
   gate blocks, no commit happens and no review fires — correct ordering by construction.
@@ -169,7 +169,7 @@ Hooks from every loaded plugin **stack**, so this one composes rather than compe
 The hook matches `Bash` with no `if` filter and decides for itself whether the command
 creates a commit, so it spawns one short-lived process per `Bash` call. That is deliberate;
 `CLAUDE.md` records why an `if` matcher was rejected. The full analysis lives in
-`workflow-claude`'s `_meta/plugin-conflict-report.md` §4.4.
+`workflow-coding`'s `_meta/plugin-conflict-report.md` §4.4.
 
 ## Typical Workflow
 
@@ -197,21 +197,21 @@ creates a commit, so it spawns one short-lived process per `Bash` call. That is 
 and the commit is named as `/smart-commit`'s to make rather than run here. `dp-compile`
 runs no `git` command at all.
 
-### The full loop, with `workflow-claude`
+### The full loop, with `workflow-coding`
 
 The sequence above is what `dp-compile` contributes. In practice it runs inside the other
 plugin's branch lifecycle, and each phase is a subgoal of a branch plan rather than a
 free-standing command:
 
 ```
-/open-revision 05-viterbi-backends        # workflow-claude: opens the revision
-  └─ /new-branch                          # workflow-claude: branch + doc + plan
-       └─ /hitl-step 1                    # workflow-claude: works one subgoal
+/open-revision 05-viterbi-backends        # workflow-coding: opens the revision
+  └─ /new-branch                          # workflow-coding: branch + doc + plan
+       └─ /hitl-step 1                    # workflow-coding: works one subgoal
             └─ /dp-compile:new-algorithm  # dp-compile: registers + phase 0
                /dp-compile:next-phase …   #   or advances one phase
-          → /smart-commit                 # workflow-claude: doc sync, commit, push
+          → /smart-commit                 # workflow-coding: doc sync, commit, push
        … repeat /hitl-step per phase …
-  → /smart-merge                          # workflow-claude: PR, CI gate, merge
+  → /smart-merge                          # workflow-coding: PR, CI gate, merge
 ```
 
 **`dp-compile` writes the artifact and reports; everything around it belongs to the other
@@ -357,7 +357,7 @@ dp-compile/
 │   └── references/               # @-included fragments, not commands
 │       ├── manifest.md           # The dp-compile.toml contract
 │       ├── phase-detection.md    # Nominal phase, staleness, and the target
-│       └── workflow-claude.md    # Presence check and the two absence severities
+│       └── workflow-coding.md    # Presence check and the two absence severities
 ├── hooks/
 │   ├── hooks.json
 │   └── scripts/
