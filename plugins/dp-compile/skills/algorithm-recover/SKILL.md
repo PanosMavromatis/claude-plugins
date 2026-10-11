@@ -274,7 +274,7 @@ Present the formalization to the user and say:
 > `/smart-commit` and run `/dp-compile:next-phase <name>`."
 
 **Name `/smart-commit`, not `git commit`**, and do not run either — commits belong to the
-`workflow-claude` plugin. Do not edit a plan file; report the document's path, the specified
+`workflow-coding` plugin. Do not edit a plan file; report the document's path, the specified
 cases nothing implements, and that the document awaits review, and let `/hitl-step` record
 the subgoal in its own words.
 

@@ -19,7 +19,7 @@ import hashlib, os, re, shutil, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-SCRIPT = REPO + "/plugins/workflow-claude/scripts/close-revision.sh"
+SCRIPT = REPO + "/plugins/workflow-coding/scripts/close-revision.sh"
 if "--script" in sys.argv:
     SCRIPT = os.path.abspath(sys.argv[sys.argv.index("--script") + 1])
 LIB = os.path.dirname(SCRIPT) + "/lib/plan-rules.sh"   # sourced by the script, from beside it

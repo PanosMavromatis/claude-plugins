@@ -266,7 +266,7 @@ user for review. Explicitly say:
 > `/dp-compile:next-phase <name>` to begin the Python prototype."
 
 **Name `/smart-commit`, not `git commit`**, and do not run either. Commits belong to the
-`workflow-claude` plugin, and a plain `git commit` skips the documentation sync that command
+`workflow-coding` plugin, and a plain `git commit` skips the documentation sync that command
 performs. Do not edit a plan file either — report the document's path and that it awaits
 review, and let `/hitl-step` record the subgoal in its own words.
 

@@ -25,5 +25,9 @@
 .envrc
 .direnv/
 
+# Python bytecode (the hooks and dev/ scripts are Python)
+__pycache__/
+*.py[cod]
+
 # Local scratchpad, not committed
 /tmp/

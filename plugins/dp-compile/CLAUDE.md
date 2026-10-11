@@ -30,7 +30,7 @@ dp-compile/
 │   └── references/          # @-included, shared by several commands. NOT commands:
 │       ├── manifest.md      #   the dp-compile.toml contract every command reads first
 │       ├── phase-detection.md
-│       └── workflow-claude.md
+│       └── workflow-coding.md
 ├── dev/                     # Developer-only tooling (not part of the plugin runtime)
 │   └── smoke-test.sh
 ├── hooks/                   # Deterministic event handlers
@@ -98,7 +98,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 {
   "name": "dp-compile",
   "description": "Guides dynamic-programming algorithms through a staged translation from pseudocode to pure Python to compiled and parallel backends, enforcing equivalence against the reference implementation at every stage.",
-  "version": "0.4.0"
+  "version": "0.4.1"
 }
 ```
 
@@ -155,7 +155,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
   up with a new backend and docs describing the old set. Suggesting `git commit` is how that
   starts, so do not suggest it either. **A phase artifact is the one exception** — a
   formalization or a kernel is the thing being produced, not a description of the
-  repository. The contract is `commands/references/workflow-claude.md`.
+  repository. The contract is `commands/references/workflow-coding.md`.
 - **`dp-compile` reports facts for a plan; it never writes one.** The plan file has a single
   writer. What this plugin contributes is what that writer cannot know — an artifact's path,
   the source and hash its provenance header records, what the suite did — offered as a line
@@ -171,7 +171,7 @@ The `plugin.json` file lives at `.claude-plugin/plugin.json`:
 - **The gate fires inside `/smart-commit`, and that is the point.** Hooks stack, so the
   `git commit` that command runs triggers `pre-commit-check.py` exactly as a hand-typed one
   would — delegating the commit does not bypass the check. It also cannot collide with
-  `workflow-claude`'s `PreToolUse` hook, which matches `Write|Edit|MultiEdit` where this one
+  `workflow-coding`'s `PreToolUse` hook, which matches `Write|Edit|MultiEdit` where this one
   matches `Bash`: no tool call matches both. One latent coupling to keep in mind when either
   plugin changes: `/smart-commit` runs `/agents-docs-update` *before* committing, so the gate
   reads a staged set that command has already modified. It stages only documentation today,
@@ -189,7 +189,7 @@ does — so the override has to be written down, which is what this section is f
 history is the authority: "Implement benchmarking skill and benchmark command", not
 `feat(benchmarking): ...`.
 
-The sibling `workflow-claude` plugin uses conventional commits. That divergence is
+The sibling `workflow-coding` plugin uses conventional commits. That divergence is
 deliberate and known; each repository follows its own history.
 
 ## Compaction instructions

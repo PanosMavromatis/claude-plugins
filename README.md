@@ -8,11 +8,13 @@ standalone repository.
 
 | Plugin | What it does |
 |---|---|
-| [`workflow-claude`](plugins/workflow-claude) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources. Applicable to most projects. |
+| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources. Applicable to most projects. |
 | [`dp-compile`](plugins/dp-compile) | Staged translation of dynamic-programming kernels — formalization → Python → Cython → CPU-parallel → CUDA — enforcing equivalence against the reference implementation at every stage. Requires a `dp-compile.toml` at the consumer's repository root. |
 
-`dp-compile` declares `workflow-claude` in its `dependencies`: it delegates branches, plans,
+`dp-compile` declares `workflow-coding` in its `dependencies`: it delegates branches, plans,
 commits and merges rather than reimplementing them, so installing one installs both.
+
+`workflow-coding` was named `workflow-claude` before 0.10.0.
 
 ## Using it
 
@@ -26,7 +28,7 @@ Declare the marketplace and the plugins in a project's committed `.claude/settin
     }
   },
   "enabledPlugins": {
-    "workflow-claude@mavromatis-ai-labs": true,
+    "workflow-coding@mavromatis-ai-labs": true,
     "dp-compile@mavromatis-ai-labs": true
   }
 }
@@ -38,7 +40,7 @@ the same keys:
 
 ```bash
 claude plugin marketplace add PanosMavromatis/claude-plugins
-claude plugin install workflow-claude@mavromatis-ai-labs --scope project
+claude plugin install workflow-coding@mavromatis-ai-labs --scope project
 ```
 
 Prefer the declaration — it is what a fresh clone reproduces from, and what a reviewer sees
@@ -46,8 +48,8 @@ in a diff.
 
 ## Conventions
 
-**No organization prefix.** The plugins are `workflow-claude` and `dp-compile`, not
-`mav-workflow-claude`. A plugin's `name` namespaces every component it ships
+**No organization prefix.** The plugins are `workflow-coding` and `dp-compile`, not
+`mav-workflow-coding`. A plugin's `name` namespaces every component it ships
 (`/dp-compile:phase-check`), so a prefix buys immunity from a third-party plugin of the same
 name at the cost of typing it forever; with two plugins that is premature. Decided
 2026-09-09, and recorded here rather than left implicit because renaming a *published*
@@ -58,7 +60,7 @@ appears.
 `plugin.json` would win anyway. This reverses a 2026-09-09 decision to omit it, which had
 the version resolve to this repository's commit SHA so that every push was an update with
 no release ceremony. What changed is that the plugins are now developed with themselves:
-`workflow-claude` drives the work that edits it, so the installed copy must move only on a
+`workflow-coding` drives the work that edits it, so the installed copy must move only on a
 deliberate release, never because `main` moved, or a half-finished change would be running
 the session that finishes it. The cost the earlier decision named is real and still applies
 — a version nobody bumps freezes every consumer silently, and `/plugin update` reports
@@ -104,7 +106,7 @@ their imports, each command plus what it reads whole, `docs/agents/**`, the bran
 and the master plan. **It measures the main session only**: a subagent's own reads are
 not in it, so total usage is judged separately.
 
-Test `workflow-claude`'s plan resolver, `scripts/locate-plan.sh`, after any change to it or
+Test `workflow-coding`'s plan resolver, `scripts/locate-plan.sh`, after any change to it or
 to `scripts/lib/plan-rules.sh`, the rules it shares with the other plan scripts:
 
 ```bash

@@ -1,6 +1,6 @@
 # propose-revision.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/propose-revision.sh`, the read-only
+These are the tests for `plugins/workflow-coding/scripts/propose-revision.sh`, the read-only
 proposal `/master-plan` runs before it drafts a revision, and again with `--render` for the
 root plan it writes. They live here, outside the plugin, so they don't ship with it. The
 contract is `propose-revision-spec.md` in the `feat-master-plan` branch plan, and the

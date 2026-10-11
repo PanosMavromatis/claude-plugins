@@ -48,7 +48,7 @@ expected=(
   "commands/benchmark.md"
   "commands/references/manifest.md"
   "commands/references/phase-detection.md"
-  "commands/references/workflow-claude.md"
+  "commands/references/workflow-coding.md"
   "hooks/hooks.json"
   "hooks/scripts/pre-commit-check.py"
 )

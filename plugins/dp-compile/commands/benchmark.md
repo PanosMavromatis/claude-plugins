@@ -37,9 +37,9 @@ Resolve every path, command and algorithm name through the manifest above. If th
 repository has no `dp-compile.toml`, stop and say so with the template — do not
 proceed against an assumed layout.
 
-## `workflow-claude` is assumed
+## `workflow-coding` is assumed
 
-@references/workflow-claude.md
+@references/workflow-coding.md
 
 **`/benchmark` takes the note-and-continue severity.** It delegates nothing, so its absence
 changes what this command can do not at all — print the one line and carry on to the full

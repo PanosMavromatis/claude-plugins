@@ -218,7 +218,7 @@ The phase ends when the file is written and the suite is green. **What happens t
 is not this plugin's to do.**
 
 - **Do not run `git add` or `git commit`.** Say the work is ready and name `/smart-commit`,
-  which the `workflow-claude` plugin owns. A plain `git commit` skips the documentation sync
+  which the `workflow-coding` plugin owns. A plain `git commit` skips the documentation sync
   that command performs, so the repository ends up carrying a new backend and docs
   describing the old set — which is why "just commit it" is the wrong suggestion here rather
   than merely a shortcut.

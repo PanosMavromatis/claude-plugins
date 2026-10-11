@@ -59,7 +59,7 @@ if there are any.
 
 ## 3. Draft
 
-Spawn the drafter with the `Agent` tool, `subagent_type: workflow-claude:plan-drafter`.
+Spawn the drafter with the `Agent` tool, `subagent_type: workflow-coding:plan-drafter`.
 Its prompt gives: the label; today's date; the file name, `_TODO.md` or `_DO.md` from
 `revision:`; the spec (the path, or the text); the root plan (`root:`, unless `layout:`
 is `none`); and the previous revision's master plan (`previous:`, unless it is `—`).

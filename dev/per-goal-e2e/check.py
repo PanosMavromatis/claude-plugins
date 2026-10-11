@@ -11,7 +11,7 @@ import hashlib, itertools, json, os, re, shutil, subprocess, sys
 W = os.environ.get("LOCATE_PLAN_WORK") or sys.exit("set LOCATE_PLAN_WORK")
 W = os.path.realpath(W); RUN = os.environ.get("RUN") or sys.exit("set RUN=<tag>")
 E = W + "/e2e"; OUT = f"{E}/out-{RUN}"
-PLUGIN = f"{E}/p/{hashlib.sha1(b'e2e/plugin').hexdigest()[:8]}/workflow-claude"
+PLUGIN = f"{E}/p/{hashlib.sha1(b'e2e/plugin').hexdigest()[:8]}/workflow-coding"
 SCRIPTS = PLUGIN + "/scripts"
 fails = 0
 WANT = [a for a in sys.argv[1:] if re.match(r"^[emc]\d$", a)] or ["e1", "e3", "e4", "e5", "m1", "m2", "m3", "c1", "c2", "c3"]
@@ -340,8 +340,8 @@ def draft_form(where, text, label):
 
 def drafter(sid, calls, label, previous):
     ag = [inp for n, inp in calls if n in ("Agent", "Task")]
-    dr = [inp for inp in ag if inp.get("subagent_type") == "workflow-claude:plan-drafter"]
-    check(f"{sid}: spawned workflow-claude:plan-drafter", bool(dr), f"agent calls: {[i.get('subagent_type') for i in ag]}")
+    dr = [inp for inp in ag if inp.get("subagent_type") == "workflow-coding:plan-drafter"]
+    check(f"{sid}: spawned workflow-coding:plan-drafter", bool(dr), f"agent calls: {[i.get('subagent_type') for i in ag]}")
     pr = dr[0].get("prompt", "") if dr else ""
     for what, v in (("the spec", f"docs/spec/{label}.md"), ("the previous revision", previous)):
         if v != "—": check(f"{sid}: the drafter's prompt names {what}, {v}", v in pr, pr[:200])

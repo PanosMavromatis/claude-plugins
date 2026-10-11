@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch --show-current:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, Skill(workflow-claude:agents-docs-build)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git branch --show-current:*), Bash(find:*), Bash(cat:*), Bash(ls:*), Read, Write, Glob, Grep, Skill(workflow-coding:agents-docs-build)
 description: Update project docs and regenerate agent artifacts to match staged changes.
 argument-hint: "[extra doc paths...]"
 ---
@@ -26,7 +26,7 @@ Build a list of documentation files to consider for updates:
 - All `.md` files under `docs/git/` (find recursively)
 - All `.md` files under `docs/ops/` (find recursively)
 
-**Do not consider** any `CLAUDE.md`, `AGENTS.md`, or `AGENTS.override.md` at any path — root-level (`CLAUDE.md`, `AGENTS.md`, `AGENTS.override.md`) or, in a monorepo layout, component-level (`<path>/CLAUDE.md`, `<path>/AGENTS.md`, `<path>/AGENTS.override.md`). Every `CLAUDE.md` is an `@import` dispatcher; the `AGENTS.*` files are generated artifacts built from the corresponding `docs/agents/[<path>/]` sources by `/agents-docs-build`. The PreToolUse hook shipped by the workflow-claude plugin blocks direct edits to all of them.
+**Do not consider** any `CLAUDE.md`, `AGENTS.md`, or `AGENTS.override.md` at any path — root-level (`CLAUDE.md`, `AGENTS.md`, `AGENTS.override.md`) or, in a monorepo layout, component-level (`<path>/CLAUDE.md`, `<path>/AGENTS.md`, `<path>/AGENTS.override.md`). Every `CLAUDE.md` is an `@import` dispatcher; the `AGENTS.*` files are generated artifacts built from the corresponding `docs/agents/[<path>/]` sources by `/agents-docs-build`. The PreToolUse hook shipped by the workflow-coding plugin blocks direct edits to all of them.
 
 **Extra paths from arguments:** `$ARGUMENTS`
 - For each extra path provided:
@@ -63,11 +63,11 @@ When an edit could plausibly belong in more than one of `core.md` / `claude.md` 
 
 ## Step 4: Rebuild Generated Artifacts
 
-If any `core.md` or `codex.md` source was modified in Step 3 — at the root (`docs/agents/core.md`, `docs/agents/codex.md`) or under any component directory (`docs/agents/<path>/core.md`, `docs/agents/<path>/codex.md`) — invoke `/agents-docs-build` once (with the Skill tool, skill `workflow-claude:agents-docs-build`) to regenerate the corresponding generated artifacts: the root `AGENTS.md` and `AGENTS.override.md`, and in a monorepo layout the per-component `<path>/AGENTS.md` and `<path>/AGENTS.override.md` files. Skip this step if no `core.md` or `codex.md` was modified.
+If any `core.md` or `codex.md` source was modified in Step 3 — at the root (`docs/agents/core.md`, `docs/agents/codex.md`) or under any component directory (`docs/agents/<path>/core.md`, `docs/agents/<path>/codex.md`) — invoke `/agents-docs-build` once (with the Skill tool, skill `workflow-coding:agents-docs-build`) to regenerate the corresponding generated artifacts: the root `AGENTS.md` and `AGENTS.override.md`, and in a monorepo layout the per-component `<path>/AGENTS.md` and `<path>/AGENTS.override.md` files. Skip this step if no `core.md` or `codex.md` was modified.
 
 If only `claude.md` files (root or component) were modified, no build is needed — the corresponding `CLAUDE.md` dispatcher picks up changes via `@import` at the next session.
 
-`/agents-docs-build` is shipped by the workflow-claude plugin; it walks `docs/agents/` and handles root + every component subdirectory at any nesting depth.
+`/agents-docs-build` is shipped by the workflow-coding plugin; it walks `docs/agents/` and handles root + every component subdirectory at any nesting depth.
 
 ## Step 5: Stage Documentation Changes
 

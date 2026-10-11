@@ -1,6 +1,6 @@
 # locate-plan.sh test suite
 
-These are the tests for `plugins/workflow-claude/scripts/locate-plan.sh`, the script that
+These are the tests for `plugins/workflow-coding/scripts/locate-plan.sh`, the script that
 `/step` and `/hitl-step` run in Step 1 to find the plan. They live here, outside the
 plugin, so they don't ship with it. They were built on the `feat/plan-locator` branch,
 and the reasoning behind them is in that branch's plan, `docs/plan/feat-plan-locator/`
@@ -85,7 +85,7 @@ python3 -I dev/locate-plan/trial/show-session.py baseline t1 e07
 ```
 
 - **Hashed names.** Each arm, and each fault copy (f03 cut short, f04 a wrong answer,
-  f05 a swapped path), sits at `p/<8 hex>/workflow-claude`. The fault wrappers carry no
+  f05 a swapped path), sits at `p/<8 hex>/workflow-coding`. The fault wrappers carry no
   comments, and the real script sits outside the plugin root. In the trial the copies
   were named `-trunc`, `-wrong` and `-swap`, and sessions noticed: a baseline f03 reply
   said "this is the `-trunc` baseline script". Some hints remain, from fixture names the

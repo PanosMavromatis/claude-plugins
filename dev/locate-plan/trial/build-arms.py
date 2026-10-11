@@ -1,5 +1,5 @@
 """Build the goal-10 trial arms under $LOCATE_PLAN_WORK/p/: copies of the working tree's
-workflow-claude, each at p/<8 hex>/workflow-claude, so that no path a session sees names
+workflow-coding, each at p/<8 hex>/workflow-coding, so that no path a session sees names
 its arm or its fault.
 
   baseline   the shipped tree, plus a probe-resolver command that runs Step 1 as shipped
@@ -19,7 +19,7 @@ import hashlib, os, shutil, stat, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
-PLUGIN = REPO + "/plugins/workflow-claude"
+PLUGIN = REPO + "/plugins/workflow-coding"
 W = os.environ.get("LOCATE_PLAN_WORK") or sys.exit("set LOCATE_PLAN_WORK to a directory outside the repository")
 os.makedirs(W, exist_ok=True); W = os.path.realpath(W)
 if (W + "/").startswith(os.path.realpath(REPO) + "/"): sys.exit(f"refusing: {W} is inside the repository")
@@ -57,11 +57,11 @@ read or search for any plan yourself beyond what is asked here, and do not edit 
    `result:` line, the output, and that the script failed.
 """ + NEXT_CHECK
 
-STEP1 = """The `workflow-claude:plan-resolver` agent runs the bundled `scripts/locate-plan.sh`,
+STEP1 = """The `workflow-coding:plan-resolver` agent runs the bundled `scripts/locate-plan.sh`,
 which resolves the plan by the five rungs the plugin's `CLAUDE.md` describes, and
 troubleshoots it if it fails. Do not resolve the plan yourself.
 
-1. Spawn `subagent_type: workflow-claude:plan-resolver` with one line per input you have:
+1. Spawn `subagent_type: workflow-coding:plan-resolver` with one line per input you have:
 
        model: {model}
        path: <the path token from `$ARGUMENTS`, if any>
@@ -102,7 +102,7 @@ This command tests Step 1 of the plan-resolver variant and nothing else. `$ARGUM
 holds a model (`TODO.md` or `DO.md`) and, optionally, a path. Do not resolve, read or
 search for any plan yourself, and do not edit anything.
 
-1. Spawn `subagent_type: workflow-claude:plan-resolver` with these lines, leaving out
+1. Spawn `subagent_type: workflow-coding:plan-resolver` with these lines, leaving out
    `path:` if no path was given:
 
        model: <the model>
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         for fault in FAULTS:
             root = arm_dir(arm, fault)
             if os.path.exists(root): sys.exit(f"refusing: {root} exists (use --rebuild)")
-            dst = root + "/workflow-claude"
+            dst = root + "/workflow-coding"
             build_arm(arm, dst)
             if fault:
                 # core.sh sources lib/plan-rules.sh from beside itself, so it takes a copy

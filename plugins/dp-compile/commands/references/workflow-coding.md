@@ -1,7 +1,7 @@
-# Detecting `workflow-claude` — shared reference
+# Detecting `workflow-coding` — shared reference
 
 `dp-compile` owns the algorithm lifecycle and nothing else. Branches, plans, commits,
-merges and documentation belong to the `workflow-claude` plugin, and this plugin delegates
+merges and documentation belong to the `workflow-coding` plugin, and this plugin delegates
 to it rather than reimplementing any of it. That assumption has to be checked, because a
 delegation to a plugin that is not loaded fails at the moment it is needed rather than at
 the moment it is assumed.
@@ -12,7 +12,7 @@ severity.
 ## What is delegated, and to what
 
 `dp-compile` owns one thing: getting an algorithm from a specification to a set of
-equivalent backends. Everything around that belongs to `workflow-claude`, and the boundary
+equivalent backends. Everything around that belongs to `workflow-coding`, and the boundary
 is drawn so that neither plugin has to know how the other works.
 
 | Concern | Owner | `dp-compile`'s part |
@@ -51,7 +51,7 @@ Offer it; do not write it, and do not ask whether to write it. The user pastes i
 
 ## How to detect it
 
-**Read your own tool list, and look for anything namespaced `workflow-claude:`** — a skill
+**Read your own tool list, and look for anything namespaced `workflow-coding:`** — a skill
 or a command. That is the whole check.
 
 There is no shell command that reports which plugins are loaded. This follows the
@@ -60,7 +60,7 @@ from that*.
 
 Three things not to do, each ruled out on evidence rather than on principle:
 
-- **Do not inspect the plugin configuration.** `workflow-claude` appears in no
+- **Do not inspect the plugin configuration.** `workflow-coding` appears in no
   `~/.claude/plugins/*.json`, and in at least one repository it is not an installed plugin
   at all — it is a full plugin tree sitting in the project's `.claude/skills/`. A config
   check would report "absent" for a plugin that is loaded and working.
@@ -71,7 +71,7 @@ Three things not to do, each ruled out on evidence rather than on principle:
 
 ## What absence means — two severities
 
-**Absence is not uniform.** No `dp-compile` command strictly *needs* `workflow-claude`:
+**Absence is not uniform.** No `dp-compile` command strictly *needs* `workflow-coding`:
 reporting a phase needs no branch machinery, and writing a `.pyx` needs no commit
 machinery. Refusing a report for a dependency that report never uses reads as a bug the
 first time someone hits it.
@@ -82,18 +82,18 @@ So the severity follows the delegation, and each command declares which it takes
 |---|---|---|
 | `/phase-check` | Note and continue | Report-only. Delegates nothing. |
 | `/benchmark` | Note and continue | Runs the repository's own benchmark command and reports. Delegates nothing. |
-| `/next-phase` | Note at the head, **stop at the delegation** | Writes a phase artifact — which needs nothing from `workflow-claude` — and then hands the commit to `/smart-commit`. |
+| `/next-phase` | Note at the head, **stop at the delegation** | Writes a phase artifact — which needs nothing from `workflow-coding` — and then hands the commit to `/smart-commit`. |
 | `/new-algorithm` | Note at the head, **stop at the delegation** | Registers and scaffolds, then hands branch creation to `/new-branch` and the commit to `/smart-commit`. |
 
 **The check happens at the head; the stop happens at the delegation.** Those are different
 places on purpose. Checking early means the user learns at the start that the commit step
 will not be available, rather than after the work. Stopping late means the work that needed
-nothing from `workflow-claude` still happens — a `.pyx` written and left uncommitted costs
+nothing from `workflow-coding` still happens — a `.pyx` written and left uncommitted costs
 the user one `git commit`, while a `/next-phase` that refused to start costs them the
 phase.
 
 **What a stop must never do is substitute.** A delegating command that finds
-`workflow-claude` absent does not run `git commit` itself, does not open a branch itself,
+`workflow-coding` absent does not run `git commit` itself, does not open a branch itself,
 and does not finish quietly as though the step had not existed. It stops at that point and
 says plainly what is left undone and who owns it.
 
@@ -101,19 +101,19 @@ says plainly what is left undone and who owns it.
 
 Print it **once**, at the head, and not again on each later step.
 
-> `workflow-claude` is not loaded in this session. `dp-compile` delegates branches, plans,
+> `workflow-coding` is not loaded in this session. `dp-compile` delegates branches, plans,
 > commits and merges to it, so `<the delegated step>` will not run — everything before it
 > will. Three ways it gets loaded, and which one applies is yours to know: an install from
-> a marketplace, where it is published as `workflow-claude@mavromatis-ai-labs`;
-> `claude --plugin-dir <path>/workflow-claude`; or a plugin tree placed at
-> `.claude/skills/workflow-claude/` in this project.
+> a marketplace, where it is published as `workflow-coding@mavromatis-ai-labs`;
+> `claude --plugin-dir <path>/workflow-coding`; or a plugin tree placed at
+> `.claude/skills/workflow-coding/` in this project.
 
 **Name all three load paths.** A message naming only one sends a user to fix something that
 is not how they loaded it — and the `.claude/skills/` route is neither a marketplace install
 nor the `--plugin-dir` the plugin's own README documents.
 
 **A marketplace install cannot reach this message.** `plugin.json` declares
-`workflow-claude` in `dependencies`, so installing `dp-compile` from a marketplace installs
+`workflow-coding` in `dependencies`, so installing `dp-compile` from a marketplace installs
 it too. What survives is the `--plugin-dir` session, where nothing enforces co-loading —
 which is the case this message exists for.
 

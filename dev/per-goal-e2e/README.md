@@ -34,7 +34,7 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   `CLAUDE.md`, so the commands run unmodified.
 - **`run.sh`** runs each session with only the copy loaded (`--plugin-dir`). It writes
   stream-json, which records every tool call and the result with its permission denials.
-  `workflow-claude@mavromatis-ai-labs` is enabled only in this repository's project
+  `workflow-coding@mavromatis-ai-labs` is enabled only in this repository's project
   settings, so a fixture elsewhere loads no second copy. `check.py` confirms each run
   used the copy.
 - **`check.py`** grades each fixture's end state, using the plugin's own read-only
@@ -75,7 +75,7 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   copy's own scripts, run on a clone of the fixture at `main` (`_main/`): the root plan is
   `--render`'s for the note the session chose, the stamp is the proposal's `edits:`, the
   cut is `--render archive` and `root`. Each must also have proposed before `git checkout -b`,
-  spawned `workflow-claude:plan-drafter` (the drafter's own calls, `parent_tool_use_id` set,
+  spawned `workflow-coding:plan-drafter` (the drafter's own calls, `parent_tool_use_id` set,
   are not counted as the session's), left the spec to the drafter, written the root plan
   from `--render`, and run its checks after the last write and before the one commit. `c2`
   alone is allowed `git mv`, the gate `/close-revision` leaves to the prompt.
