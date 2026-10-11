@@ -1,6 +1,6 @@
 # chore/rename-workflow-coding
 
-**Status**: active
+**Status**: merged — PR #12 — 2026-10-11
 **Created**: 2026-10-11
 **Subgoal**: revision 06-subagent-refactor-R1 — rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR
 

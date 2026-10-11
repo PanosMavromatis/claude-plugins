@@ -147,6 +147,9 @@ ends with. Settled, and not to be reopened:
       exactly one plugin loads, `workflow-coding` `0.10.0`, and that the old-layout root
       plan still resolves under it.
   > **Branch:** chore/rename-workflow-coding
+  > **Done:** The plugin is `workflow-coding` `0.10.0` and `dp-compile` `0.4.1` depends on it by
+  > the new name, with every live reference moved and the records left as written; the suites,
+  > mutants and e2e run `r8` verify it. The install check follows the merge — PR #12
 
 ## Closed revisions
 
