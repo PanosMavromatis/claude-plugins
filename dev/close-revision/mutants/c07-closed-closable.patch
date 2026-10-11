@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -205,7 +205,7 @@
+     refuse "$ROOT_PLAN lists no revision $LABEL" "check the label against the \`## Revisions\` lines"
+   fi
+   IDX_N="${out%%"$TAB"*}"; IDX_LINE="${out#*"$TAB"}"; mk="${IDX_LINE:3:1}"
+-  if [ "$mk" != "~" ]; then
++  if [ "$mk" != "~" ] && [ "$mk" != x ]; then
+     if [ $CHECK -eq 1 ]; then
+       violation "$ROOT_PLAN:$IDX_N at HEAD marks revision $LABEL [$mk], not [~]" "$BEFORE"; fail ""
+     fi

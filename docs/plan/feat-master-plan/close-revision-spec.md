@@ -14,7 +14,8 @@ command's writes before they are committed. It writes nothing.
 - `--date`: the closing date, which the command supplies; the script never reads the clock.
 - `--render`, legacy only: print the root plan after the cut (`root`), or the archive
   (`archive`), and nothing else. Exit 1 unless the result would be `proposed`, with the
-  report on stderr.
+  report on stderr. Under a revisions index it is a usage error, exit 2: the close there is
+  two edits, not a rendered file.
 - `--check`: compare the working tree with what closing must have written, computed from
   `HEAD`'s files. `result: verified`, or `result: error` naming what differs.
 
@@ -51,17 +52,19 @@ violation (E5–E8) is an error with its problem and fix.
 
 Then `edits:` names `_<model>`'s `**Status**:` line as `**Status**: closed — <date>`,
 and the index line with its marker as `[x]`, the rest unchanged. A branch plan inside
-`docs/plan/<label>/` still stamped `active` is a warning, not a refusal. Nothing moves:
+`docs/plan/<label>/` still stamped `active` is a warning, not a refusal, and is not looked
+for under `--check`. Nothing moves:
 `/new-branch` created each plan inside the revision.
 
 **legacy** (`change: extract`): today's rules, with whole-label matching. Refused, in order:
 1. no section, `## Subgoals — revision <label>` alone or with `: <subtitle>`
-   (`section_line`);
+   (`section_line`); if a pointer for the label is there (`pointer_line`), the refusal
+   says the revision is already closed and names the pointer's line;
 2. an open item in the section, at any indent outside fences, each listed;
 3. `docs/plan/<label>/_<model>` already exists.
 
-The section runs from its heading to the line before the next `## ` heading, or to the end
-of the file. The pointer is `- **Revision <label>**[ — <subtitle>] — closed. See \`<archive>\`.`
+The section runs from its heading to the line before the next `## ` heading outside a
+fenced block, or to the end of the file. The pointer is `- **Revision <label>**[ — <subtitle>] — closed. See \`<archive>\`.`
 
 `moves:` files the revision's branch plans, the job `/file-plans` did. Each
 `> **Branch:** <name>` line in the section, at any indent outside fences, names a plan
@@ -74,7 +77,8 @@ directory, `<name>` with `/` flattened to `-`, matched whole:
 
 `--render archive` is the section, verbatim, LF. `--render root` is the root plan without
 the section, with the pointer after the last `- **Revision ` line under `## Closed
-revisions`, or after the last non-blank line of that section if it has none. With no such
+revisions`, or, if it has none, after the last non-blank line of that section with a blank
+line between (after the heading itself, with a blank line, if the section is empty). With no such
 section, `## Closed revisions`, a blank line and the pointer go before `## Deferred`, or at
 the end, with a blank line on each side.
 

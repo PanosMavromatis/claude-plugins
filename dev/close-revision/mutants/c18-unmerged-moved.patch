@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -350,7 +350,7 @@
+       if has "$PD/$flat/$MODEL"; then pf="$PD/$flat/$MODEL"; elif has "$PD/$flat/$OTHER"; then pf="$PD/$flat/$OTHER"; fi
+       s=""; [ -z "$pf" ] || s="$(status_src "$pf")"
+       case "$s" in
+-        merged*) R_MOVES="${R_MOVES:+$R_MOVES$NL}git mv $PD/$flat $PD/$LABEL/$flat" ;;
++        *) R_MOVES="${R_MOVES:+$R_MOVES$NL}git mv $PD/$flat $PD/$LABEL/$flat" ;;
+         *) warn "$PD/$flat is not stamped merged (${s:-no status}), so it stays flat: file it by hand once it merges" ;;
+       esac
+     else

@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -157,7 +157,7 @@
+ 
+ # --- the model and the layout -------------------------------------------------------
+ 
+-if has "$PD/DO.md" && has "$PD/TODO.md"; then
++if false; then
+   violation "both $PD/DO.md and $PD/TODO.md exist, so which one is the root plan is ambiguous" \
+     "keep the one the project's plans use, and move or remove the other (your call)"
+   fail ""

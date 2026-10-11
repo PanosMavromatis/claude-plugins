@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -221,7 +221,7 @@
+     fail ""
+   fi
+   ST_N="${out%%"$TAB"*}"; v="${out#*"$TAB"}"
+-  if [ "$v" != open ]; then
++  if false; then
+     if [ $CHECK -eq 1 ]; then
+       violation "$REV:$ST_N at HEAD reads \`**Status**: $v\`, not open" "$BEFORE"; fail ""
+     fi

@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -196,7 +196,7 @@
+     /^[ \t]*```/ { fence = !fence; next }
+     fence { next }
+     /^## / { insec = ($0 ~ /^## Revisions[ \t]*$/); next }
+-    insec && /^- \[[ ~x!-]\] / { split(substr($0, 7), a, /[ \t]+/); if (a[1] == ENVIRON["L"]) { print NR "\t" $0; exit } }
++    insec && /^- \[[ ~x!-]\] / { split(substr($0, 7), a, /[ \t]+/); if (index(a[1], ENVIRON["L"]) == 1) { print NR "\t" $0; exit } }
+   ')" || die "awk failed reading the revisions of $ROOT_PLAN"
+   if [ -z "$out" ]; then
+     if [ $CHECK -eq 1 ]; then

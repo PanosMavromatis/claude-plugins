@@ -235,7 +235,20 @@
     > which recomputes both layouts' writes, and the moves, from `HEAD` and compares them
     > with the working tree before the commit. The stamp is two `Edit`s at named lines, not
     > a rendered file: a 100-line `_TODO.md` retyped is where a word changes unnoticed.
-  - [ ] `close-revision.sh` rewritten on the library, with `dev/close-revision/` and every mutant caught
+  - [x] `close-revision.sh` rewritten on the library, with `dev/close-revision/` and every mutant caught
+    > **Note:** 446 lines. Every read goes through `src`, the working tree or `HEAD` under
+    > `--check`, so a check is the proposal computed against `HEAD`: one set of rules.
+    > `dev/close-revision/`: 55 cases (~38 s), 37 mutants (~465 s), each killed by its aimed
+    > case; `c05` and `c06` through an exit 3 that is the mutant's own consequence. The
+    > `--check` cases write the closed state from the suite's strings, never from `--render`,
+    > so a wrong render cannot pass a wrong check. The five other library suites' cases are
+    > unchanged.
+    > **Note:** Rehearsed on a copy of this repository with R1's three open subgoals marked
+    > `[x]`: the proposal moves the same five plans `file-plans.sh` named, warns that
+    > `feat-master-plan` is still active, and cuts lines 9-134; after the writes and the moves
+    > `--check` verified, and with one word of the archive changed it failed, naming it.
+    > `propose-revision.sh` then proposed converting the closed root plan for R2, with R1's
+    > archive as `previous:`: the lifecycle composes.
   - [ ] `commands/close-revision.md`: both paths, the moves, `--check` before the commit, `argument-hint: "<label>"`
   - [ ] `/file-plans` removed: its command and script, with the README's command table and `scripts/` line
 - [ ] Verify end to end: the user runs it, I grade

@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -341,7 +341,7 @@
+   for b in $seen; do
+     flat="$(printf '%s' "$b" | tr / -)" || die "tr failed flattening $b"
+     if has "$PD/$flat"; then
+-      if has "$PD/$LABEL/$flat"; then
++      if false; then
+         violation "both $PD/$flat and $PD/$LABEL/$flat exist, so one is a copy" \
+           "compare them and remove the stale one (your call), then run this again"
+         continue

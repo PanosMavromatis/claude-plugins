@@ -119,9 +119,10 @@ Step 1 with a subagent wrapping the script.
 Test its plan check, `scripts/check-plan-index.sh` (drift in a per-goal plan, open items in
 either layout), the script `/new-branch` places a new plan with,
 `scripts/propose-branch-plan.sh`, the one `/smart-merge` records a merge with,
-`scripts/propose-merge-record.sh`, and the one `/master-plan` opens a revision with,
-`scripts/propose-revision.sh`, the same way. All five share `scripts/lib/plan-rules.sh`,
-so run all five suites after a change to it:
+`scripts/propose-merge-record.sh`, the one `/master-plan` opens a revision with,
+`scripts/propose-revision.sh`, and the one `/close-revision` closes it with,
+`scripts/close-revision.sh`, the same way. All six share `scripts/lib/plan-rules.sh`,
+so run all six suites after a change to it:
 
 ```bash
 python3 -I dev/check-plan-index/suite.py                 # 39 cases, no model, ~10 s
@@ -132,6 +133,8 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 python3 -I dev/propose-revision/suite.py                 # 72 cases, no model, ~30 s
 python3 -I dev/propose-revision/suite.py --mutants       # the suite must catch each mutant, ~7 min
+python3 -I dev/close-revision/suite.py                   # 55 cases, no model, ~40 s
+python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~8 min
 ```
 
 `dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge`

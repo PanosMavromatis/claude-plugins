@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -143,7 +143,7 @@
+ 
+ # As locate-plan.sh: only 128 means "not a repository"; any other failure is git's.
+ if ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then st=0; else st=$?; fi
+-if [ "$st" -eq 128 ] || { [ "$st" -eq 0 ] && [ -z "$ROOT" ]; }; then
++if false; then
+   violation "the working directory is not inside a git repository" "run it from the repository"
+   fail ""
+ elif [ "$st" -ne 0 ]; then

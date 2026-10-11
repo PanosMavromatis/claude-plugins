@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -322,7 +322,7 @@
+   done
+   unset IFS
+   R_SECTION="$ROOT_PLAN:$START-$END"
+-  if [ $opn -gt 0 ]; then
++  if false; then
+     if [ $CHECK -eq 1 ]; then
+       violation "the section at HEAD has $opn unfinished item(s)" "$BEFORE"; fail ""
+     fi
