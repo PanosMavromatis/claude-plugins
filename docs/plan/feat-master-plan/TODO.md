@@ -90,6 +90,71 @@
     > master plan. `Bash(find:*)` and `Bash(cat:*)` in four commands' `allowed-tools`
     > match destructive forms; that goes to R2, with the "run alone" follow-up. The
     > `**Spec**:` path stays: it records provenance and no command resolves it.
-- [ ] `/master-plan <label> [spec]`, with `--dry-run <path>`; `/open-revision` is its alias
+- [~] `/master-plan <label> [spec]`, with `--dry-run <path>`; `/open-revision` is its alias
+  > **Q:** Where do the refusal and the proposal live: (A) a new read-only
+  > `scripts/propose-revision.sh <label>` with a `key: value` report, which reads the root
+  > plan's layout, refuses a label `## Revisions` lists under any marker or whose
+  > `docs/plan/<label>/` exists, proposes the `_TODO.md` path and the index line (or a new
+  > index), and shares a whole-label matcher through `lib/plan-rules.sh`, leaving
+  > `open-revision.sh` and its suite as the legacy proposer; (B) `open-revision.sh` extended
+  > to detect the layout; or (C) no script, the checks in `/master-plan`'s prose?
+  > **A:** A.
+  > **Note:** A legacy close already writes the new layout's per-revision file:
+  > `close-revision.sh` cuts the section to `docs/plan/<label>/_TODO.md` and leaves
+  > `- **Revision <label>**[ — <subtitle>] — closed. See \`<path>\`.` (line 78). Only the
+  > pointer's shape differs from an index line, and `index_open` accepts any note after ` — `.
+  > **Q:** On a legacy root plan: (A) with no open `## Subgoals — revision` section, propose
+  > converting it in the same commit (add `**Layout**: revisions`, `## Closed revisions` →
+  > `## Revisions`, each pointer → `- [x] <label> — <the rest>`, the new `[~]` line, other
+  > lines kept), and with one open, refuse ("close it first, or convert by hand"), with
+  > `--dry-run` working in every layout; (B) insert the draft as a legacy section through
+  > `open-revision.sh`; or (C) refuse, apart from `--dry-run`?
+  > **A:** A.
+  > **Note:** This leaves nothing that writes a new legacy section, so Q5 below revises Q1's
+  > "leaving `open-revision.sh` and its suite as the legacy proposer".
+  > **Note:** R2 step 0 in the agreed plan converts this repo by hand, assuming R1 is still
+  > open. Goal 5 closes R1 in legacy form, so R2 can open with `/master-plan` itself, which
+  > converts the root plan. Revise step 0 in the R2 handoff.
+  > **Q:** `--dry-run <path>`: (A) `<path>` is a directory, created if absent, given the
+  > approved `_TODO.md` and, when a real run would change the root plan, the root plan as it
+  > would read after; a refusal a real run would hit is reported, not fatal; a path inside
+  > `docs/plan/` or an existing file is refused; no branch or commit, writes still confirmed;
+  > (B) `<path>` is the one `_TODO.md`, the root change printed, refusals fatal; or (C) the
+  > draft only?
+  > **A:** A.
+  > **Q:** The drafter and the review: (A) spawn `workflow-claude:plan-drafter` with the
+  > label, date, model file, spec (a path, or the text), the root plan and the script's
+  > `previous:` path; with no spec, ask for purpose, decisions and subgoals and pass those as
+  > the spec (`**Spec**: conversation`); show the three sections as returned, edit the draft
+  > in the main session, re-spawn only on request; after the write and before the commit,
+  > `locate-plan.sh` must report `found` with subgoal 1 as `next:`, or nothing is committed;
+  > (B) as A, re-spawning every round; or (C) as A, with no spec drafted in the main session?
+  > **A:** A.
+  > **Q:** `/open-revision` as an alias: (A) a short command running
+  > `Skill(workflow-claude:master-plan)` with its arguments, kept for one revision; the
+  > heading and closed-pointer matchers move from `open-revision.sh` into `lib/plan-rules.sh`
+  > for `propose-revision.sh`'s legacy path; `open-revision.sh` is deleted and its 15 cases and
+  > 9 mutants ported to the new suite; (B) a pure alias, `open-revision.sh` kept unused; or
+  > (C) an alias keeping the legacy section path?
+  > **A:** A.
+  > **Note:** Only `/open-revision` runs `open-revision.sh`. `plugins/dp-compile/README.md`
+  > names `/open-revision`, so the command name has to keep working.
+  > **Note:** The Claude Code docs, as reported by a docs agent and not checked here: `Agent`
+  > needs no permission; `Agent(Name)` rules exist, but the `plugin:agent` form is not
+  > documented in them; and the skills page says `allowed-tools` grants rather than restricts,
+  > where the plugin `CLAUDE.md` says "restricts". Measured here: `Write` creates missing
+  > parent directories, so a dry run needs no `mkdir`.
+  > **Q:** `allowed-tools`: (A) `propose-revision.sh` and `locate-plan.sh`; `git status`,
+  > `git log`, `git branch --show-current`, `git rev-parse`, `git checkout -b`, `git add`,
+  > `git commit`; `Read`, `Write`, `Edit`, `Agent`, `AskUserQuestion`; no `Grep`/`Glob`, no
+  > push; (B) as A with `Agent(workflow-claude:plan-drafter)`; or (C) as A with `git push`?
+  > **A:** A.
+  - [x] The spec, `propose-revision-spec.md`, beside this plan
+    > **Note:** `index_open` calls the caller's own `fail`, as it does for
+    > `propose-branch-plan.sh` and `propose-merge-record.sh`, so the new script reuses it and
+    > reports an index violation in its own ten-line shape.
+  - [ ] `lib/plan-rules.sh` gains the heading and closed-pointer matchers; the four library suites still pass
+  - [ ] `scripts/propose-revision.sh` and `dev/propose-revision/`, with `open-revision`'s cases ported and every mutant caught
+  - [ ] `commands/master-plan.md`, `commands/open-revision.md` as its alias, `open-revision.sh` and `dev/open-revision/` removed, README run lines
 - [ ] `/close-revision` stamps, keeping the legacy path; `/file-plans` is legacy-only
 - [ ] Verify end to end: the user runs it, I grade

@@ -111,7 +111,10 @@ ends with. Settled, and not to be reopened:
         commands; a later line says to Grep for the backlink;
       - `/new-branch` is no longer "always flat", and the branch-doc path differs between
         practice here (`docs/git/<flattened>.md`) and the e2e (`docs/git/<branch>.md`);
-      - `/new-branch` has no `argument-hint`.
+      - `/new-branch` has no `argument-hint`;
+      - `CLAUDE.md` says `allowed-tools` "restricts which tools the command can call", where
+        the skills docs say it grants permission and does not restrict. Verify before
+        rewording (`feat-master-plan` goal 4).
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its
