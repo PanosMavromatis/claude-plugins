@@ -280,4 +280,84 @@
     > The rest of the lifecycle prose, in `CLAUDE.md` and the README, is listed with its
     > line numbers under the master plan's plan-convention subgoal. All six library suites'
     > cases are unchanged: 83, 39, 32, 37, 72 and 56.
-- [ ] Verify end to end: the user runs it, I grade
+- [x] Verify end to end: the user runs it, I grade
+  > **Done:** `dev/per-goal-e2e/` runs `/master-plan`, `/open-revision` and `/close-revision`
+  > headless in six scenarios; run `r6` passed 102 checks, and the drafts read faithful. Reading
+  > the sessions found an archive one blank line short after a faithful copy, now fixed in
+  > `close-revision.sh` (58 cases, 40 mutants), and step 6's ambiguous `<revision>`, reworded.
+  > **Q:** How should `/master-plan` and `/close-revision` be verified: (A) six sessions added
+  > to `dev/per-goal-e2e/`: `m1` `/master-plan` appending to an index, `m2` `/open-revision`
+  > converting a legacy root plan, `m3` a `--dry-run` past a refusal, `c1` a stamp, `c2` a
+  > legacy cut with moves (`git mv` allowed for that session only), `c3` a refused close; the
+  > user runs `run.sh`, `check.py` grades; (B) the four happy paths only; or (C) by hand in a
+  > scratch repository, graded by reading?
+  > **A:** A.
+  - [x] Fixtures, sessions and checks for `m1`–`m3` and `c1`–`c3` in `build.py`, `run.sh` and `check.py`
+    > **Note:** What each session should have written comes from the copy's scripts, run on a
+    > clone of the fixture at `main`: the root plan is `--render`'s for the note the session
+    > chose, the stamp is the proposal's two `edits:` lines, the cut is `--render archive` and
+    > `root`. Rehearsed in a scratch `LOCATE_PLAN_WORK`: on the untouched fixtures each script
+    > gave the planned report (m3 refused, c2 two moves and a warning for `feat-old-c`, c3
+    > refused); with each session's work done by hand, every end-state check passed; with a
+    > `Scope:` line dropped from a draft, or one word of the archive changed, the check failed
+    > naming it. The session checks wait for a real run.
+    > **Note:** `session()` now skips stream messages with `parent_tool_use_id` set, which is
+    > how a subagent's own tool calls are expected to appear, so the drafter reading the spec
+    > is not counted against the main session; no earlier scenario spawns a subagent. Not yet
+    > measured: the run's stream confirms it or not.
+    > **Note:** A side agent noted, during the run, that the draft checks were checks of form:
+    > the fixture approves the review, so a draft dropping, merging or inventing work would
+    > pass. `check.py` gained a content check (after `r6` started; it grades, so the
+    > sessions are unaffected). Each of the spec's three units names one file
+    > (`CHANGELOG.md`, `CLAUDE.md`, `check-changelog.sh`). Each file must reach a subgoal,
+    > first in the spec's order, and every subgoal must name one. A split is reported, not
+    > failed. Tried on a faithful draft (pass), one with a unit dropped and one with a CI
+    > subgoal added (both fail, naming it). It is a check against obvious drift, not a
+    > judgement, so the drafts are also read by hand and graded under subgoal 2.
+    > **Note:** For R2's handoff, not this branch: make fidelity checkable in real use.
+    > `plan-drafter` tags each subgoal with the spec item it comes from, so `/master-plan`
+    > can confirm that every spec item is a subgoal or listed under `## Left out`. Changing
+    > the drafter's output mid-run would have invalidated `r6`.
+  - [x] The user runs them; every failure graded as the harness's or the command's, and the command's fixed
+    > **Result:** Run `r6`, 6 sessions, $2.39: 102 checks, 0 failing. Measured: a subagent's
+    > stream messages carry `parent_tool_use_id`, so the filter holds; the drafter read the
+    > spec, `subdividing.md`, the root plan and `previous:`, plus one `Glob` (a subagent has
+    > `Glob`; the main session does not).
+    > **Note:** The three drafts, read against the spec: faithful. Three subgoals each, one per
+    > unit, in order, `builds on 1` where it does; the preamble is the spec's own why; the
+    > settled decision is copied. Where the spec was open (past releases, what a release
+    > branch is), the drafter asked rather than guessed, and the first-option answers became
+    > settled decisions, as step 4 says. Acceptance lines are runnable checks.
+    > **Note:** The side agent's second point holds: in this spec nearly any invented subgoal
+    > names `CHANGELOG.md`, so the content check proves only that nothing was dropped and the
+    > order holds. The earlier note's "a CI subgoal added fails" was the easy case, one that
+    > names none of the files. The check is renamed to say so; invented work is the reader's.
+    > **Note:** Found by reading the sessions, though no check failed. c2's first `--check`
+    > failed: the section ends in a blank line, tool output drops trailing blank lines, so the
+    > `Write` of the render was one line short; the session tried a `--show-bytes` flag that does
+    > not exist, then repaired it by hand, and the second check verified. This repository's R1
+    > section ends the same way. m1 first ran `locate-plan.sh TODO.md -- 08-next`, the label
+    > for step 6's `<revision>`, then the path. m1 and m2 both flagged `layout: legacy` from
+    > `locate-plan.sh` on the new revision file: there it is the file's own form (single file,
+    > not per-goal), where the revision scripts use the word for a root plan.
+    > **Q:** The archive's trailing blank line: (A) `--render archive` and `--check` drop the
+    > section's trailing blank lines, with the spec and `dev/close-revision/`; (B) a warning in
+    > `close-revision.md`; or (C) leave it, as `--check` caught it?
+    > **A:** A.
+    > **Q:** Step 6's `<revision>` and the `layout:` clash: (A) reword step 6 to pass the
+    > `revision:` path, and record the clash for R2; (B) fix both here; or (C) defer both?
+    > **A:** A.
+    > **Note:** Fixed. `render_archive` holds blank lines back and prints them only before a
+    > non-blank line, so blank lines inside the section stay and trailing ones go; `--check`
+    > compares against the same function. `dev/close-revision/`: `x21` (inner kept, trailing and
+    > whitespace-only dropped) and `k10` (an archive keeping the blank fails the check), 58
+    > cases; mutants `c36` (keeps trailing blanks) and `c37` (drops inner ones) killed by `x02`,
+    > `c27` regenerated, 40 of 40 killed. Rehearsed on a copy of this repository with R1's open
+    > items ticked: the 9-138 cut, five moves, `--check` verified, and a changed word still
+    > fails. `/master-plan` step 6 now says to pass the `revision:` path, not the label. The
+    > `layout:` clash is recorded for R2.
+  - [x] `dev/per-goal-e2e/README.md` describes the new sessions and the run's result
+    > **Note:** The README gains the six scenarios, how their expectations are derived, what
+    > they do not test (the review step, so drafts are read by hand, and a scenario that spawns
+    > an agent needs a content check or a named reader), and run `r6`. Its cost line now
+    > gives measured runs only ($4.18 for `r5`'s e1, e3, e4; $2.39 for `r6`).

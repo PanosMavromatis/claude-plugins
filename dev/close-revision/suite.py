@@ -84,7 +84,7 @@ Nothing.
 """
 LL = LEGACY.split("\n")
 POINTER = "- **Revision 08-c** — A subtitled heading — closed. See `docs/plan/08-c/_TODO.md`."
-ARCHIVE = "\n".join(LL[8:27]) + "\n"                                  # lines 9-27
+ARCHIVE = "\n".join(LL[8:26]) + "\n"                                  # lines 9-26: the section, less its trailing blank line 27
 ROOT_AFTER = "\n".join(LL[0:8] + LL[27:32] + [POINTER] + LL[32:])     # cut, pointer after line 32
 MERGED = "# b\n\n**Status**: merged — PR #1 — 2026-10-01\n"
 ACTIVE = "# b\n\n**Status**: active\n"
@@ -153,6 +153,8 @@ def extract_ok():
     os.makedirs(f"{FX}/docs/plan/08-c", exist_ok=True)
     write("docs/plan/08-c/_TODO.md", ARCHIVE); write("docs/plan/TODO.md", ROOT_AFTER)
     gitmv("docs/plan/feat-one", "docs/plan/08-c/feat-one")
+def extract_blank():  # the archive as the section ran, trailing blank line kept
+    extract_ok(); write("docs/plan/08-c/_TODO.md", ARCHIVE + "\n")
 def extract_word():
     extract_ok(); write("docs/plan/08-c/_TODO.md", ARCHIVE.replace("shipped", "shiped"))
 def extract_nomove():
@@ -254,6 +256,9 @@ C = [
           "docs/plan/feat-a$(touch${IFS}PWNED)/TODO.md": MERGED}, ["01-a"] + D, dict(exit=1, rep=rep(result="error",
      problem="the backlink `feat/a$(touch${IFS}PWNED)` names a plan directory that is not a plain name, so no move is printed for it",
      fix="check the backlink; move the directory by hand if it is genuine (your call)"), any=["layout", "root", "revision"])),
+ # the archive drops the section's trailing blank and whitespace-only lines, and keeps those inside it
+ ("x21", {"docs/plan/TODO.md": "# M\n\n## Subgoals — revision 01-a\n\nPreamble.\n\n- [x] a\n\n \n\t\n\n## Closed revisions\n"},
+     ["01-a", "--render", "archive"] + D, dict(exit=0, out="## Subgoals — revision 01-a\n\nPreamble.\n\n- [x] a\n")),
  # tool failures: every awk, then only the matcher named by the label it is passed
  ("t01", LG, "awk127", dict(exit=3, err="awk failed")),
  ("t02", LG, "awk-section", dict(exit=3, err="awk failed reading /dev/stdin")),
@@ -272,6 +277,9 @@ C = [
      problem="docs/plan/feat-one has not been moved into docs/plan/08-c/", fix=f"run: {LG_MOVE}")), extract_nomove),
  ("k07", LG, ["08-c", "--check"] + D, dict(exit=1, rep=dict(LEG, result="error", warnings="\n".join(LG_WARN),
      problem="docs/plan/TODO.md is not the root plan with the section cut and the pointer added"), any=["fix"]), extract_nocut),
+ ("k10", LG, ["08-c", "--check"] + D, dict(exit=1, rep=dict(LEG, result="error", warnings="\n".join(LG_WARN),
+     problem="docs/plan/08-c/_TODO.md is not the section, verbatim",
+     fix="write it again from `close-revision.sh 08-c --date 2026-10-11 --render archive`, run before the cut")), extract_blank),
  ("k08", IX_DONE, ["08-new", "--check"] + D, dict(exit=1, rep=dict(STAMP, result="error",
      problem="docs/plan/TODO.md:10 at HEAD marks revision 08-new [x], not [~]", fix=BEFORE))),
  ("k09", LG_DONE, ["08-c", "--check"] + D, dict(exit=1, rep=dict(LEG, result="error",

@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -392,7 +392,6 @@
+@@ -395,7 +395,6 @@
    else atend=1; fi
    src "$ROOT_PLAN" | S="$START" E="$END" P="$R_POINTER" A="$after" B="$blank" D="$before" Z="$atend" awk '
      BEGIN { s = ENVIRON["S"] + 0; e = ENVIRON["E"] + 0; a = ENVIRON["A"] + 0; d = ENVIRON["D"] + 0; p = ENVIRON["P"] }

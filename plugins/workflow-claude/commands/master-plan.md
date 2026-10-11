@@ -116,11 +116,12 @@ first. Then:
 Both must pass, each run alone:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <TODO.md|DO.md> -- <revision>
+${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <TODO.md|DO.md> -- <the revision: path>
 ${CLAUDE_PLUGIN_ROOT}/scripts/propose-revision.sh <label>
 ```
 
-- `locate-plan.sh` must report `result: found`, `plan:` the revision's file, and `next:`
+- `locate-plan.sh` takes the path step 1 reported as `revision:`
+  (`docs/plan/<label>/_TODO.md`), not the label, and must report `result: found`, `plan:` the revision's file, and `next:`
   on subgoal 1: the revision's master plan reads as every later command will read it.
 - `propose-revision.sh` must now refuse, with `problem:` saying the root plan already
   lists the label: the index reads, and it holds the new line.

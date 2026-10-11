@@ -1,11 +1,11 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -380,7 +380,7 @@
- 
- # --- the files as closing writes them ---------------------------------------------------
- 
--render_archive() { src "$ROOT_PLAN" | S="$START" E="$END" awk 'NR >= ENVIRON["S"] + 0 && NR <= ENVIRON["E"] + 0 { sub(/\r$/, ""); print }' || die "awk failed rendering the archive"; }
-+render_archive() { src "$ROOT_PLAN" | S="$START" E="$END" awk 'NR >= ENVIRON["S"] + 0 && NR <= ENVIRON["E"] + 0 { print }' || die "awk failed rendering the archive"; }
+@@ -383,7 +383,7 @@
+ # The section without its trailing blank lines: in the root plan they only separate it from
+ # the next heading, and tool output drops them, so a faithful Write of this render would
+ # never match. Blank lines inside it are held back and printed, as they were, at the next line.
+-render_archive() { src "$ROOT_PLAN" | S="$START" E="$END" awk 'NR >= ENVIRON["S"] + 0 && NR <= ENVIRON["E"] + 0 { sub(/\r$/, ""); if ($0 ~ /^[ \t]*$/) { held = held $0 "\n"; next } printf "%s", held; held = ""; print }' || die "awk failed rendering the archive"; }
++render_archive() { src "$ROOT_PLAN" | S="$START" E="$END" awk 'NR >= ENVIRON["S"] + 0 && NR <= ENVIRON["E"] + 0 { if ($0 ~ /^[ \t]*$/) { held = held $0 "\n"; next } printf "%s", held; held = ""; print }' || die "awk failed rendering the archive"; }
  
  render_root() {
    local after=0 blank=0 before=0 atend=0

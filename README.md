@@ -133,12 +133,12 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 python3 -I dev/propose-revision/suite.py                 # 72 cases, no model, ~30 s
 python3 -I dev/propose-revision/suite.py --mutants       # the suite must catch each mutant, ~7 min
-python3 -I dev/close-revision/suite.py                   # 56 cases, no model, ~40 s
+python3 -I dev/close-revision/suite.py                   # 58 cases, no model, ~40 s
 python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~8 min
 ```
 
-`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step` and `/smart-merge`
-headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
+`dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step`, `/smart-merge`,
+`/master-plan`, `/open-revision` and `/close-revision` headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
 runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,
 which cost money, so run them yourself, after a change to the command text;
 `dev/per-goal-e2e/README.md` covers how.

@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -439,7 +439,7 @@
+@@ -442,7 +442,7 @@
        IFS="$NL"
        for m in $R_MOVES; do
          flat="${m##*/}"

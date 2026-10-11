@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -424,7 +424,7 @@
+@@ -427,7 +427,7 @@
  if [ $CHECK -eq 1 ]; then
    case "$R_CHANGE" in
      stamp)

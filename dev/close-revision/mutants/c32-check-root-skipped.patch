@@ -1,6 +1,6 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -433,7 +433,7 @@
+@@ -436,7 +436,7 @@
      extract)
        render_archive | same "$REV" \
          || violation "$REV is not the section, verbatim" "write it again from \`$PROG $LABEL --date $DATE --render archive\`, run before the cut"

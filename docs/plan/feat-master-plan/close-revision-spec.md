@@ -78,7 +78,10 @@ directory, `<name>` with `/` flattened to `-`, matched whole:
   is printed. The command runs each move as printed, and a backlink is text from the plan:
   `$( )` or `;` in it would be run by the shell.
 
-`--render archive` is the section, verbatim, LF. `--render root` is the root plan without
+`--render archive` is the section, verbatim, LF, less its trailing blank lines (blank or
+whitespace-only): in the root plan they only separate it from the next heading, and tool
+output drops them, so a `Write` of the render could never match (run `r6`, c2). `section:`
+still names the whole range the cut removes. `--render root` is the root plan without
 the section, with the pointer after the last `- **Revision ` line under `## Closed
 revisions`, or, if it has none, after the last non-blank line of that section with a blank
 line between (after the heading itself, with a blank line, if the section is empty). With no such
