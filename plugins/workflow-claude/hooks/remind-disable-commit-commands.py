@@ -3,9 +3,8 @@
 is loaded (i.e. this hook ran at all), recommend disabling it. Silent otherwise.
 
 This hook ships inside workflow-claude, so it only runs when workflow-claude is
-loaded -- which only happens when the session was launched with
-`claude --plugin-dir <path>/workflow-claude`. The hook firing IS the
-"--plugin-dir was used" signal; no need to inspect argv.
+loaded -- by a marketplace install, or `claude --plugin-dir` while developing it.
+The hook firing IS the "workflow-claude is loaded" signal; no need to inspect argv.
 """
 import json
 import os

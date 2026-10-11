@@ -49,7 +49,7 @@ Report a brief summary: branch name, N commits ahead of main, clean/dirty state.
 
 ### 2. Read the branch doc and the branch plan
 
-**Branch doc.** Check for `docs/git/<current-branch>.md`. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
+**Branch doc.** Check for `docs/git/<flattened-branch>.md`, the current branch name with `/` flattened to `-`, which is where `/new-branch` writes it. If that is absent, check the unflattened `docs/git/<current-branch>.md`, where earlier versions wrote it, so a branch opened before the change still finds its doc. **Note which path exists**: step 4 deletes that one. If it exists, read it — it contains the purpose, scope, and context captured when the branch was created. Use this as primary input for drafting the PR.
 
 **Branch plan.** The bundled `scripts/locate-plan.sh` resolves it, by the rules `/step` and
 `/hitl-step` use. It is read-only. Do not resolve the plan yourself. The completed items and
@@ -123,10 +123,10 @@ Explain: the branch doc was a working artifact for this branch; deleting it now 
 
 **Only the branch doc is deleted.** Leave the branch plan directory resolved in step 2 alone, wherever it sits — it is meant to land on `main`.
 
-If the doc exists, run:
+If the doc exists, run, with the path step 2 found:
 
 ```bash
-git rm docs/git/<branch-name>.md
+git rm <the branch doc's path from step 2>
 git commit -m "<subject>"
 ```
 

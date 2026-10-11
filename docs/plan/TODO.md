@@ -106,7 +106,7 @@ ends with. Settled, and not to be reopened:
   > is its alias, and the reopen guard matches whole labels. `close-revision.sh` stamps an
   > index or cuts a legacy section and files its merged plans, checked from `HEAD` before the
   > commit, so `/file-plans` is removed. Two suites and six e2e sessions verify it — PR #10
-- [ ] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
+- [x] Rewrite the plan-convention sections of the plugin's `CLAUDE.md` and README. The
       "do not reintroduce the split" paragraph gains the §4.2 distinction. Known drift,
       found on earlier branches:
       - `CLAUDE.md` says "`Grep` is allow-listed … `Bash(grep:*)` deliberately is not",
@@ -130,6 +130,12 @@ ends with. Settled, and not to be reopened:
         69, 73, 75, 81, 103 (the status-stamp contract names `/file-plans` as a reader; it is
         now `close-revision.sh`) and 202; README lines 147-151, 164-170 and 216
         (`feat-master-plan` goal 5).
+  > **Branch:** docs/plan-convention
+  > **Done:** The plugin's `CLAUDE.md` and README describe the revisions and legacy layouts,
+  > per-goal plans and `/master-plan` → `/close-revision`, with §4.2's distinction in the split
+  > paragraph and the drift list fixed; the branch doc is `docs/git/<flattened-branch>.md` in
+  > `/new-branch` and `/smart-merge`, which falls back to the old path. A review against the
+  > scripts and e2e run `r7` verify it — PR #11
 - [ ] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its

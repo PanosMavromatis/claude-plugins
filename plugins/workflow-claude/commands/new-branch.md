@@ -1,5 +1,6 @@
 ---
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-branch-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit, Glob, Grep
+argument-hint: "[<type>/<slug>] [purpose]"
 description: Create a new feature branch with documented purpose
 ---
 
@@ -78,7 +79,7 @@ Wait for approval, then run it.
 
 ### 6. Create the branch doc
 
-Write `docs/git/<branch-name>.md` with this template, filled in from the gathered context:
+Write the branch doc at `docs/git/<flattened-branch>.md`: the branch name with `/` flattened to `-`, as the plan's directory is (`feat/user-auth` → `docs/git/feat-user-auth.md`), so `docs/git/` stays one flat directory with no `feat/` or `fix/` pseudo-namespace. Fill in this template from the gathered context:
 
 ```markdown
 # <branch-name>
@@ -172,7 +173,7 @@ Explain: the branch doc informs the PR title and body and is deleted at merge; t
 Run, substituting the real paths — the branch doc, `index:`, every `goals:` path, and the master file `backlink:` names if one was backlinked:
 
 ```bash
-git add docs/git/<branch-name>.md <index> <goal file>... <backlinked master file>
+git add docs/git/<flattened-branch>.md <index> <goal file>... <backlinked master file>
 git commit -m "<subject>"
 ```
 
@@ -188,7 +189,7 @@ git commit -m "<subject>"
 Summarize the final state:
 
 - Current branch: `<branch-name>`
-- Doc created at: `docs/git/<branch-name>.md`
+- Doc created at: `docs/git/<flattened-branch>.md`
 - Plan created at: the `index:` path, with its goal files if per-goal, and the backlink if any
 - Next steps: run `/step` (or `/hitl-step`) to work the plan; `/smart-merge` when ready to merge.
 
