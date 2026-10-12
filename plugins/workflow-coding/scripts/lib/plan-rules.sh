@@ -514,13 +514,14 @@ e10_fix() {  # e10_fix <goal dir> <NN> <index line text>; reads FILES
 # begins (07-rev for 07-rev-2), and a label may hold regex metacharacters. The label
 # reaches awk through the environment, since -v would read a backslash in it as an
 # escape, and a trailing CR is dropped so a CRLF plan reads the same. Each prints the
-# first matching line's number, or nothing.
+# first matching line's number, or nothing, and reads to EOF: close-revision.sh feeds each
+# a pipe through /dev/stdin, whose writer an exit at the match could kill with SIGPIPE.
 section_line() {  # section_line <file> <label>: the heading alone, or then `: <subtitle>`
   L="## Subgoals — revision $2" awk '
-    { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }
+    got { next } { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; got = 1 }
   ' "$1" || die "awk failed reading $1"
 }
 pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label
-  L="- **Revision $2**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
+  L="- **Revision $2**" awk 'got { next } { sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; got = 1 }' "$1" \
     || die "awk failed reading $1"
 }
