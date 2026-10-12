@@ -1,7 +1,11 @@
 # 04 — Export a real session outside the repo
 
-**Goal**: [ ]
+**Goal**: [x]
+> **Done:** Two runs of the real command, through `claude --plugin-dir`, exported this project's sessions to `~/claude-exports/claude-plugins/`: with no argument, the run's own session by `${CLAUDE_SESSION_ID}`; and `multi-agent-refactor-r1`, whose export holds all 16 compaction summaries and all 14 `/compact` commands, beside a byte-identical `.jsonl` and an archive of all 34 files in its folder.
 > **Note:** The 0.10.0 driver cannot run the new command, so until 0.10.1 is installed the run follows the command's text, as `feat/session-handoff`'s goal 03 did.
+> **Note:** The runs did not need the fallback: `claude --plugin-dir ./plugins/workflow-coding -p "/workflow-coding:session-export-full …"` loads the working tree's plugin, and the installed 0.10.0 has no `session-export-full`, so only the new command could answer, with its `${…}` substituted.
 
-- [ ] A real session with compactions is exported through the command to a path outside the repository
-- [ ] The export holds every compaction summary and the `/compact` instructions given, and its title comes from the output filename; `<name>.jsonl` and the session's folder sit beside it
+- [x] A real session with compactions is exported through the command to a path outside the repository
+  > **Note:** Run 2026-10-12 by the user. With no argument, the run exported its own session, `8d0baa86-…`, by id, as `<id>.md` and `<id>.jsonl`, the copy a byte-exact prefix of the log, which went on growing mid-turn; it had no folder, so no archive. Named `multi-agent-refactor-r1`, it wrote `.md`, `.jsonl` and `.tar.gz` beside each other. That run's session first read `tmp/session-handoff.md`, as the root `CLAUDE.md` asks: every new session spends one call on that check, a cost R2 should count. The summary's "0 operator messages" was its slash command, rendered as "Operator ran" and not counted as a typed message.
+- [x] The export holds every compaction summary and the `/compact` instructions given, and its title comes from the output filename; `<name>.jsonl` and the session's folder sit beside it
+  > **Note:** Counted from the R1 log: 16 compaction summaries, all 16 in the export, of which 2 had no `/compact` before them, so were automatic; 14 `/compact` commands, 13 with instructions, all present; the title `# Session multi-agent-refactor-r1 — full transcript`; `.jsonl` identical to the 61 MB log (`cmp`); the archive's 34 files the same set as the folder's.
