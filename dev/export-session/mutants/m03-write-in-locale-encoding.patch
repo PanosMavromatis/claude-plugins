@@ -1,9 +1,9 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -129,7 +129,7 @@
-         flush_tools()
-         out.append(f"## Operator — {when(r)}\n\n{text}\n")
- flush_tools()
+@@ -175,7 +175,7 @@
+ if subs:   # subagents whose spawning call the log does not hold
+     out.append("## Subagents whose call is not in the log\n")
+     out += [subagent(s) for s in subs.values()]
 -with open(dst, "w", encoding="utf-8") as f:
 +with open(dst, "w") as f:
      f.write("\n".join(out))

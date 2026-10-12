@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -50,7 +50,7 @@
+@@ -58,7 +58,7 @@
               + "; pass the log's path instead")
      src = hits[0]
  REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)

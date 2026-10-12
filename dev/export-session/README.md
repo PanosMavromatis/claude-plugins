@@ -8,8 +8,8 @@ in the `feat-session-export-full` branch plan.
 ## Running it: no model, no cost
 
 ```bash
-python3 -I dev/export-session/suite.py             # 13 cases (~1 s)
-python3 -I dev/export-session/suite.py --mutants   # 6 mutants, every one must be caught (~1 s)
+python3 -I dev/export-session/suite.py             # 16 cases (~1 s)
+python3 -I dev/export-session/suite.py --mutants   # 10 mutants, every one must be caught (~1 s)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy. Each case works in its own
@@ -36,6 +36,12 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   session by its new name, and `n02` finds another session by the first one's old name.
   No match (`n03`), two matches (`n04`) and a missing log path (`n05`) each exit 1 with a
   reason and write nothing.
+- **`s01`–`s03`** are subagent transcripts, from the log's `<uuid>/subagents/`, which appear
+  only with `--subagents` (`s02` has the files and no flag). Each follows the call that
+  spawned it, collapsed (`s01`), or, when that call is not in the log, an appendix
+  (`s03`). Every record in a subagent's log is a sidechain record, which the main log's
+  filter drops, and a subagent hands its answer back as a `SubagentHandback` call, not as
+  text: `s01` checks both.
 - **`g01`** renders one log holding every kind of record, each block checked byte for
   byte: an operator message with a system reminder stripped, tool actions collapsed,
   replies, a question and its answer, commands with and without arguments, a compaction
@@ -50,4 +56,5 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   it if its rule has gone. A mutant must be caught by the case aimed at its rule: the
   defect cases run first, the title's before the rest, since every output carries a
   title. Check the `FAIL` line each one prints. `m06` matches a name against every name a
-  log has had, as the old runbook's `grep` did, and `n02` catches it.
+  log has had, as the old runbook's `grep` did, and `n02` catches it. `m07`–`m10` undo the
+  subagent rules: the flag, the sidechain filter, the handback, and the appendix.

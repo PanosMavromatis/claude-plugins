@@ -1,11 +1,11 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -24,7 +24,7 @@
- 
- if len(sys.argv) != 3:
-     print("usage: export-session.py <session name | session.jsonl> <output.md>", file=sys.stderr)
+@@ -32,7 +32,7 @@
+ subagents = args[2:] == ["--subagents"]
+ if len(args) != 2 and not subagents:
+     print("usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]", file=sys.stderr)
 -    sys.exit(2)
 +    sys.exit(1)
- arg, dst = sys.argv[1], sys.argv[2]
+ arg, dst = args[0], args[1]
  
  def fail(msg):

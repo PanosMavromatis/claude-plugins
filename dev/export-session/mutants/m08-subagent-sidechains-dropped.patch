@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -150,7 +150,7 @@
+     return out
+ 
+ def subagent(s):   # one subagent's transcript, collapsed
+-    blocks = render(load(s["log"]), "###", "Prompt", "Subagent", side=True)
++    blocks = render(load(s["log"]), "###", "Prompt", "Subagent", side=False)
+     n = sum(1 for x in blocks if x.startswith("### Subagent —"))
+     return (f"<details><summary>Subagent {s['type']} — {s['desc']} ({n} replies)</summary>\n\n"
+             + "\n".join(blocks) + "\n</details>\n")

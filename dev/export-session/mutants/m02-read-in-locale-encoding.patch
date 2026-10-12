@@ -1,11 +1,11 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -73,7 +73,7 @@
-            f"`{src.split('/')[-1]}`. It contains the operator's messages, the assistant's visible replies, "
-            "the operator's answers to multiple-choice questions, compaction summaries, and one-line "
-            "entries for tool actions. It omits tool output, system reminders and hidden reasoning.\n")
--with open(src, encoding="utf-8") as log:
-+with open(src) as log:
-     lines = log.readlines()
- for line in lines:
-     try: r = json.loads(line)
+@@ -71,7 +71,7 @@
+     return f"- `{name}`" + (f": {str(detail)[:160]}" if detail else "")
+ 
+ def load(path):
+-    with open(path, encoding="utf-8") as log:
++    with open(path) as log:
+         lines = log.readlines()
+     records = []
+     for line in lines:

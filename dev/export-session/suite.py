@@ -87,6 +87,24 @@ PROJ = {
     f"{UE}.jsonl": [said("E")], f"{UE}/custom-title.json": named("twin"),
 }
 def by_name(n): return dict(proj=PROJ, arg=n)
+
+# A session that spawned a subagent. Every record in a subagent's log is a sidechain record,
+# and it hands its answer back as a SubagentHandback call, not as text.
+FOLDER = LOG.removesuffix(".jsonl")
+SPAWNS = [rec("assistant", [{"type": "tool_use", "id": "ag1", "name": "Agent", "input": {"description": "Draft it"}}], at("11:00")),
+          rec("assistant", [{"type": "text", "text": "Drafting."}], at("11:01"))]
+SUB = [rec("user", "Draft the plan.", at("11:00"), isSidechain=True),
+       rec("assistant", [{"type": "tool_use", "id": "r1", "name": "Read", "input": {"file_path": "/p.md"}}], at("11:00"), isSidechain=True),
+       rec("assistant", [{"type": "tool_use", "id": "h1", "name": "SubagentHandback", "input": {"message": "## Draft\n\nDone."}}],
+           at("11:01"), isSidechain=True)]
+def agent(tool_use_id): return {f"{FOLDER}/subagents/agent-a1.jsonl": SUB, f"{FOLDER}/subagents/agent-a1.meta.json":
+                                json.dumps({"agentType": "plan-drafter", "description": "Draft it", "toolUseId": tool_use_id})}
+SPAWN_ACT = "<details><summary>Actions (1)</summary>\n\n- `Agent`: Draft it\n\n</details>\n"
+SUB_OUT = ("<details><summary>Subagent plan-drafter — Draft it (1 replies)</summary>\n\n"
+           "### Prompt — 2026-10-12 11:00 UTC\n\nDraft the plan.\n\n"
+           "<details><summary>Actions (1)</summary>\n\n- `Read`: /p.md\n\n</details>\n\n"
+           "### Subagent — 2026-10-12 11:01 UTC\n\n## Draft\n\nDone.\n\n</details>\n")
+DRAFTING = "## Claude — 2026-10-12 11:01 UTC\n\nDrafting.\n"
 def from_(who, u, t): return dict(exit=0, out=doc(t, f"## Operator — 2026-10-12 08:00 UTC\n\nfrom {who}\n", log=f"{u}.jsonl"),
                                   summary=summary(1, 0, 0))
 
@@ -109,9 +127,17 @@ C = [
                                          nofile=True), by_name("twin")),
     ("n05", [], "n05.md", UTF8, [], dict(exit=1, stderr="export-session.py: no such session log: missing.jsonl",
                                          nofile=True), dict(proj={}, arg="missing.jsonl")),
+    ("s01", SPAWNS, "s01.md", UTF8, ["--subagents"],      # inline, after the call that spawned it
+     dict(exit=0, out=doc("s01", SPAWN_ACT, SUB_OUT, DRAFTING), summary=summary(0, 1, 0) + ", 1 subagents"),
+     dict(files=agent("ag1"))),
+    ("s02", SPAWNS, "s02.md", UTF8, [],                   # only when asked for
+     dict(exit=0, out=doc("s02", SPAWN_ACT, DRAFTING), summary=summary(0, 1, 0)), dict(files=agent("ag1"))),
+    ("s03", SPAWNS, "s03.md", UTF8, ["--subagents"],      # its call not in the log: an appendix, not lost
+     dict(exit=0, out=doc("s03", SPAWN_ACT, DRAFTING, "## Subagents whose call is not in the log\n", SUB_OUT),
+          summary=summary(0, 1, 0) + ", 1 subagents"), dict(files=agent("zz"))),
     ("g01", G, "g01-full.md", UTF8, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
     ("g02", G, "g01-full.md", LATIN1, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
-    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session name | session.jsonl> <output.md>")),
+    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]")),
     ("u02", HI, "u02.md", UTF8, ["extra"], dict(exit=2, stderr="usage: export-session.py", nofile=True)),
 ]
 
@@ -125,16 +151,20 @@ def run_case(script, case, tmp):
     with open(log, "w", encoding="utf-8") as f: f.write("".join(l + "\n" for l in lines))
     env, cwd, first = dict(os.environ, LC_ALL=loc, LANG=loc), None, log
     env.pop("CLAUDE_CONFIG_DIR", None)
-    if setup:   # a case that names a session: its own config directory, working directory and projects
+    def put(root, files):
+        for rel, body in files.items():
+            os.makedirs(os.path.dirname(os.path.join(root, rel)), exist_ok=True)
+            with open(os.path.join(root, rel), "w", encoding="utf-8") as f:
+                f.write(body if isinstance(body, str) else "".join(l + "\n" for l in body))
+    s = setup[0] if setup else {}
+    if "proj" in s:   # a case that names a session: its own config directory, working directory and projects
         cwd, env["CLAUDE_CONFIG_DIR"] = os.path.join(d, "work"), os.path.join(d, "claude")
         os.makedirs(cwd)
         proj = os.path.join(env["CLAUDE_CONFIG_DIR"], "projects", enc(os.path.realpath(cwd)))
         os.makedirs(proj)
-        for rel, body in setup[0]["proj"].items():
-            os.makedirs(os.path.dirname(os.path.join(proj, rel)), exist_ok=True)
-            with open(os.path.join(proj, rel), "w", encoding="utf-8") as f:
-                f.write(body if isinstance(body, str) else "".join(l + "\n" for l in body))
-        first = setup[0]["arg"]
+        put(proj, s["proj"])
+    put(d, s.get("files", {}))   # files beside the log, such as its <uuid>/subagents/
+    first = s.get("arg", log)
     argv = [sys.executable, "-I", script] + ([first, out] if out else []) + extra
     p = subprocess.run(argv, capture_output=True, env=env, cwd=cwd)
     err, so, bad = p.stderr.decode("utf-8", "replace"), p.stdout.decode("utf-8", "replace"), []

@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -100,7 +100,7 @@
+                     out.append(f"{h} {cl} — {when(r)}\n\n{b['text'].strip()}\n")
+                 elif b.get("type") == "tool_use":
+                     handback = (b.get("input") or {}).get("message") if b.get("name") == "SubagentHandback" else None
+-                    if isinstance(handback, str) and handback.strip():   # a subagent's answer, sent as a call
++                    if False:   # a subagent's answer, sent as a call
+                         flush_tools()
+                         out.append(f"{h} {cl} — {when(r)}\n\n{handback.strip()}\n")
+                     elif b.get("name") == "AskUserQuestion":
