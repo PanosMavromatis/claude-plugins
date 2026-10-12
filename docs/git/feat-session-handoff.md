@@ -1,0 +1,28 @@
+# feat/session-handoff
+
+**Created**: 2026-10-12
+**Base**: main at 3285123
+**Status**: active
+
+## Purpose
+
+Add `/workflow-coding:session-handoff`, which writes `tmp/session-handoff.md` for the next session in `/smart-compact`'s three parts (Keep / Drop / Say where), and a root `CLAUDE.md` that has the next session read it first. The 0.10.0 driver cannot run a new command, so the command's text must work when a session follows it as a plain file. The root `CLAUDE.md` also carries the workflow's `# Compact instructions`, the static half of `/smart-compact`'s Compose. This is R1a subgoal 2, and it ships in `workflow-coding` 0.10.1.
+
+## Scope
+
+- `plugins/workflow-coding/commands/session-handoff.md` (new), needing no `$ARGUMENTS`, no `${CLAUDE_PLUGIN_ROOT}` and no `allowed-tools`.
+- `CLAUDE.md` at the repository root (new): the conditional read-the-handoff-first line, and a `# Compact instructions` section with §4.4's Drop list and Say-where convention.
+- A dogfood run on the 0.10.0 driver: one session follows the file and writes the handoff, and a fresh one reads it first.
+- Not in scope: documenting the command in the READMEs (R1a subgoal 4, the release), or how the handoff couples with `/smart-compact` (R2 decides that by measurement).
+
+## Context
+
+- R1a subgoal 2 is at `docs/plan/07-subagent-refactor-R1a/_TODO.md:57`, with its settled decisions at `:19`–`33` and `:49`.
+- The design is `tmp/subagent-refactor-plan.md` §4.4 (`/smart-compact`), including "What `/smart-compact` is for (2026-10-12)". It is untracked, since `tmp/` is gitignored.
+- The model handoff is `tmp/session-handoff-r1-r1a.md`, written by hand in the R1→R1a session in the shape this command will produce. It was kept (renamed) rather than deleted, because its "For R2" section is still live.
+- Open: whether a handoff is deleted once read and the user confirms (the settled decision at `_TODO.md:30`–`31`), or archived, as the R1→R1a one was.
+- The plugin's `protect-agent-docs.py` blocks `CLAUDE.md` writes only when `docs/agents/core.md` exists, and this repository has no `docs/agents/`.
+
+## Notes
+
+- 2026-10-12: the goal files are written with their subgoals, by hand from the subgoal's Acceptance line, until R1a subgoal 5 ships in 0.10.1.
