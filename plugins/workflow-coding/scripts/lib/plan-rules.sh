@@ -27,6 +27,15 @@ die() {  # die <message> [status]: a tool failed in a way the rules cannot expla
   if [ $# -ge 2 ]; then st="$2"; fi
   echo "$PROG: $1" >&2
   tool="${1%% *}"
+  # Two statuses are no tool's own, so neither names a binary or blames PATH: 141 is a
+  # writer killed by SIGPIPE, its reader having stopped before EOF; 3 is die's own, from a
+  # function that died inside the failed pipeline and has already said why.
+  case "$st" in
+    141) echo "hint: status 141 is SIGPIPE: a command was killed writing to a pipe whose reader stopped before EOF, a bug in $PROG rather than in PATH or a tool" >&2
+         exit 3 ;;
+    3)   echo "hint: status 3 is $PROG's own failure status, so the cause is the failure reported above, not PATH or a tool" >&2
+         exit 3 ;;
+  esac
   case "$tool" in
     awk|find|sort|git)   # name the binary that failed, so a broken PATH shows itself
       path="$(command -v "$tool" 2>/dev/null)" || path=""

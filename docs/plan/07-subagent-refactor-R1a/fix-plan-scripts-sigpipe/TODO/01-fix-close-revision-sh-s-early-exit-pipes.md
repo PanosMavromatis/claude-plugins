@@ -2,6 +2,7 @@
 
 **Goal**: [x]
 > **Note:** close-revision.sh has five pipe readers that exit early, not three: :135, :177 (layout under --check), :194 (stamp's index line), :217 and :365. :236, :248, :260, :285 and :342 read to EOF. Every awk in lib/plan-rules.sh reads a file argument, so it has no writer to kill.
+> **Note:** Later, during goal 03: seven, not five. close-revision.sh:277 and :282 feed src to section_line and pointer_line through /dev/stdin, and both stop at the first match. Fixed in goal 01a.
 
 - [x] Inventory every pipe reader in close-revision.sh, and which of them exit before EOF
 - [x] Replace each early `exit` with a guard that reads to EOF (`got { next }` / `found { next }`), with the rule stated once above `src()`

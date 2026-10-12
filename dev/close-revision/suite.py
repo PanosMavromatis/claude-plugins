@@ -33,6 +33,7 @@ def h(label): return hashlib.sha1(label.encode()).hexdigest()[:8]
 AWK127 = f"{W}/bin/{h('crv-awk-127')}"
 AWKSEL = {"awk-section": (f"{W}/bin/{h('crv-awk-section')}", "## Subgoals"),
           "awk-pointer": (f"{W}/bin/{h('crv-awk-pointer')}", "- **Revision")}
+CAT141 = f"{W}/bin/{h('crv-cat-141')}"   # a cat killed by SIGPIPE, as a writer is when its reader stops early
 NOREPO = f"{W}/norepo-{h('crv-norepo')}"
 DATE = "2026-10-11"
 
@@ -263,6 +264,10 @@ C = [
  ("t01", LG, "awk127", dict(exit=3, err="awk failed")),
  ("t02", LG, "awk-section", dict(exit=3, err="awk failed reading /dev/stdin")),
  ("t03", LG, "awk-pointer", dict(exit=3, err="awk failed reading /dev/stdin")),
+ # die's hints when a writer dies of SIGPIPE: the writer's own status (141), then the reader's
+ # pipeline, which fails with die's (3); neither blames PATH or a tool
+ ("t04", IX, "cat141", dict(exit=3, err="cat failed reading docs/plan/TODO.md\nhint: status 141 is SIGPIPE")),
+ ("t05", IX, "cat141", dict(exit=3, err="awk failed reading the revisions of docs/plan/TODO.md\nhint: status 3 is close-revision.sh's own failure status")),
  # --check
  ("k01", IX, ["08-new", "--check"] + D, dict(exit=0, rep=dict(STAMP, result="verified", change="stamp", edits=EDITS8)), stamp_ok),
  ("k02", IX, ["08-new", "--check"] + D, dict(exit=1, rep=dict(STAMP, result="error",
@@ -313,6 +318,8 @@ def build():
     git("checkout", "-q", "main")
     os.makedirs(AWK127, exist_ok=True)
     open(AWK127 + "/awk", "w").write("#!/bin/sh\nexit 127\n"); os.chmod(AWK127 + "/awk", 0o755)
+    os.makedirs(CAT141, exist_ok=True)
+    open(CAT141 + "/cat", "w").write("#!/bin/sh\nkill -PIPE $$\nexit 141\n"); os.chmod(CAT141 + "/cat", 0o755)
     real = shutil.which("awk") or sys.exit("no awk on PATH")
     for d, prefix in AWKSEL.values():
         os.makedirs(d, exist_ok=True)
@@ -328,6 +335,7 @@ def run(cid, args, shell, script, apply):
     env["GIT_CEILING_DIRECTORIES"] = W
     if apply: apply()
     if args == "awk127": env["PATH"] = AWK127 + ":" + env["PATH"]; args = ["01-new"] + D
+    if args == "cat141": env["PATH"] = CAT141 + ":" + env["PATH"]; args = ["08-new"] + D
     if isinstance(args, str) and args in AWKSEL:
         env["PATH"] = AWKSEL[args][0] + ":" + env["PATH"]
         args = (["08-c"] if args == "awk-section" else ["99-none"]) + D

@@ -28,7 +28,7 @@ The script uses `scripts/lib/plan-rules.sh`, so run this suite after a change to
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite              # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/close-revision/suite.py             # 58 cases, twice under each Bash found (~40 s)
+python3 -I dev/close-revision/suite.py             # 60 cases, twice under each Bash found (~40 s)
 python3 -I dev/close-revision/suite.py --mutants   # 40 mutants, every one must be caught (~8 min)
 ```
 
@@ -39,7 +39,10 @@ python3 -I dev/close-revision/suite.py --mutants   # 40 mutants, every one must 
   case, since the script reads the repository's own `docs/plan/`. It is rebuilt on every
   run. `t01` puts an `awk` that exits 127 first on `PATH`; `t02` and `t03` put one that fails
   only for `section_line` or `pointer_line`, found by the label passed in `$L`, so each
-  matcher's own failure is reached. `g01` runs in a directory no repository contains.
+  matcher's own failure is reached. `t04` and `t05` put a `cat` that kills itself with
+  SIGPIPE first, and pin `die`'s two hints that blame neither PATH nor a tool: the writer's
+  status 141, then status 3 from the reader's pipeline, which the writer's `die` failed.
+  `g01` runs in a directory no repository contains.
 - **A `--check` case** (`k01`–`k07`) first writes what the close would write, by hand, from
   strings in the suite and never from the script's own `--render`: a wrong render would
   otherwise produce the very file a wrong check approves. The runner records the working

@@ -135,7 +135,7 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 python3 -I dev/propose-revision/suite.py                 # 72 cases, no model, ~30 s
 python3 -I dev/propose-revision/suite.py --mutants       # the suite must catch each mutant, ~7 min
-python3 -I dev/close-revision/suite.py                   # 58 cases, no model, ~40 s
+python3 -I dev/close-revision/suite.py                   # 60 cases, no model, ~40 s
 python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~8 min
 ```
 
