@@ -1,0 +1,107 @@
+"""Render a Claude Code session log (JSONL) as readable Markdown, compactions included.
+
+  python3 -I export-session.py <session.jsonl> <output.md>
+
+/export writes only what is in context, so after a compaction it loses everything before
+the summary. Claude Code's session log, ~/.claude/projects/<project-dir>/<session-uuid>.jsonl,
+is append-only and survives compaction, so the whole conversation is rendered from it.
+
+Output: the operator's messages, the assistant's visible replies, AskUserQuestion
+questions and answers, slash commands run with their arguments, compaction summaries
+(collapsed), and one-line entries for tool actions. Omitted: tool output, system
+reminders, hidden reasoning and subagent sidechains. The title is the output file's name,
+less `.md` and any `-full`.
+
+Both files are read and written as UTF-8 whatever the locale, so an em dash is written
+once, as itself."""
+import json, os, re, sys
+
+if len(sys.argv) != 3:
+    print("usage: export-session.py <session.jsonl> <output.md>", file=sys.stderr)
+    sys.exit(2)
+src, dst = sys.argv[1], sys.argv[2]
+REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
+CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
+LOCAL = re.compile(r"<local-command-(?:stdout|caveat)>.*?</local-command-(?:stdout|caveat)>", re.S)
+
+def when(r):
+    return r.get("timestamp", "")[:16].replace("T", " ") + " UTC"
+
+def tool_line(b):
+    name, i = b.get("name", ""), b.get("input", {}) or {}
+    detail = (i.get("description") or i.get("file_path") or i.get("url") or i.get("query")
+              or i.get("title") or i.get("action") or "")
+    return f"- `{name}`" + (f": {str(detail)[:160]}" if detail else "")
+
+out, pending_tools, ask_ids = [], [], {}
+def flush_tools():
+    if pending_tools:
+        out.append("<details><summary>Actions (" + str(len(pending_tools)) + ")</summary>\n\n"
+                   + "\n".join(pending_tools) + "\n\n</details>\n")
+        pending_tools.clear()
+
+out.append(f"# Session {os.path.basename(dst).removesuffix('.md').removesuffix('-full')} — full transcript\n\nRendered from the Claude Code session log "
+           f"`{src.split('/')[-1]}`. It contains the operator's messages, the assistant's visible replies, "
+           "the operator's answers to multiple-choice questions, compaction summaries, and one-line "
+           "entries for tool actions. It omits tool output, system reminders and hidden reasoning.\n")
+with open(src, encoding="utf-8") as log:
+    lines = log.readlines()
+for line in lines:
+    try: r = json.loads(line)
+    except Exception: continue
+    t = r.get("type")
+    if t not in ("user", "assistant") or r.get("isMeta") or r.get("isSidechain"): continue
+    content = r.get("message", {}).get("content")
+    blocks = [{"type": "text", "text": content}] if isinstance(content, str) else (content or [])
+    if t == "assistant":
+        for b in blocks:
+            if b.get("type") == "text" and b["text"].strip():
+                flush_tools()
+                out.append(f"## Claude — {when(r)}\n\n{b['text'].strip()}\n")
+            elif b.get("type") == "tool_use":
+                if b.get("name") == "AskUserQuestion":
+                    flush_tools()
+                    qs = (b.get("input") or {}).get("questions", [])
+                    txt = "\n".join(f"- **{q.get('question')}** Options: "
+                                    + "; ".join(o.get("label", "") for o in q.get("options", []))
+                                    for q in qs)
+                    out.append(f"## Claude asks — {when(r)}\n\n{txt}\n")
+                    ask_ids[b.get("id")] = True
+                else:
+                    pending_tools.append(tool_line(b))
+        continue
+    # user
+    if r.get("isCompactSummary"):
+        flush_tools()
+        text = blocks[0].get("text", "") if blocks else ""
+        out.append(f"## Compaction summary — {when(r)}\n\n<details><summary>Summary the session "
+                   f"continued from</summary>\n\n{text.strip()}\n\n</details>\n")
+        continue
+    for b in blocks:
+        if b.get("type") == "tool_result":
+            if b.get("tool_use_id") in ask_ids:
+                c = b.get("content")
+                c = c if isinstance(c, str) else " ".join(x.get("text", "") for x in (c or []) if isinstance(x, dict))
+                flush_tools()
+                out.append(f"## Operator answers — {when(r)}\n\n{c.strip()}\n")
+            continue
+        if b.get("type") != "text": continue
+        text = REMINDER.sub("", b["text"])
+        m = CMD.search(text)
+        if m:
+            flush_tools()
+            args = (m.group(2) or "").strip()
+            out.append(f"## Operator ran `{m.group(1)}` — {when(r)}\n" + (f"\n{args}\n" if args else ""))
+            continue
+        text = LOCAL.sub("", text).strip()
+        if not text or text.startswith("[Request interrupted"):
+            if text: out.append(f"*{text}*\n")
+            continue
+        flush_tools()
+        out.append(f"## Operator — {when(r)}\n\n{text}\n")
+flush_tools()
+with open(dst, "w", encoding="utf-8") as f:
+    f.write("\n".join(out))
+print(dst, sum(1 for s in out if s.startswith("## Operator —")), "operator messages,",
+      sum(1 for s in out if s.startswith("## Claude —")), "assistant replies,",
+      sum(1 for s in out if s.startswith("## Compaction")), "compactions")

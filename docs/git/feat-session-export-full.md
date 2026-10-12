@@ -27,3 +27,4 @@ Add `/workflow-coding:session-export-full`, which exports a session's whole JSON
 ## Notes
 
 - 2026-10-12: the goal files are written with their subgoals, by hand from the subgoal's Acceptance line, until R1a subgoal 5 ships in 0.10.1.
+- 2026-10-12, goal 01: `scripts/export-session.py` is ported, byte-identical in output to `tmp/export_session.py` on a real 15 MB log, with UTF-8 named on both ends: under a Latin-1 locale the original crashes and the port does not. For R1a subgoal 4: `plugins/workflow-coding/README.md:11` says every script but the two agent-docs ones serves the plan workflow and is read-only, and `export-session.py` is neither.
