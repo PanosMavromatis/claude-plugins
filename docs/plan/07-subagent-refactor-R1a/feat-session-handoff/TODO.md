@@ -10,4 +10,4 @@
 
 - [x] 01 — Write the session-handoff command
 - [x] 02 — Create the root CLAUDE.md
-- [ ] 03 — Dogfood the handoff as a plain file
+- [x] 03 — Dogfood the handoff as a plain file

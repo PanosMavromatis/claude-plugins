@@ -1,10 +1,13 @@
 # Session handoff
 
-If `tmp/session-handoff.md` exists, read it whole before anything else, and say in a few
-lines what you took from it. Once the user confirms, archive it: run
-`mkdir -p tmp/handoffs`, then `mv` it to `tmp/handoffs/<YYYY-MM-DD>-<branch>.md`,
-with the date from its `**Written**:` line and the branch from its title, each `/`
-replaced by `-`. If that name is taken, add `-2`, `-3` before `.md`.
+`tmp/session-handoff.md` is left by one session for the next. If it exists when a session
+starts, that is, before your first reply, with no summary of an earlier conversation in
+context, read it whole before anything else, and say in a few lines what you took from it.
+Once the user confirms, archive it: run `mkdir -p tmp/handoffs`, then `mv` it to
+`tmp/handoffs/<YYYY-MM-DD>-<branch>.md`, with the date from its `**Written**:` line and
+the branch from its title, each `/` replaced by `-`. If that name is taken, add `-2`, `-3`
+before `.md`. At any other time, after a compaction or in the session that wrote it, leave
+it alone: it is the next session's.
 
 # Compact instructions
 
