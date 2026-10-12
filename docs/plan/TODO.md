@@ -136,7 +136,7 @@ ends with. Settled, and not to be reopened:
   > paragraph and the drift list fixed; the branch doc is `docs/git/<flattened-branch>.md` in
   > `/new-branch` and `/smart-merge`, which falls back to the old path. A review against the
   > scripts and e2e run `r7` verify it — PR #11
-- [~] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
+- [x] Rename `workflow-claude` to `workflow-coding`, and release `0.10.0` in the same PR.
       Renaming now means R2's agents, R3's skills and R4's contract file are each written
       once, under the new name. Every live reference moves: the plugin directory, its
       manifest, `marketplace.json`, command and agent names, both READMEs and `CLAUDE.md`s,
@@ -149,7 +149,9 @@ ends with. Settled, and not to be reopened:
   > **Branch:** chore/rename-workflow-coding
   > **Done:** The plugin is `workflow-coding` `0.10.0` and `dp-compile` `0.4.1` depends on it by
   > the new name, with every live reference moved and the records left as written; the suites,
-  > mutants and e2e run `r8` verify it. The install check follows the merge — PR #12
+  > mutants and e2e run `r8` verify it. After the merge, `claude --debug` loads one plugin from
+  > the marketplace, `workflow-coding` `0.10.0`, and its installed `locate-plan.sh` resolves the
+  > legacy root plan at rung 3 — PR #12
 
 ## Closed revisions
 
