@@ -138,6 +138,21 @@ EDITS8 = f"docs/plan/08-new/_TODO.md:3: {ST8}\ndocs/plan/TODO.md:10: {IDX8}"
 REV8_AFTER = REV8.replace("**Status**: open", ST8)
 INDEX_AFTER = INDEX.replace("- [~] 08-new — the next one", IDX8)
 
+# Large inputs: a reader that wants one match still reads to EOF. One that exits at its match
+# leaves its writer (cat, git show, or the printf of the directory list) writing into a closed
+# pipe once the rest outgrows awk's read and the pipe buffer, and the script then dies of it, or
+# at the directory search warns falsely. Measured on 0.10.0, whose readers exited: every site
+# failed every run from 256 KB, some runs at 128 KB, and none at 70 KB. BIG doubles 256 KB.
+BIG = 512 * 1024
+PAD = "".join(f"Padding {i:05d}: prose, not an item, a heading or a status line.\n" for i in range(9000))
+# feat/gone's directory, grp/feat-gone, with BIG bytes of directory listing below it: found in
+# the listing's first lines, so the search matches long before the end of its input.
+DEEP = "docs/plan/grp/feat-gone/" + "d" * 240
+BULK = {f"{DEEP}/{i:04d}-{'e' * 240}/.keep": "" for i in range(BIG // 500)}
+assert len(PAD) > BIG and sum(len(os.path.dirname(p)) + 1 for p in BULK) > BIG
+LGB = dict(LG, **BULK, **{"docs/plan/TODO.md": LEGACY + PAD, "docs/plan/feat-one/TODO.md": MERGED + PAD})
+IXB = dict(IX, **{"docs/plan/TODO.md": INDEX + PAD, "docs/plan/08-new/_TODO.md": REV8 + PAD})
+
 NONE = {"README.md": "x\n"}
 BOTH = {"docs/plan/TODO.md": "# a\n", "docs/plan/DO.md": "# b\n"}
 def crlf(files): return {k: v.replace("\n", "\r\n") for k, v in files.items()}
@@ -164,6 +179,9 @@ def extract_nomove():
 def extract_nocut():
     os.makedirs(f"{FX}/docs/plan/08-c", exist_ok=True)
     write("docs/plan/08-c/_TODO.md", ARCHIVE); gitmv("docs/plan/feat-one", "docs/plan/08-c/feat-one")
+def extract_big():
+    extract_ok(); write("docs/plan/TODO.md", ROOT_AFTER + PAD)
+def stamp_big(): write("docs/plan/08-new/_TODO.md", REV8_AFTER + PAD); write("docs/plan/TODO.md", INDEX_AFTER + PAD)
 
 LG_DONE = {"docs/plan/TODO.md": ROOT_AFTER, "docs/plan/08-c/_TODO.md": ARCHIVE, "docs/plan/08-c/feat-one/TODO.md": MERGED,
            "docs/plan/feat-two/TODO.md": ACTIVE, "docs/plan/grp/fix-three/TODO.md": MERGED,
@@ -174,6 +192,7 @@ def rep(**kv): return kv
 STAMP = rep(layout="revisions", root="docs/plan/TODO.md", revision="docs/plan/08-new/_TODO.md")
 LEG = rep(layout="legacy", root="docs/plan/TODO.md", revision="docs/plan/08-c/_TODO.md")
 LEGOUT = dict(LEG, change="extract", section="docs/plan/TODO.md:9-27", pointer=POINTER, moves=LG_MOVE, warnings="\n".join(LG_WARN))
+LGBOUT = dict(LEGOUT, warnings=LG_WARN[0])   # grp/feat-gone is feat/gone's directory, so only feat-two warns
 D = ["--date", DATE]
 # id, files on the case's branch, arguments (or a special), expectations[, an after-state for --check]
 C = [
@@ -289,6 +308,15 @@ C = [
      problem="docs/plan/TODO.md:10 at HEAD marks revision 08-new [x], not [~]", fix=BEFORE))),
  ("k09", LG_DONE, ["08-c", "--check"] + D, dict(exit=1, rep=dict(LEG, result="error",
      problem="docs/plan/TODO.md at HEAD has no section for revision 08-c", fix=BEFORE))),
+ # large inputs (BIG): LGB reaches section_line, status_src (feat-one) and the directory search
+ # (feat-gone), and with 05-old pointer_line; IXB reaches the stamp's index line and the
+ # revision's status, and under --check the **Layout** read
+ ("b01", LGB, ["08-c"] + D, dict(exit=0, rep=dict(LGBOUT, result="proposed"))),
+ ("b02", LGB, ["08-c", "--check"] + D, dict(exit=0, rep=dict(LGBOUT, result="verified")), extract_big),
+ ("b03", LGB, ["05-old"] + D, dict(exit=1, rep=rep(result="refused", problem="revision 05-old is already closed: docs/plan/TODO.md:32 is its pointer",
+     fix="nothing to do"), any=["layout", "root", "revision"])),
+ ("b04", IXB, ["08-new"] + D, dict(exit=0, rep=dict(STAMP, result="proposed", change="stamp", edits=EDITS8))),
+ ("b05", IXB, ["08-new", "--check"] + D, dict(exit=0, rep=dict(STAMP, result="verified", change="stamp", edits=EDITS8)), stamp_big),
 ]
 
 def sh(args, cwd, env=None):

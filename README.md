@@ -135,8 +135,8 @@ python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min
 python3 -I dev/propose-revision/suite.py                 # 72 cases, no model, ~30 s
 python3 -I dev/propose-revision/suite.py --mutants       # the suite must catch each mutant, ~7 min
-python3 -I dev/close-revision/suite.py                   # 60 cases, no model, ~40 s
-python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~8 min
+python3 -I dev/close-revision/suite.py                   # 65 cases, no model, ~60 s
+python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~15 min
 ```
 
 `dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step`, `/smart-merge`,
