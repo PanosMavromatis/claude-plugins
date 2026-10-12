@@ -26,3 +26,4 @@ Add `/workflow-coding:session-handoff`, which writes `tmp/session-handoff.md` fo
 ## Notes
 
 - 2026-10-12: the goal files are written with their subgoals, by hand from the subgoal's Acceptance line, until R1a subgoal 5 ships in 0.10.1.
+- 2026-10-12, goal 01: `commands/session-handoff.md` takes the plan from the session's latest `locate-plan.sh` report and never searches for it (goal 01's Q&A), and first flushes unlogged decisions to the plan. Found on the way: §4.3's target has no `CLAUDE.md`, so wherever it is adopted, goal 02's `CLAUDE.md` must move into `AGENTS.md`.

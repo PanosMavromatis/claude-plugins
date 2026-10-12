@@ -8,6 +8,6 @@
 
 ## Goals
 
-- [ ] 01 — Write the session-handoff command
+- [x] 01 — Write the session-handoff command
 - [ ] 02 — Create the root CLAUDE.md
 - [ ] 03 — Dogfood the handoff as a plain file
