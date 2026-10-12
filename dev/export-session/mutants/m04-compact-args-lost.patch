@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -21,7 +21,7 @@
+     sys.exit(2)
+ src, dst = sys.argv[1], sys.argv[2]
+ REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
+-CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
++CMD = re.compile(r"<command-name>(.*?)</command-name>.*?(?:<command-args>(.*?)</command-args>)?", re.S)
+ LOCAL = re.compile(r"<local-command-(?:stdout|caveat)>.*?</local-command-(?:stdout|caveat)>", re.S)
+ 
+ def when(r):
