@@ -3,7 +3,7 @@
 **Status**: open
 **Version**: workflow-coding 0.10.1
 **Opened**: 2026-10-12
-**Spec**: the R1→R1a session handoff (`tmp/session-handoff.md`, temporary), section "Revision R1a — settled, do not reopen"; conversation (2026-10-12)
+**Spec**: the R1→R1a session handoff (`tmp/session-handoff-r1-r1a.md`, untracked, kept locally), section "Revision R1a — settled, do not reopen"; conversation (2026-10-12)
 
 ## Preamble
 
