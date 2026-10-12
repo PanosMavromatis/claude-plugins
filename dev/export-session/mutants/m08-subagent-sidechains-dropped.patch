@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -159,7 +159,7 @@
+@@ -187,7 +187,7 @@
      return out
  
  def subagent(s):   # one subagent's transcript, collapsed

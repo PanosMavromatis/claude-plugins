@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -65,7 +65,7 @@
+     base = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
+     d = os.path.join(base, "projects", re.sub(r"[^A-Za-z0-9]", "-", os.getcwd()))
+     if not os.path.isdir(d): fail(f"no session log directory for this project: {d}")
+-    if re.fullmatch(UUID, arg) and os.path.isfile(os.path.join(d, arg + ".jsonl")):   # a session id
++    if False:   # a session id
+         hits = [os.path.join(d, arg + ".jsonl")]
+     else:
+         hits = [p for p in sorted(glob.glob(os.path.join(glob.escape(d), "*.jsonl"))) if arg in names(p)]

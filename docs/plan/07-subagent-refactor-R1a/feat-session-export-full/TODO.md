@@ -10,5 +10,5 @@
 
 - [x] 01 — Move the export script into the plugin, with a suite
 - [x] 02 — Resolve a session by name, and add subagents on request
-- [ ] 03 — Write the session-export-full command
+- [x] 03 — Write the session-export-full command
 - [ ] 04 — Export a real session outside the repo

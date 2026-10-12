@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -189,7 +189,7 @@
+@@ -217,7 +217,7 @@
      f.write("\n".join(out))
  shutil.copyfile(src, base + ".jsonl")   # the raw log: tool output, reasoning and token counts
  archived = os.path.isdir(folder)

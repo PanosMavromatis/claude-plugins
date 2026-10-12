@@ -8,8 +8,8 @@ in the `feat-session-export-full` branch plan.
 ## Running it: no model, no cost
 
 ```bash
-python3 -I dev/export-session/suite.py             # 20 cases (~1 s)
-python3 -I dev/export-session/suite.py --mutants   # 14 mutants, every one must be caught (~6 s)
+python3 -I dev/export-session/suite.py             # 25 cases (~1 s)
+python3 -I dev/export-session/suite.py --mutants   # 18 mutants, every one must be caught (~9 s)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy. Each case works in its own
@@ -48,6 +48,13 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   (`r03`). An export whose `<name>.jsonl` would be the log it reads is refused before
   anything is written (`r02`), and a missing output directory is created (`r04`). A
   session with no folder gets no archive, and the summary line says which.
+- **`i01`, `o01`–`o04`** are what `/session-export-full` relies on to stay thin. A session
+  can be named by its id (`i01`), which is how the command exports the session it runs in.
+  Given a directory, or no output at all, the export is named for the session: its
+  `/rename` name (`o01`), or its id if it was never renamed (`o03`), in
+  `~/claude-exports/<the working directory's name>/` by default (`o02`, with `HOME` set to
+  the case's own). An output inside the git repository holding the working directory is
+  refused (`o04`).
 - **`g01`** renders one log holding every kind of record, each block checked byte for
   byte: an operator message with a system reminder stripped, tool actions collapsed,
   replies, a question and its answer, commands with and without arguments, a compaction
@@ -65,4 +72,5 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   log has had, as the old runbook's `grep` did, and `n02` catches it. `m07`–`m10` undo the
   subagent rules: the flag, the sidechain filter, the handback, and the appendix.
   `m11`–`m14` undo the raw record's: the log's copy, the overwrite guard, the archive, and
-  the output directory.
+  the output directory. `m15`–`m18` undo the command's: the session id, naming the export
+  for its session, the default directory, and the repository guard.

@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -67,7 +67,7 @@
+@@ -95,7 +95,7 @@
  if os.path.exists(base + ".jsonl") and os.path.samefile(base + ".jsonl", src):
      fail(f"{base}.jsonl is the session log itself: write the export somewhere else")
  REMINDER =re.compile(r"<system-reminder>.*?</system-reminder>", re.S)

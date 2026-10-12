@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -184,7 +184,7 @@
+@@ -212,7 +212,7 @@
  if subs:   # subagents whose spawning call the log does not hold
      out.append("## Subagents whose call is not in the log\n")
      out += [subagent(s) for s in subs.values()]

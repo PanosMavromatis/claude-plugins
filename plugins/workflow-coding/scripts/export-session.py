@@ -1,12 +1,18 @@
 """Render a Claude Code session log (JSONL) as readable Markdown, compactions included.
 
-  python3 -I export-session.py <session name | session.jsonl> <output.md> [--subagents]
+  python3 -I export-session.py <session> [<output.md> | <output dir>] [--subagents]
 
-A session is named by the path of its log, or by the name /rename gave it. A name is
-looked up in this project's log directory, which Claude Code names after the working
-directory, each character other than a letter or digit made `-`: the session whose
-`<uuid>/custom-title.json` holds that name. A renamed session's log keeps every name it
-has had, so its records cannot say which one is current; that file can.
+A session is named by the path of its log, by its id, or by the name /rename gave it. An
+id or a name is looked up in this project's log directory, which Claude Code names after
+the working directory, each character other than a letter or digit made `-`: an id is the
+log's own name, and a name is matched against each `<uuid>/custom-title.json`. A renamed
+session's log keeps every name it has had, so its records cannot say which one is
+current; that file can.
+
+Given a directory, or nothing, the export is named for the session: `<name>.md`, where
+`<name>` is its /rename name, or its id if it was never renamed. The default directory is
+~/claude-exports/<the working directory's name>/. The export goes outside the repository:
+a path inside the git repository holding the working directory is refused.
 
 /export writes only what is in context, so after a compaction it loses everything before
 the summary. Claude Code's session log, ~/.claude/projects/<project-dir>/<session-uuid>.jsonl,
@@ -35,11 +41,13 @@ once, as itself."""
 import glob, json, os, re, shutil, sys, tarfile
 
 args = sys.argv[1:]
-subagents = args[2:] == ["--subagents"]
-if len(args) != 2 and not subagents:
-    print("usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]", file=sys.stderr)
+flags, pos = [a for a in args if a.startswith("--")], [a for a in args if not a.startswith("--")]
+subagents = "--subagents" in flags
+if not 1 <= len(pos) <= 2 or any(f != "--subagents" for f in flags):
+    print("usage: export-session.py <session> [<output.md> | <output dir>] [--subagents]", file=sys.stderr)
     sys.exit(2)
-arg, dst = args[0], args[1]
+arg, out_arg = pos[0], (pos[1] if len(pos) == 2 else None)
+UUID = r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}"
 
 def fail(msg):
     print(f"export-session.py: {msg}", file=sys.stderr)
@@ -57,12 +65,32 @@ else:
     base = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
     d = os.path.join(base, "projects", re.sub(r"[^A-Za-z0-9]", "-", os.getcwd()))
     if not os.path.isdir(d): fail(f"no session log directory for this project: {d}")
-    hits = [p for p in sorted(glob.glob(os.path.join(glob.escape(d), "*.jsonl"))) if arg in names(p)]
+    if re.fullmatch(UUID, arg) and os.path.isfile(os.path.join(d, arg + ".jsonl")):   # a session id
+        hits = [os.path.join(d, arg + ".jsonl")]
+    else:
+        hits = [p for p in sorted(glob.glob(os.path.join(glob.escape(d), "*.jsonl"))) if arg in names(p)]
     if not hits: fail(f"no session named {arg!r} in {d}: a session's name is the one /rename gave it")
     if len(hits) > 1:
         fail(f"{len(hits)} sessions named {arg!r} in {d}: " + ", ".join(os.path.basename(p) for p in hits)
              + "; pass the log's path instead")
     src = hits[0]
+if out_arg and out_arg.endswith(".md"):
+    dst = out_arg
+else:   # a directory, or the default one: the export is named for the session
+    title = next(iter(names(src)), None)
+    name = (title if isinstance(title, str) and title else os.path.basename(src).removesuffix(".jsonl")).replace("/", "-")
+    out_dir = out_arg or os.path.join(os.path.expanduser("~"), "claude-exports", os.path.basename(os.getcwd()))
+    dst = os.path.join(out_dir, name + ".md")
+
+def repo_of(p):   # the git working tree holding p, if any
+    p = os.path.realpath(p)
+    while not os.path.exists(os.path.join(p, ".git")):
+        if os.path.dirname(p) == p: return None
+        p = os.path.dirname(p)
+    return p
+repo = repo_of(os.getcwd())
+if repo and (os.path.realpath(os.path.dirname(os.path.abspath(dst))) + "/").startswith(repo + "/"):
+    fail(f"{dst} is inside the repository {repo}: an export goes outside it")
 base, folder = dst.removesuffix(".md"), src.removesuffix(".jsonl")
 if os.path.exists(base + ".jsonl") and os.path.samefile(base + ".jsonl", src):
     fail(f"{base}.jsonl is the session log itself: write the export somewhere else")

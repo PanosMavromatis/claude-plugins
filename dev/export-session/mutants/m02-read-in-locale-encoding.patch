@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -80,7 +80,7 @@
+@@ -108,7 +108,7 @@
      return f"- `{name}`" + (f": {str(detail)[:160]}" if detail else "")
  
  def load(path):

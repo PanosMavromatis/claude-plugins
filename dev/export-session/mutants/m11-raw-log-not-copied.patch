@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -187,7 +187,7 @@
+@@ -215,7 +215,7 @@
  os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
  with open(dst, "w", encoding="utf-8") as f:
      f.write("\n".join(out))

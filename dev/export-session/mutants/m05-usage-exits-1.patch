@@ -1,11 +1,11 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -38,7 +38,7 @@
- subagents = args[2:] == ["--subagents"]
- if len(args) != 2 and not subagents:
-     print("usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]", file=sys.stderr)
+@@ -45,7 +45,7 @@
+ subagents = "--subagents" in flags
+ if not 1 <= len(pos) <= 2 or any(f != "--subagents" for f in flags):
+     print("usage: export-session.py <session> [<output.md> | <output dir>] [--subagents]", file=sys.stderr)
 -    sys.exit(2)
 +    sys.exit(1)
- arg, dst = args[0], args[1]
+ arg, out_arg = pos[0], (pos[1] if len(pos) == 2 else None)
+ UUID = r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}"
  
- def fail(msg):

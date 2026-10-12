@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -181,7 +181,7 @@
+@@ -209,7 +209,7 @@
         "the operator's answers to multiple-choice questions, compaction summaries, and one-line "
         "entries for tool actions. It omits tool output, system reminders and hidden reasoning.\n"]
  out += render(load(src), subs=subs)

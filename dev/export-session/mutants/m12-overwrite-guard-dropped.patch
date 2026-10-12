@@ -1,8 +1,8 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -64,7 +64,7 @@
-              + "; pass the log's path instead")
-     src = hits[0]
+@@ -92,7 +92,7 @@
+ if repo and (os.path.realpath(os.path.dirname(os.path.abspath(dst))) + "/").startswith(repo + "/"):
+     fail(f"{dst} is inside the repository {repo}: an export goes outside it")
  base, folder = dst.removesuffix(".md"), src.removesuffix(".jsonl")
 -if os.path.exists(base + ".jsonl") and os.path.samefile(base + ".jsonl", src):
 +if False:

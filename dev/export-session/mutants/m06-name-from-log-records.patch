@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -47,7 +47,7 @@
+@@ -55,7 +55,7 @@
  
  def names(log):   # the session's current name: the one /rename left in <uuid>/custom-title.json
      try:

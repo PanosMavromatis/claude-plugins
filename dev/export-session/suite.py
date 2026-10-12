@@ -108,8 +108,8 @@ SUB_OUT = ("<details><summary>Subagent plan-drafter — Draft it (1 replies)</su
            "<details><summary>Actions (1)</summary>\n\n- `Read`: /p.md\n\n</details>\n\n"
            "### Subagent — 2026-10-12 11:01 UTC\n\n## Draft\n\nDone.\n\n</details>\n")
 DRAFTING = "## Claude — 2026-10-12 11:01 UTC\n\nDrafting.\n"
-def from_(who, u, t): return dict(exit=0, out=doc(t, f"## Operator — 2026-10-12 08:00 UTC\n\nfrom {who}\n", log=f"{u}.jsonl"),
-                                  summary=summary(1, 0, 0, folder=True))   # a named session has a folder
+def from_(who, u, t, folder=True): return dict(exit=0, out=doc(t, f"## Operator — 2026-10-12 08:00 UTC\n\nfrom {who}\n",
+                                                               log=f"{u}.jsonl"), summary=summary(1, 0, 0, folder=folder))
 
 # id, log lines, output name (None: no output path), locale, extra args, expectations.
 # The defect cases come first, the title's before the rest, since every output has a title:
@@ -151,9 +151,19 @@ C = [
                  **agent("ag1")})),
     ("r04", HI, "deeper/still/r04.md", UTF8, [],          # the output directory is created
      dict(exit=0, out=doc("r04", HIOUT), summary=summary(1, 0, 0), jsonl=True, notar=True)),
+    ("i01", [], "i01.md", UTF8, [], from_("A", UA, "i01"), dict(proj=PROJ, arg=UA)),   # a session by its id
+    ("o01", [], "o01dir/new-name.md", UTF8, [], from_("A", UA, "new-name"),          # a directory: named for it
+     dict(proj=PROJ, arg="new-name", out_arg="o01dir")),
+    ("o02", [], "home/claude-exports/work/new-name.md", UTF8, [], from_("A", UA, "new-name"),   # no output given
+     dict(proj=PROJ, arg="new-name", out_arg=None, home=True)),
+    ("o03", [], f"o03dir/{UC}.md", UTF8, [], from_("C", UC, UC, folder=False),    # never renamed: its id
+     dict(proj=PROJ, arg=UC, out_arg="o03dir")),
+    ("o04", [], "work/exports/new-name.md", UTF8, [],                              # inside the repository
+     dict(exit=1, stderr="export-session.py: ", stderr_has="is inside the repository", nofile=True),
+     dict(proj=PROJ, arg="new-name", out_arg="work/exports", files={"work/.git/HEAD": "ref: refs/heads/main\n"})),
     ("g01", G, "g01-full.md", UTF8, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
     ("g02", G, "g01-full.md", LATIN1, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
-    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]")),
+    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session> [<output.md> | <output dir>] [--subagents]")),
     ("u02", HI, "u02.md", UTF8, ["extra"], dict(exit=2, stderr="usage: export-session.py", nofile=True)),
 ]
 
@@ -182,7 +192,9 @@ def run_case(script, case, tmp):
         put(proj, s["proj"])
     put(d, s.get("files", {}))   # files beside the log, such as its <uuid>/subagents/
     first = s.get("arg", log)
-    argv = [sys.executable, "-I", script] + ([first, out] if out else []) + extra
+    if s.get("home"): env["HOME"] = os.path.join(d, "home")
+    second = ([os.path.join(d, s["out_arg"])] if s["out_arg"] else []) if "out_arg" in s else ([out] if out else [])
+    argv = [sys.executable, "-I", script] + ([first] + second if out else []) + extra
     p = subprocess.run(argv, capture_output=True, env=env, cwd=cwd)
     err, so, bad = p.stderr.decode("utf-8", "replace"), p.stdout.decode("utf-8", "replace"), []
     if p.returncode != want["exit"]: bad.append(f"exit {p.returncode}, want {want['exit']} (stderr: {err.strip()[-200:]!r})")
