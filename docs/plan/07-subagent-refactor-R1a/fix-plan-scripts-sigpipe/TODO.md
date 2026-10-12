@@ -1,6 +1,6 @@
 # fix/plan-scripts-sigpipe
 
-**Status**: active
+**Status**: merged — PR #15 — 2026-10-12
 **Created**: 2026-10-12
 **Revision**: 07-subagent-refactor-R1a
 **Subgoal**: 1. The plan scripts survive SIGPIPE: no reader exits before EOF on a pipe and kills its writer (`cat`, or `git show` under `--check`), starting with `close-revision.sh` at `:135`, `:217` and `:365`, and `die`'s hint no longer blames PATH or awk for a writer killed by SIGPIPE.
