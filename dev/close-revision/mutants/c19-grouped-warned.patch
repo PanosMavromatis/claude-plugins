@@ -1,11 +1,11 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -362,7 +362,7 @@
+@@ -368,7 +368,7 @@
          *) warn "$PD/$flat is not stamped merged (${s:-no status}), so it stays flat: file it by hand once it merges" ;;
        esac
      else
--      if ! printf '%s\n' "$dirs" | F="$flat" awk '{ n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1; exit } END { exit !found }'; then
-+      if true || ! printf '%s\n' "$dirs" | F="$flat" awk '{ n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1; exit } END { exit !found }'; then
+-      if ! printf '%s\n' "$dirs" | F="$flat" awk 'found { next } { n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1 } END { exit !found }'; then
++      if true || ! printf '%s\n' "$dirs" | F="$flat" awk 'found { next } { n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1 } END { exit !found }'; then
          warn "no plan directory named $flat under $PD/, for the branch $b backlinked in the section"
        fi
      fi

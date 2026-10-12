@@ -22,3 +22,5 @@ Make the plan scripts survive SIGPIPE. Under `set -euo pipefail`, a pipe whose r
 - Fix idea: `!done && /re/ {print; done=1}`, which reads to EOF and prints the first match only.
 
 ## Notes
+
+- 2026-10-12, goal 01: `close-revision.sh` had five early-exit pipe readers, not three; `:177` (the layout under `--check`) and `:194` (`stamp`'s index line) too. All five now read to EOF (`got { next }`). Suite 58/58; `--mutants` 40/40 after re-anchoring the four patches the edit made stale (c05, c06, c08, c19).

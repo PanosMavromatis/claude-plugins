@@ -120,6 +120,10 @@ fi
 
 # --- reading: the working tree, or HEAD under --check -----------------------------
 
+# A reader of src's output reads to EOF: one that exits at its first match can kill
+# the writer (cat, or git show under --check) with SIGPIPE once the file outgrows the
+# pipe buffer, and under pipefail the script then dies. So a reader that wants only
+# its first match sets `got` and skips the rest with `got { next }`, rather than exit.
 src() {  # src <path>: the file's contents
   if [ $CHECK -eq 1 ]; then git show "HEAD:$1" || die "git show failed reading $1 at HEAD"
   else cat "$1" || die "cat failed reading $1"; fi
@@ -132,7 +136,7 @@ plan_dirs() {  # every directory under docs/plan/, one per line
   else find "$PD" -type d || die "find failed listing $PD"; fi
 }
 status_src() {  # the first **Status** value of a file, as status_of reads it
-  src "$1" | awk '/^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' \
+  src "$1" | awk 'got { next } /^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; got = 1 }' \
     || die "awk failed reading the status of $1"
 }
 lf() {  # a file with each line's trailing CR dropped
@@ -175,8 +179,9 @@ ROOT_PLAN="$PD/$MODEL"; R_ROOT="$ROOT_PLAN"; REV="$PD/$LABEL/_$MODEL"; R_REV="$R
 if [ $CHECK -eq 1 ]; then
   # HEAD's layout, as check_layout reads it: the first **Layout** line outside fences.
   v="$(src "$ROOT_PLAN" | awk '
+    got { next }
     /^[ \t]*```/ { fence = !fence; next }
-    !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print v; exit }
+    !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print v; got = 1 }
   ')" || die "awk failed reading the **Layout** header of $ROOT_PLAN at HEAD"
   if [ "$v" = revisions ]; then MLAYOUT=revisions; else MLAYOUT=legacy; fi
 else
@@ -192,11 +197,12 @@ stamp() {
   local out mk v n rec IFS
   # The label's line under `## Revisions`, matched whole: the first word after the marker.
   out="$(src "$ROOT_PLAN" | L="$LABEL" awk '
+    got { next }
     { sub(/\r$/, "") }
     /^[ \t]*```/ { fence = !fence; next }
     fence { next }
     /^## / { insec = ($0 ~ /^## Revisions[ \t]*$/); next }
-    insec && /^- \[[ ~x!-]\] / { split(substr($0, 7), a, /[ \t]+/); if (a[1] == ENVIRON["L"]) { print NR "\t" $0; exit } }
+    insec && /^- \[[ ~x!-]\] / { split(substr($0, 7), a, /[ \t]+/); if (a[1] == ENVIRON["L"]) { print NR "\t" $0; got = 1 } }
   ')" || die "awk failed reading the revisions of $ROOT_PLAN"
   if [ -z "$out" ]; then
     if [ $CHECK -eq 1 ]; then
@@ -214,7 +220,7 @@ stamp() {
       *) refuse "revision $LABEL is not open: $ROOT_PLAN:$IDX_N marks it [$mk]" "$NOTOPEN" ;;
     esac
   fi
-  out="$(src "$REV" | awk '/^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }')" \
+  out="$(src "$REV" | awk 'got { next } /^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; got = 1 }')" \
     || die "awk failed reading the status of $REV"
   if [ -z "$out" ]; then
     violation "$REV has no **Status** line, so it cannot be stamped closed" "add \`**Status**: open\` under its title, then run this again"
@@ -362,7 +368,7 @@ extract() {
         *) warn "$PD/$flat is not stamped merged (${s:-no status}), so it stays flat: file it by hand once it merges" ;;
       esac
     else
-      if ! printf '%s\n' "$dirs" | F="$flat" awk '{ n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1; exit } END { exit !found }'; then
+      if ! printf '%s\n' "$dirs" | F="$flat" awk 'found { next } { n = $0; sub(/.*\//, "", n) } n == ENVIRON["F"] { found = 1 } END { exit !found }'; then
         warn "no plan directory named $flat under $PD/, for the branch $b backlinked in the section"
       fi
     fi
