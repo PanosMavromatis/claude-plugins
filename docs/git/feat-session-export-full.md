@@ -21,7 +21,7 @@ Add `/workflow-coding:session-export-full`, which exports a session's whole JSON
 ## Context
 
 - R1a subgoal 3 is at `docs/plan/07-subagent-refactor-R1a/_TODO.md:63`, with its settled decisions at `:34`–`44`, `:47` and `:51`.
-- The four defects, measured 2026-10-11 on the R1 session's log (55 MB, 16 compactions, 0.28 s): double-encoded em dashes, the `/compact` instructions never captured, a title hard-coded to `m2-tier-1a` (all three fixed that day), and a renamed session carrying several `custom-title` records (still open).
+- The four defects, measured 2026-10-11 on the R1 session's log (55 MB, 16 compactions, 0.28 s): double-encoded em dashes, the `/compact` instructions never captured, a title hard-coded to `m2-tier-1a` (all three fixed that day), and a renamed session carrying several `custom-title` records (fixed in goal 02).
 - `cleanupPeriodDays`: Claude Code's costs page (fetched 2026-10-12) says session data older than it is removed at startup, "30 days by default".
 - The export script stays Python (settled 2026-10-12, `_TODO.md:47`).
 
@@ -31,3 +31,4 @@ Add `/workflow-coding:session-export-full`, which exports a session's whole JSON
 - 2026-10-12, goal 01: `scripts/export-session.py` is ported, byte-identical in output to `tmp/export_session.py` on a real 15 MB log, with UTF-8 named on both ends: under a Latin-1 locale the original crashes and the port does not. For R1a subgoal 4: `plugins/workflow-coding/README.md:11` says every script but the two agent-docs ones serves the plan workflow and is read-only, and `export-session.py` is neither.
 - 2026-10-12, goal 01 closed: `dev/export-session/` has 8 cases and 5 mutants, under a second each. Run against `tmp/export_session.py`, it fails only the encoding and usage cases, so the three 2026-10-11 fixes were already in it; mutant `m02` reproduces the double-encoded em dash byte for byte.
 - 2026-10-12: two side agents found that the Markdown is not the full record, and neither is the log alone: the Markdown drops tool output, reasoning and token counts, and the log keeps only a 2 KB preview of a large tool output, whose full text is in `<uuid>/tool-results/`. The export now keeps both beside the Markdown (R1a `_TODO.md:51`); goal 02 adds the copies and decides directory or compressed tar.
+- 2026-10-12, goal 02: the script takes a session's name as well as its log path, and finds a name through each log's `<uuid>/custom-title.json` in this project's log directory (honouring `CLAUDE_CONFIG_DIR`). The R1 log carries both its names, 586 and 632 times; by its current name it renders as 329 messages, 996 replies and 16 compactions, and its old name matches nothing. The suite has 13 cases and 6 mutants.

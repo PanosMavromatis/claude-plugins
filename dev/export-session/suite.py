@@ -27,8 +27,8 @@ def at(hm): return f"2026-10-12T{hm}:00.000Z"
 def compact(args):                   # the shape of a real /compact record
     return ("<command-name>/compact</command-name>\n            <command-message>compact</command-message>\n"
             f"            <command-args>{args}</command-args>")
-def doc(title, *blocks):
-    head = (f"# Session {title} — full transcript\n\nRendered from the Claude Code session log `{LOG}`. "
+def doc(title, *blocks, log=LOG):
+    head = (f"# Session {title} — full transcript\n\nRendered from the Claude Code session log `{log}`. "
             "It contains the operator's messages, the assistant's visible replies, the operator's answers "
             "to multiple-choice questions, compaction summaries, and one-line entries for tool actions. "
             "It omits tool output, system reminders and hidden reasoning.\n")
@@ -71,6 +71,25 @@ GOUT = doc("g01",
 HI = [rec("user", "hi", at("09:00"))]
 HIOUT = "## Operator — 2026-10-12 09:00 UTC\n\nhi\n"
 
+# A project's log directory, for the cases that name a session: A was renamed from
+# old-name to new-name, so its log holds both names; B is old-name now; C was never
+# renamed, so it has no folder; D and E share a name.
+UA, UB, UC, UD, UE = (f"{c * 8}-0000-4000-8000-00000000000{n}" for n, c in enumerate("abcde", 1))
+def title(t, u): return json.dumps({"type": "custom-title", "customTitle": t, "sessionId": u})
+def named(t): return json.dumps({"customTitle": t})
+def said(who): return rec("user", f"from {who}", at("08:00"))
+PROJ = {
+    f"{UA}.jsonl": [title("old-name", UA), title("old-name", UA), said("A"), title("new-name", UA)],
+    f"{UA}/custom-title.json": named("new-name"),
+    f"{UB}.jsonl": [title("old-name", UB), said("B")], f"{UB}/custom-title.json": named("old-name"),
+    f"{UC}.jsonl": [said("C")],
+    f"{UD}.jsonl": [said("D")], f"{UD}/custom-title.json": named("twin"),
+    f"{UE}.jsonl": [said("E")], f"{UE}/custom-title.json": named("twin"),
+}
+def by_name(n): return dict(proj=PROJ, arg=n)
+def from_(who, u, t): return dict(exit=0, out=doc(t, f"## Operator — 2026-10-12 08:00 UTC\n\nfrom {who}\n", log=f"{u}.jsonl"),
+                                  summary=summary(1, 0, 0))
+
 # id, log lines, output name (None: no output path), locale, extra args, expectations.
 # The defect cases come first, the title's before the rest, since every output has a title:
 # so a mutant's first failure is the case aimed at it.
@@ -82,19 +101,42 @@ C = [
     ("e02", [rec("user", compact("Keep A.\nKeep B."), at("09:00"))], "e02.md", UTF8, [],   # /compact's instructions
      dict(exit=0, out=doc("e02", "## Operator ran `/compact` — 2026-10-12 09:00 UTC\n\nKeep A.\nKeep B.\n"),
           summary=summary(0, 0, 0))),
+    ("n01", [], "n01.md", UTF8, [], from_("A", UA, "n01"), by_name("new-name")),     # a renamed session's name
+    ("n02", [], "n02.md", UTF8, [], from_("B", UB, "n02"), by_name("old-name")),     # A's old name is B's alone
+    ("n03", [], "n03.md", UTF8, [], dict(exit=1, stderr="export-session.py: no session named 'no-such' in ",
+                                         nofile=True), by_name("no-such")),
+    ("n04", [], "n04.md", UTF8, [], dict(exit=1, stderr="export-session.py: 2 sessions named 'twin' in ",
+                                         nofile=True), by_name("twin")),
+    ("n05", [], "n05.md", UTF8, [], dict(exit=1, stderr="export-session.py: no such session log: missing.jsonl",
+                                         nofile=True), dict(proj={}, arg="missing.jsonl")),
     ("g01", G, "g01-full.md", UTF8, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
     ("g02", G, "g01-full.md", LATIN1, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
-    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session.jsonl> <output.md>")),
+    ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session name | session.jsonl> <output.md>")),
     ("u02", HI, "u02.md", UTF8, ["extra"], dict(exit=2, stderr="usage: export-session.py", nofile=True)),
 ]
 
+def enc(path):   # how Claude Code names a project's log directory: each non-letter, non-digit is -
+    return "".join(c if c.isascii() and c.isalnum() else "-" for c in path)
+
 def run_case(script, case, tmp):
-    cid, lines, name, loc, extra, want = case
+    cid, lines, name, loc, extra, want, *setup = case
     d = os.path.join(tmp, cid); os.makedirs(d)
     log, out = os.path.join(d, LOG), (os.path.join(d, name) if name else None)
     with open(log, "w", encoding="utf-8") as f: f.write("".join(l + "\n" for l in lines))
-    argv = [sys.executable, "-I", script] + ([log, out] if out else []) + extra
-    p = subprocess.run(argv, capture_output=True, env=dict(os.environ, LC_ALL=loc, LANG=loc))
+    env, cwd, first = dict(os.environ, LC_ALL=loc, LANG=loc), None, log
+    env.pop("CLAUDE_CONFIG_DIR", None)
+    if setup:   # a case that names a session: its own config directory, working directory and projects
+        cwd, env["CLAUDE_CONFIG_DIR"] = os.path.join(d, "work"), os.path.join(d, "claude")
+        os.makedirs(cwd)
+        proj = os.path.join(env["CLAUDE_CONFIG_DIR"], "projects", enc(os.path.realpath(cwd)))
+        os.makedirs(proj)
+        for rel, body in setup[0]["proj"].items():
+            os.makedirs(os.path.dirname(os.path.join(proj, rel)), exist_ok=True)
+            with open(os.path.join(proj, rel), "w", encoding="utf-8") as f:
+                f.write(body if isinstance(body, str) else "".join(l + "\n" for l in body))
+        first = setup[0]["arg"]
+    argv = [sys.executable, "-I", script] + ([first, out] if out else []) + extra
+    p = subprocess.run(argv, capture_output=True, env=env, cwd=cwd)
     err, so, bad = p.stderr.decode("utf-8", "replace"), p.stdout.decode("utf-8", "replace"), []
     if p.returncode != want["exit"]: bad.append(f"exit {p.returncode}, want {want['exit']} (stderr: {err.strip()[-200:]!r})")
     if "stderr" in want:

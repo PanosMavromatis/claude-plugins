@@ -142,7 +142,7 @@ python3 -I dev/close-revision/suite.py --mutants         # the suite must catch 
 Test the session-log renderer, `scripts/export-session.py`, after any change to it:
 
 ```bash
-python3 -I dev/export-session/suite.py                   # 8 cases, no model, ~1 s
+python3 -I dev/export-session/suite.py                   # 13 cases, no model, ~1 s
 python3 -I dev/export-session/suite.py --mutants         # the suite must catch each mutant, ~1 s
 ```
 

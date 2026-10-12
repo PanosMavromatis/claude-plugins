@@ -8,13 +8,15 @@ in the `feat-session-export-full` branch plan.
 ## Running it: no model, no cost
 
 ```bash
-python3 -I dev/export-session/suite.py             # 8 cases (~1 s)
-python3 -I dev/export-session/suite.py --mutants   # 5 mutants, every one must be caught (~1 s)
+python3 -I dev/export-session/suite.py             # 13 cases (~1 s)
+python3 -I dev/export-session/suite.py --mutants   # 6 mutants, every one must be caught (~1 s)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy. Each case works in its own
 temporary directory, so no fixture outlives the run and nothing is written in the
-repository. Only macOS has been tested.
+repository. A case that names a session gets its own working directory and its own
+`CLAUDE_CONFIG_DIR`, holding the project's log directory under the name Claude Code gives
+it, so no case reads the real `~/.claude`. Only macOS has been tested.
 
 - **The fixtures** are session logs written the way Claude Code writes them: one JSON
   record per line, in raw UTF-8, never `\u` escapes. A real log holds thousands of em
@@ -28,6 +30,12 @@ repository. Only macOS has been tested.
     and writing as Latin-1 crashes on the title's em dash. The suite refuses to run if
     that locale is not installed, rather than pass without testing it;
   - `e02`: the instructions given to `/compact` appear under it.
+- **`n01`–`n05`** name a session instead of passing its log, the fourth defect. A renamed
+  session's log keeps every name it has had, so a name is matched against each session's
+  `<uuid>/custom-title.json`, which holds only the current one: `n01` finds a renamed
+  session by its new name, and `n02` finds another session by the first one's old name.
+  No match (`n03`), two matches (`n04`) and a missing log path (`n05`) each exit 1 with a
+  reason and write nothing.
 - **`g01`** renders one log holding every kind of record, each block checked byte for
   byte: an operator message with a system reminder stripped, tool actions collapsed,
   replies, a question and its answer, commands with and without arguments, a compaction
@@ -41,4 +49,5 @@ repository. Only macOS has been tested.
   `scripts/`. A patch that no longer applies is reported as `STALE`. Re-anchor it, or drop
   it if its rule has gone. A mutant must be caught by the case aimed at its rule: the
   defect cases run first, the title's before the rest, since every output carries a
-  title. Check the `FAIL` line each one prints.
+  title. Check the `FAIL` line each one prints. `m06` matches a name against every name a
+  log has had, as the old runbook's `grep` did, and `n02` catches it.

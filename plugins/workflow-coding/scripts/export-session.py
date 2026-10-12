@@ -1,6 +1,12 @@
 """Render a Claude Code session log (JSONL) as readable Markdown, compactions included.
 
-  python3 -I export-session.py <session.jsonl> <output.md>
+  python3 -I export-session.py <session name | session.jsonl> <output.md>
+
+A session is named by the path of its log, or by the name /rename gave it. A name is
+looked up in this project's log directory, which Claude Code names after the working
+directory, each character other than a letter or digit made `-`: the session whose
+`<uuid>/custom-title.json` holds that name. A renamed session's log keeps every name it
+has had, so its records cannot say which one is current; that file can.
 
 /export writes only what is in context, so after a compaction it loses everything before
 the summary. Claude Code's session log, ~/.claude/projects/<project-dir>/<session-uuid>.jsonl,
@@ -14,12 +20,35 @@ less `.md` and any `-full`.
 
 Both files are read and written as UTF-8 whatever the locale, so an em dash is written
 once, as itself."""
-import json, os, re, sys
+import glob, json, os, re, sys
 
 if len(sys.argv) != 3:
-    print("usage: export-session.py <session.jsonl> <output.md>", file=sys.stderr)
+    print("usage: export-session.py <session name | session.jsonl> <output.md>", file=sys.stderr)
     sys.exit(2)
-src, dst = sys.argv[1], sys.argv[2]
+arg, dst = sys.argv[1], sys.argv[2]
+
+def fail(msg):
+    print(f"export-session.py: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+def names(log):   # the session's current name: the one /rename left in <uuid>/custom-title.json
+    try:
+        with open(log.removesuffix(".jsonl") + "/custom-title.json", encoding="utf-8") as f: return {json.load(f).get("customTitle")}
+    except (OSError, ValueError, AttributeError): return set()
+
+if arg.endswith(".jsonl"):
+    if not os.path.isfile(arg): fail(f"no such session log: {arg}")
+    src = arg
+else:
+    base = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
+    d = os.path.join(base, "projects", re.sub(r"[^A-Za-z0-9]", "-", os.getcwd()))
+    if not os.path.isdir(d): fail(f"no session log directory for this project: {d}")
+    hits = [p for p in sorted(glob.glob(os.path.join(glob.escape(d), "*.jsonl"))) if arg in names(p)]
+    if not hits: fail(f"no session named {arg!r} in {d}: a session's name is the one /rename gave it")
+    if len(hits) > 1:
+        fail(f"{len(hits)} sessions named {arg!r} in {d}: " + ", ".join(os.path.basename(p) for p in hits)
+             + "; pass the log's path instead")
+    src = hits[0]
 REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
 CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
 LOCAL = re.compile(r"<local-command-(?:stdout|caveat)>.*?</local-command-(?:stdout|caveat)>", re.S)

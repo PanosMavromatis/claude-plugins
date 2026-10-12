@@ -1,11 +1,11 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -18,7 +18,7 @@
+@@ -24,7 +24,7 @@
  
  if len(sys.argv) != 3:
-     print("usage: export-session.py <session.jsonl> <output.md>", file=sys.stderr)
+     print("usage: export-session.py <session name | session.jsonl> <output.md>", file=sys.stderr)
 -    sys.exit(2)
 +    sys.exit(1)
- src, dst = sys.argv[1], sys.argv[2]
- REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
- CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
+ arg, dst = sys.argv[1], sys.argv[2]
+ 
+ def fail(msg):
