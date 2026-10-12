@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -181,7 +181,7 @@
+   v="$(src "$ROOT_PLAN" | awk '
+     got { next }
+     /^[ \t]*```/ { fence = !fence; next }
+-    !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print v; got = 1 }
++    !fence && /^\*\*Layout\*\*:/ { v = $0; sub(/^\*\*Layout\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print v; exit }
+   ')" || die "awk failed reading the **Layout** header of $ROOT_PLAN at HEAD"
+   if [ "$v" = revisions ]; then MLAYOUT=revisions; else MLAYOUT=legacy; fi
+ else

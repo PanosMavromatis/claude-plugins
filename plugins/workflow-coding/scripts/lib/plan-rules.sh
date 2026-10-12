@@ -27,6 +27,15 @@ die() {  # die <message> [status]: a tool failed in a way the rules cannot expla
   if [ $# -ge 2 ]; then st="$2"; fi
   echo "$PROG: $1" >&2
   tool="${1%% *}"
+  # Two statuses are no tool's own, so neither names a binary or blames PATH: 141 is a
+  # writer killed by SIGPIPE, its reader having stopped before EOF; 3 is die's own, from a
+  # function that died inside the failed pipeline and has already said why.
+  case "$st" in
+    141) echo "hint: status 141 is SIGPIPE: a command was killed writing to a pipe whose reader stopped before EOF, a bug in $PROG rather than in PATH or a tool" >&2
+         exit 3 ;;
+    3)   echo "hint: status 3 is $PROG's own failure status, so the cause is the failure reported above, not PATH or a tool" >&2
+         exit 3 ;;
+  esac
   case "$tool" in
     awk|find|sort|git)   # name the binary that failed, so a broken PATH shows itself
       path="$(command -v "$tool" 2>/dev/null)" || path=""
@@ -505,13 +514,14 @@ e10_fix() {  # e10_fix <goal dir> <NN> <index line text>; reads FILES
 # begins (07-rev for 07-rev-2), and a label may hold regex metacharacters. The label
 # reaches awk through the environment, since -v would read a backslash in it as an
 # escape, and a trailing CR is dropped so a CRLF plan reads the same. Each prints the
-# first matching line's number, or nothing.
+# first matching line's number, or nothing, and reads to EOF: close-revision.sh feeds each
+# a pipe through /dev/stdin, whose writer an exit at the match could kill with SIGPIPE.
 section_line() {  # section_line <file> <label>: the heading alone, or then `: <subtitle>`
   L="## Subgoals — revision $2" awk '
-    { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; exit }
+    got { next } { sub(/\r$/, "") } $0 == ENVIRON["L"] || index($0, ENVIRON["L"] ":") == 1 { print NR; got = 1 }
   ' "$1" || die "awk failed reading $1"
 }
 pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label
-  L="- **Revision $2**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
+  L="- **Revision $2**" awk 'got { next } { sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; got = 1 }' "$1" \
     || die "awk failed reading $1"
 }

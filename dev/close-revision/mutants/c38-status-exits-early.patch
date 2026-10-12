@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -136,7 +136,7 @@
+   else find "$PD" -type d || die "find failed listing $PD"; fi
+ }
+ status_src() {  # the first **Status** value of a file, as status_of reads it
+-  src "$1" | awk 'got { next } /^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; got = 1 }' \
++  src "$1" | awk 'got { next } /^\*\*Status\*\*:/ { sub(/^\*\*Status\*\*:[ \t]*/, ""); sub(/[ \t\r]+$/, ""); print; exit }' \
+     || die "awk failed reading the status of $1"
+ }
+ lf() {  # a file with each line's trailing CR dropped

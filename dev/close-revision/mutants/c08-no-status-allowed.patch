@@ -1,8 +1,8 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -216,7 +216,7 @@
+@@ -222,7 +222,7 @@
    fi
-   out="$(src "$REV" | awk '/^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }')" \
+   out="$(src "$REV" | awk 'got { next } /^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; got = 1 }')" \
      || die "awk failed reading the status of $REV"
 -  if [ -z "$out" ]; then
 +  if false; then

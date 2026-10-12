@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -220,7 +220,7 @@
+       *) refuse "revision $LABEL is not open: $ROOT_PLAN:$IDX_N marks it [$mk]" "$NOTOPEN" ;;
+     esac
+   fi
+-  out="$(src "$REV" | awk 'got { next } /^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; got = 1 }')" \
++  out="$(src "$REV" | awk 'got { next } /^\*\*Status\*\*:/ { v = $0; sub(/^\*\*Status\*\*:[ \t]*/, "", v); sub(/[ \t\r]+$/, "", v); print NR "\t" v; exit }')" \
+     || die "awk failed reading the status of $REV"
+   if [ -z "$out" ]; then
+     violation "$REV has no **Status** line, so it cannot be stamped closed" "add \`**Status**: open\` under its title, then run this again"

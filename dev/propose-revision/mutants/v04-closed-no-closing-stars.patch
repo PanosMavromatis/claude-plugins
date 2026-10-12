@@ -1,10 +1,10 @@
 --- a/lib/plan-rules.sh
 +++ b/lib/plan-rules.sh
-@@ -512,6 +512,6 @@
+@@ -522,6 +522,6 @@
    ' "$1" || die "awk failed reading $1"
  }
  pointer_line() {  # pointer_line <file> <label>: `- **Revision <label>**`; the closing ** ends the label
--  L="- **Revision $2**" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
-+  L="- **Revision $2" awk '{ sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; exit }' "$1" \
+-  L="- **Revision $2**" awk 'got { next } { sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; got = 1 }' "$1" \
++  L="- **Revision $2" awk 'got { next } { sub(/\r$/, "") } index($0, ENVIRON["L"]) == 1 { print NR; got = 1 }' "$1" \
      || die "awk failed reading $1"
  }
