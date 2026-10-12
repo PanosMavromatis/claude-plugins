@@ -17,13 +17,14 @@ Add `/workflow-coding:session-handoff`, which writes `tmp/session-handoff.md` fo
 
 ## Context
 
-- R1a subgoal 2 is at `docs/plan/07-subagent-refactor-R1a/_TODO.md:57`, with its settled decisions at `:19`–`33` and `:49`.
+- R1a subgoal 2 is at `docs/plan/07-subagent-refactor-R1a/_TODO.md:57`, with its settled decisions at `:19`–`33` and `:49`–`50`.
 - The design is `tmp/subagent-refactor-plan.md` §4.4 (`/smart-compact`), including "What `/smart-compact` is for (2026-10-12)". It is untracked, since `tmp/` is gitignored.
 - The model handoff is `tmp/session-handoff-r1-r1a.md`, written by hand in the R1→R1a session in the shape this command will produce. It was kept (renamed) rather than deleted, because its "For R2" section is still live.
-- Open: whether a handoff is deleted once read and the user confirms (the settled decision at `_TODO.md:30`–`31`), or archived, as the R1→R1a one was.
+- Settled in goal 02: a read handoff is archived to `tmp/handoffs/<YYYY-MM-DD>-<branch>.md` once the user confirms, not deleted; the dated settled decision at `_TODO.md:50` amends `:30`–`31`.
 - The plugin's `protect-agent-docs.py` blocks `CLAUDE.md` writes only when `docs/agents/core.md` exists, and this repository has no `docs/agents/`.
 
 ## Notes
 
 - 2026-10-12: the goal files are written with their subgoals, by hand from the subgoal's Acceptance line, until R1a subgoal 5 ships in 0.10.1.
 - 2026-10-12, goal 01: `commands/session-handoff.md` takes the plan from the session's latest `locate-plan.sh` report and never searches for it (goal 01's Q&A), and first flushes unlogged decisions to the plan. Found on the way: §4.3's target has no `CLAUDE.md`, so wherever it is adopted, goal 02's `CLAUDE.md` must move into `AGENTS.md`.
+- 2026-10-12, goal 02: the root `CLAUDE.md` (1014 bytes) has the next session read the handoff first and archive it, and holds `# Compact instructions`, §4.4's Drop list and Say where with no static Keep. Claude Code's docs give that heading, place it under automatic compaction, and re-inject the project-root `CLAUDE.md` after every compaction.

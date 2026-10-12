@@ -1,0 +1,19 @@
+# Session handoff
+
+If `tmp/session-handoff.md` exists, read it whole before anything else, and say in a few
+lines what you took from it. Once the user confirms, archive it: run
+`mkdir -p tmp/handoffs`, then `mv` it to `tmp/handoffs/<YYYY-MM-DD>-<branch>.md`,
+with the date from its `**Written**:` line and the branch from its title, each `/`
+replaced by `-`. If that name is taken, add `-2`, `-3` before `.md`.
+
+# Compact instructions
+
+Keep pointers, not copies.
+
+- **Say where things are**, not what they say: the branch, the plan and the goal file by
+  path, as the latest `locate-plan.sh` report gave them, and any other file by its path
+  and a few words on what it holds.
+- **Drop** what a later step can get back: the contents of any file under `docs/plan/`
+  or `docs/agents/`, and of `AGENTS.md`, which their paths retrieve; subagent reports in
+  full, since a subagent can be run again; anything under `.claude/agent-memory/`, which
+  the agent reloads; and the bodies of commands and skills already run.
