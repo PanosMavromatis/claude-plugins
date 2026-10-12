@@ -1,0 +1,24 @@
+# fix/plan-scripts-sigpipe
+
+**Created**: 2026-10-12
+**Base**: main at 1dd709a
+**Status**: active
+
+## Purpose
+
+Make the plan scripts survive SIGPIPE. Under `set -euo pipefail`, a pipe whose reader exits before EOF (`awk '…{print; exit}'`) can kill its writer (`cat`, or `git show` under `--check`), and the script then dies with exit 3. That made closing R1 fail at random on plans over ~16 KB. This branch makes every reader read to EOF, corrects `die`'s hint, which blames PATH or awk, and adds large-input suite cases so the race can't come back. It ships in `workflow-coding` 0.10.1.
+
+## Scope
+
+- `close-revision.sh`: the measured sites at `:135` and `:217` (loud: exit 3) and `:365` (silent: `if ! printf | awk …exit` would read "not found").
+- Sweep every other script under `plugins/workflow-coding/scripts/` and `scripts/lib/`, single- and multi-line awk alike.
+- `lib/plan-rules.sh`'s `die`: the hint must not blame PATH or awk for a writer killed by SIGPIPE.
+- `dev/close-revision/suite.py`: a >64 KB plan, both the close and its `--check`. Its `mutants/` and `README.md`. A large-input case in the suite of any other script changed.
+
+## Context
+
+- R1a subgoal 1: `docs/plan/07-subagent-refactor-R1a/_TODO.md`.
+- Diagnosed while closing R1 (PR #13). It failed once on the 66 KB `feat-plan-locator/TODO.md` and once on the 22 KB `feat-locate-plan-diagnostics/TODO.md`. A standalone `cat | awk` loop (50 runs) did not reproduce it.
+- Fix idea: `!done && /re/ {print; done=1}`, which reads to EOF and prints the first match only.
+
+## Notes
