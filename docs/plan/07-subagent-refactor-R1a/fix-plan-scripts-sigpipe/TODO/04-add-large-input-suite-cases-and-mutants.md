@@ -7,4 +7,5 @@
 - [ ] A close-revision case closes a plan larger than 64 KB, both the close and its `--check`
 - [ ] Mutants that put back `exit` at the five sites, and `--mutants` catches each, including `:365`'s silent one (it needs a directory list larger than the pipe buffer)
 - [ ] A large-input case in the suite of each script that goal 02 changes
+  > **Note:** Goal 02 changed no script (see its goal file), so this subgoal has nothing to cover. Expect `[-]` when goal 04 runs.
 - [ ] `dev/close-revision/README.md` describes the new cases

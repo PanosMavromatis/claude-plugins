@@ -24,4 +24,5 @@ Make the plan scripts survive SIGPIPE. Under `set -euo pipefail`, a pipe whose r
 ## Notes
 
 - 2026-10-12, goal 01: `close-revision.sh` had five early-exit pipe readers, not three; `:177` (the layout under `--check`) and `:194` (`stamp`'s index line) too. All five now read to EOF (`got { next }`). Suite 58/58; `--mutants` 40/40 after re-anchoring the four patches the edit made stale (c05, c06, c08, c19).
+- 2026-10-12, goal 02: no other plan script has an early-exit pipe reader. Every other pipe's reader reads to EOF (`sort`, `tr`, or an awk with no `exit`), and every awk that exits early reads a file argument or exits only in `END`. No code changed, so goal 04's large-input cases are close-revision's alone.
 - 2026-10-12: this branch also adds R1a subgoal 5 to the revision's `_TODO.md`: `/new-branch` 0.10.0 wrote this branch's goal files as stubs with no subgoals, so they were fleshed out by hand, and the fix (goal files with their subgoals, never stubs) ships in 0.10.1.

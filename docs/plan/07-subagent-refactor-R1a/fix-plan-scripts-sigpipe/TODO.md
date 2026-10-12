@@ -9,6 +9,6 @@
 ## Goals
 
 - [x] 01 — Fix close-revision.sh's early-exit pipes
-- [ ] 02 — Sweep the other plan scripts and lib for early-exit readers
+- [x] 02 — Sweep the other plan scripts and lib for early-exit readers
 - [ ] 03 — Correct die's PATH and awk hint
 - [ ] 04 — Add large-input suite cases and mutants
