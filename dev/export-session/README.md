@@ -8,8 +8,8 @@ in the `feat-session-export-full` branch plan.
 ## Running it: no model, no cost
 
 ```bash
-python3 -I dev/export-session/suite.py             # 16 cases (~1 s)
-python3 -I dev/export-session/suite.py --mutants   # 10 mutants, every one must be caught (~1 s)
+python3 -I dev/export-session/suite.py             # 20 cases (~1 s)
+python3 -I dev/export-session/suite.py --mutants   # 14 mutants, every one must be caught (~6 s)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy. Each case works in its own
@@ -42,6 +42,12 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   (`s03`). Every record in a subagent's log is a sidechain record, which the main log's
   filter drops, and a subagent hands its answer back as a `SubagentHandback` call, not as
   text: `s01` checks both.
+- **`r01`–`r04`** are the raw record kept beside the Markdown, which drops tool output,
+  reasoning and token counts: the log, byte for byte, as `<name>.jsonl` (`r01`), and the
+  session's folder as `<name>.tar.gz`, unpacking into `<name>/`, checked file by file
+  (`r03`). An export whose `<name>.jsonl` would be the log it reads is refused before
+  anything is written (`r02`), and a missing output directory is created (`r04`). A
+  session with no folder gets no archive, and the summary line says which.
 - **`g01`** renders one log holding every kind of record, each block checked byte for
   byte: an operator message with a system reminder stripped, tool actions collapsed,
   replies, a question and its answer, commands with and without arguments, a compaction
@@ -58,3 +64,5 @@ it, so no case reads the real `~/.claude`. Only macOS has been tested.
   title. Check the `FAIL` line each one prints. `m06` matches a name against every name a
   log has had, as the old runbook's `grep` did, and `n02` catches it. `m07`–`m10` undo the
   subagent rules: the flag, the sidechain filter, the handback, and the appendix.
+  `m11`–`m14` undo the raw record's: the log's copy, the overwrite guard, the archive, and
+  the output directory.

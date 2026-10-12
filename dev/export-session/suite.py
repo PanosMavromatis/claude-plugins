@@ -10,7 +10,7 @@ under a stated locale, and checks the exit code, stderr, the summary line and th
 file's bytes. --mutants applies each patch in mutants/ to a copy of the script and runs the
 suite on it: each must fail it, and a patch that no longer applies is reported stale. A
 patch names its file relative to scripts/."""
-import glob, json, os, shutil, subprocess, sys, tempfile
+import glob, json, os, shutil, subprocess, sys, tarfile, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -33,7 +33,10 @@ def doc(title, *blocks, log=LOG):
             "to multiple-choice questions, compaction summaries, and one-line entries for tool actions. "
             "It omits tool output, system reminders and hidden reasoning.\n")
     return "\n".join([head, *blocks])
-def summary(op, cl, co): return f"{op} operator messages, {cl} assistant replies, {co} compactions"
+def summary(op, cl, co, folder=False, subs=None):
+    return (f"{op} operator messages, {cl} assistant replies, {co} compactions"
+            + (f", {subs} subagents" if subs is not None else "")
+            + ", raw log copied" + (", session folder archived" if folder else ", no session folder"))
 
 # Every kind of record the script renders or skips, in one log.
 G = [
@@ -106,7 +109,7 @@ SUB_OUT = ("<details><summary>Subagent plan-drafter — Draft it (1 replies)</su
            "### Subagent — 2026-10-12 11:01 UTC\n\n## Draft\n\nDone.\n\n</details>\n")
 DRAFTING = "## Claude — 2026-10-12 11:01 UTC\n\nDrafting.\n"
 def from_(who, u, t): return dict(exit=0, out=doc(t, f"## Operator — 2026-10-12 08:00 UTC\n\nfrom {who}\n", log=f"{u}.jsonl"),
-                                  summary=summary(1, 0, 0))
+                                  summary=summary(1, 0, 0, folder=True))   # a named session has a folder
 
 # id, log lines, output name (None: no output path), locale, extra args, expectations.
 # The defect cases come first, the title's before the rest, since every output has a title:
@@ -128,13 +131,26 @@ C = [
     ("n05", [], "n05.md", UTF8, [], dict(exit=1, stderr="export-session.py: no such session log: missing.jsonl",
                                          nofile=True), dict(proj={}, arg="missing.jsonl")),
     ("s01", SPAWNS, "s01.md", UTF8, ["--subagents"],      # inline, after the call that spawned it
-     dict(exit=0, out=doc("s01", SPAWN_ACT, SUB_OUT, DRAFTING), summary=summary(0, 1, 0) + ", 1 subagents"),
+     dict(exit=0, out=doc("s01", SPAWN_ACT, SUB_OUT, DRAFTING), summary=summary(0, 1, 0, folder=True, subs=1)),
      dict(files=agent("ag1"))),
     ("s02", SPAWNS, "s02.md", UTF8, [],                   # only when asked for
-     dict(exit=0, out=doc("s02", SPAWN_ACT, DRAFTING), summary=summary(0, 1, 0)), dict(files=agent("ag1"))),
+     dict(exit=0, out=doc("s02", SPAWN_ACT, DRAFTING), summary=summary(0, 1, 0, folder=True)), dict(files=agent("ag1"))),
     ("s03", SPAWNS, "s03.md", UTF8, ["--subagents"],      # its call not in the log: an appendix, not lost
      dict(exit=0, out=doc("s03", SPAWN_ACT, DRAFTING, "## Subagents whose call is not in the log\n", SUB_OUT),
-          summary=summary(0, 1, 0) + ", 1 subagents"), dict(files=agent("zz"))),
+          summary=summary(0, 1, 0, folder=True, subs=1)), dict(files=agent("zz"))),
+    ("r01", HI, "r01.md", UTF8, [],                       # the raw log, byte for byte, as <name>.jsonl
+     dict(exit=0, out=doc("r01", HIOUT), summary=summary(1, 0, 0), jsonl=True, notar=True)),
+    ("r02", HI, FOLDER + ".md", UTF8, [],                 # <name>.jsonl would be the log it reads
+     dict(exit=1, stderr="export-session.py: ", stderr_has="is the session log itself", nofile=True, keep_log=True)),
+    ("r03", HI, "r03.md", UTF8, [],                       # the session's folder, as <name>.tar.gz
+     dict(exit=0, out=doc("r03", HIOUT), summary=summary(1, 0, 0, folder=True), jsonl=True,
+          tar={"r03/custom-title.json": named("x"), "r03/tool-results/t1.txt": "a large output\n",
+               "r03/subagents/agent-a1.jsonl": "".join(l + "\n" for l in SUB),
+               "r03/subagents/agent-a1.meta.json": agent("ag1")[f"{FOLDER}/subagents/agent-a1.meta.json"]}),
+     dict(files={f"{FOLDER}/custom-title.json": named("x"), f"{FOLDER}/tool-results/t1.txt": "a large output\n",
+                 **agent("ag1")})),
+    ("r04", HI, "deeper/still/r04.md", UTF8, [],          # the output directory is created
+     dict(exit=0, out=doc("r04", HIOUT), summary=summary(1, 0, 0), jsonl=True, notar=True)),
     ("g01", G, "g01-full.md", UTF8, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
     ("g02", G, "g01-full.md", LATIN1, [], dict(exit=0, out=GOUT, summary=summary(1, 2, 1))),
     ("u01", HI, None, UTF8, [], dict(exit=2, stderr="usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]")),
@@ -148,7 +164,8 @@ def run_case(script, case, tmp):
     cid, lines, name, loc, extra, want, *setup = case
     d = os.path.join(tmp, cid); os.makedirs(d)
     log, out = os.path.join(d, LOG), (os.path.join(d, name) if name else None)
-    with open(log, "w", encoding="utf-8") as f: f.write("".join(l + "\n" for l in lines))
+    written = "".join(l + "\n" for l in lines).encode("utf-8")
+    with open(log, "wb") as f: f.write(written)
     env, cwd, first = dict(os.environ, LC_ALL=loc, LANG=loc), None, log
     env.pop("CLAUDE_CONFIG_DIR", None)
     def put(root, files):
@@ -182,6 +199,21 @@ def run_case(script, case, tmp):
         elif got != exp:
             i = next((k for k in range(min(len(got), len(exp))) if got[k] != exp[k]), min(len(got), len(exp)))
             bad.append(f"output differs at byte {i}: got {got[max(0, i - 20):i + 30]!r}, want {exp[max(0, i - 20):i + 30]!r}")
+    base = out.removesuffix(".md") if out else ""
+    if want.get("stderr_has") and want["stderr_has"] not in err: bad.append(f"stderr {err!r} lacks {want['stderr_has']!r}")
+    if want.get("keep_log") and open(log, "rb").read() != written: bad.append("the session log changed")
+    if want.get("jsonl"):   # the raw log beside the Markdown, byte for byte
+        got = open(base + ".jsonl", "rb").read() if os.path.exists(base + ".jsonl") else None
+        if got is None: bad.append("no <name>.jsonl")
+        elif got != written: bad.append("<name>.jsonl is not the log, byte for byte")
+    if want.get("notar") and os.path.exists(base + ".tar.gz"): bad.append("wrote <name>.tar.gz for a session with no folder")
+    if "tar" in want:       # the folder, as <name>.tar.gz: its files, by name and content
+        if not os.path.exists(base + ".tar.gz"): bad.append("no <name>.tar.gz")
+        else:
+            with tarfile.open(base + ".tar.gz") as t:
+                got = {m.name: t.extractfile(m).read().decode("utf-8") for m in t.getmembers() if m.isfile()}
+            if sorted(got) != sorted(want["tar"]): bad.append(f"archive holds {sorted(got)}, want {sorted(want['tar'])}")
+            elif got != want["tar"]: bad.append("an archived file's content differs")
     if VERBOSE and out and os.path.exists(out): print(open(out, encoding="utf-8", errors="replace").read())
     return bad
 

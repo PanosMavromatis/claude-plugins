@@ -1,6 +1,7 @@
 # 02 — Resolve a session by name, and add subagents on request
 
-**Goal**: [~]
+**Goal**: [x]
+> **Done:** `export-session.py` takes a session's current name or its log, renders subagents inline on request, and keeps the raw record beside the Markdown, as `<name>.jsonl` and `<name>.tar.gz`. The suite has 20 cases and 14 mutants, each killed by the case aimed at it.
 > **Q:** The Markdown drops tool output, hidden reasoning and token counts, and Claude Code deletes the raw log after `cleanupPeriodDays`, so R2's token measure would have nothing to read. Should the export keep the raw log too?
 > **A:** Yes: the raw `.jsonl` beside the `.md`, as `<name>.jsonl` next to `<name>.md`. The Markdown is for reading; the raw log is for an agent to dig into when needed.
 > **Q:** Large tool outputs live only in the session's folder, `<uuid>/tool-results/`, with a preview and a pointer in the log, and subagent transcripts in `<uuid>/subagents/`. Should the export keep that folder too?
@@ -10,10 +11,14 @@
 > **A:** A.
 > **Q:** Where does a subagent's transcript go in the Markdown: inline after the call that spawned it, collapsed (A), in an appendix at the end (B), or in a separate file each (C)?
 > **A:** A, with a subagent whose call is not in the log in an appendix rather than lost.
+> **Q:** How is the session's folder kept beside `<name>.md` and `<name>.jsonl`: as a compressed `<name>.tar.gz` (A), or as a plain `<name>/` directory (B)?
+> **A:** A.
 
 - [x] A renamed session with several `custom-title` records takes its name from `<uuid>/custom-title.json`, and a suite case pins it
   > **Note:** A name is looked up among this project's logs, in `$CLAUDE_CONFIG_DIR` (else `~/.claude`)`/projects/<cwd, each non-letter, non-digit made ->`, by each log's `<uuid>/custom-title.json`; none or several is refused with exit 1. Checked on this project (2026-10-12): each of the three sessions with title records in its log has a `custom-title.json`, holding the last of them. The R1 log carries `multi-agent-refactor` 586 times and `multi-agent-refactor-r1` 632 times: by its current name it renders as 329 operator messages, 996 replies and 16 compactions, and its old name matches nothing. Cases `n01`–`n05`; `m06`, which matches any name a log has had, as the old runbook's `grep` did, is killed by `n02`. A missing output directory raises a traceback, and subgoals 3 and 4 write into that directory.
 - [x] Subagent transcripts (`<uuid>/subagents/`) appear only when asked for, with a suite case each way
   > **Note:** `--subagents` puts each transcript from `<uuid>/subagents/` right after the call that spawned it (`meta.json`'s `toolUseId`), collapsed under its agent type and description, and one whose call is not in the log in an appendix. Two findings on this session's log (2026-10-12): every record in a subagent's log is a sidechain record, which the main log's filter drops, so a subagent is rendered without that filter; and the subagent hands its answer back as a `SubagentHandback` call, its 10.5 KB draft in the call's `message`, not as text, so that call renders as its reply. Without either, the block came out empty, then answer-less. The refactor into one `render` function leaves the main output byte-identical on the 15 MB snapshot. Cases `s01`–`s03`, mutants `m07`–`m10`; `m02` re-anchored on `load`.
-- [ ] Beside `<name>.md` the script writes the raw log, byte for byte, as `<name>.jsonl`, refusing to overwrite the log it reads, and a suite case pins it
-- [ ] Beside them it writes the session's folder, `<uuid>/`, under the same name: decide whether as a directory, `<name>/`, or a compressed `<name>.tar.gz`, log the decision here, and a suite case pins it
+- [x] Beside `<name>.md` the script writes the raw log, byte for byte, as `<name>.jsonl`, refusing to overwrite the log it reads, and a suite case pins it
+  > **Note:** The log is copied with `shutil.copyfile` to `<name>.jsonl`, `<name>` being the output's path less `.md`; when that file is the log itself (`os.path.samefile`), the export is refused before anything is written. The output directory is created, which closes the traceback subgoal 1 found. On the R1 session the 61 MB copy is byte-identical to its log. Cases `r01`, `r02`, `r04`; mutants `m11`, `m12`, `m14`.
+- [x] Beside them it writes the session's folder, `<uuid>/`, under the same name: decide whether as a directory, `<name>/`, or a compressed `<name>.tar.gz`, log the decision here, and a suite case pins it
+  > **Note:** The folder goes in as `<name>.tar.gz`, written with Python's `tarfile`, its members under `<name>/`; a session with no folder gets none, and the summary line says which. On the R1 session the archive is 1.4 MB, holding `custom-title.json`, 6 subagent transcripts and 21 tool results. Case `r03` checks it file by file, since its bytes carry timestamps; mutant `m13`.

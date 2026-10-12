@@ -1,9 +1,9 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -58,7 +58,7 @@
-              + "; pass the log's path instead")
-     src = hits[0]
- REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
+@@ -67,7 +67,7 @@
+ if os.path.exists(base + ".jsonl") and os.path.samefile(base + ".jsonl", src):
+     fail(f"{base}.jsonl is the session log itself: write the export somewhere else")
+ REMINDER =re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
 -CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
 +CMD = re.compile(r"<command-name>(.*?)</command-name>.*?(?:<command-args>(.*?)</command-args>)?", re.S)
  LOCAL = re.compile(r"<local-command-(?:stdout|caveat)>.*?</local-command-(?:stdout|caveat)>", re.S)

@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -187,7 +187,7 @@
+ os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
+ with open(dst, "w", encoding="utf-8") as f:
+     f.write("\n".join(out))
+-shutil.copyfile(src, base + ".jsonl")   # the raw log: tool output, reasoning and token counts
++None   # the raw log: tool output, reasoning and token counts
+ archived = os.path.isdir(folder)
+ if archived:   # large tool outputs and subagent transcripts live only here
+     with tarfile.open(base + ".tar.gz", "w:gz") as t:

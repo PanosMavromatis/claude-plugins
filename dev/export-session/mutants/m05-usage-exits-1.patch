@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -32,7 +32,7 @@
+@@ -38,7 +38,7 @@
  subagents = args[2:] == ["--subagents"]
  if len(args) != 2 and not subagents:
      print("usage: export-session.py <session name | session.jsonl> <output.md> [--subagents]", file=sys.stderr)

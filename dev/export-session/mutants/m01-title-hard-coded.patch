@@ -1,6 +1,6 @@
 --- a/export-session.py
 +++ b/export-session.py
-@@ -167,7 +167,7 @@
+@@ -176,7 +176,7 @@
                                                        desc=meta.get("description", ""))
  found = len(subs)
  

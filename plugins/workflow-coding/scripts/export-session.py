@@ -24,9 +24,15 @@ subagent's own records are all sidechain records, so they are rendered without t
 that drops sidechains from the main log. A subagent may hand its answer back as a
 SubagentHandback call rather than as text; that call's message is rendered as its reply.
 
+Beside <name>.md it keeps the raw record, which the Markdown leaves out: the log, byte for
+byte, as <name>.jsonl, and the session's folder, `<uuid>/` (large tool outputs, subagent
+transcripts, custom-title.json), as <name>.tar.gz, which unpacks into `<name>/`. A
+session that was never renamed and spawned no subagent has no folder, and no archive. It
+refuses to write <name>.jsonl over the log it reads, and creates the output directory.
+
 Both files are read and written as UTF-8 whatever the locale, so an em dash is written
 once, as itself."""
-import glob, json, os, re, sys
+import glob, json, os, re, shutil, sys, tarfile
 
 args = sys.argv[1:]
 subagents = args[2:] == ["--subagents"]
@@ -57,7 +63,10 @@ else:
         fail(f"{len(hits)} sessions named {arg!r} in {d}: " + ", ".join(os.path.basename(p) for p in hits)
              + "; pass the log's path instead")
     src = hits[0]
-REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
+base, folder = dst.removesuffix(".md"), src.removesuffix(".jsonl")
+if os.path.exists(base + ".jsonl") and os.path.samefile(base + ".jsonl", src):
+    fail(f"{base}.jsonl is the session log itself: write the export somewhere else")
+REMINDER =re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
 CMD = re.compile(r"<command-name>(.*?)</command-name>(?:.*?<command-args>(.*?)</command-args>)?", re.S)
 LOCAL = re.compile(r"<local-command-(?:stdout|caveat)>.*?</local-command-(?:stdout|caveat)>", re.S)
 
@@ -175,9 +184,16 @@ out += render(load(src), subs=subs)
 if subs:   # subagents whose spawning call the log does not hold
     out.append("## Subagents whose call is not in the log\n")
     out += [subagent(s) for s in subs.values()]
+os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
 with open(dst, "w", encoding="utf-8") as f:
     f.write("\n".join(out))
+shutil.copyfile(src, base + ".jsonl")   # the raw log: tool output, reasoning and token counts
+archived = os.path.isdir(folder)
+if archived:   # large tool outputs and subagent transcripts live only here
+    with tarfile.open(base + ".tar.gz", "w:gz") as t:
+        t.add(folder, arcname=os.path.basename(base))
 print(dst, sum(1 for s in out if s.startswith("## Operator —")), "operator messages,",
       sum(1 for s in out if s.startswith("## Claude —")), "assistant replies,",
       sum(1 for s in out if s.startswith("## Compaction")), "compactions"
-      + (f", {found} subagents" if subagents else ""))
+      + (f", {found} subagents" if subagents else "")
+      + ", raw log copied" + (", session folder archived" if archived else ", no session folder"))
