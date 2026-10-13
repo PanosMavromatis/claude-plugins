@@ -12,4 +12,4 @@
 - [x] 02 — Warn on a goal file with no subgoals
 - [x] 03 — Draft each goal's subgoals in /new-branch
 - [x] 04 — Propose subgoals in /step and /hitl-step
-- [ ] 05 — Check a real /new-branch run's goal files
+- [~] 05 — Check a real /new-branch run's goal files

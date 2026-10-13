@@ -46,7 +46,9 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   - every script ran from the copy.
 
   It reports `Grep`, `Glob` and shell searches for reading. On fixtures no session has
-  touched, it passes nothing.
+  touched, it passes nothing. In the TODO model it also checks that `/new-branch` wrote
+  each goal file with a `- [ ]` subgoal, reading them from the branch's first commit,
+  since the step session ticks them afterwards.
 - **The merge sessions** (`e1-merge`, `e3-merge`, `e4-merge`) each run in a fresh clone of
   their scenario's fixture (`r1m`, `r3m`, `r4m`), on the branch the step session left, so
   the fixture stays as the other checks grade it. The step session's work is uncommitted
