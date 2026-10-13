@@ -185,6 +185,13 @@ D = [
  ("w11", "d/w11", {"docs/plan/d-w11/TODO.md": pergoal_index("- [~] 01 — one"),
                    "docs/plan/d-w11/TODO/01-one.md": goalfile("x", "- [x] a")}, ["TODO.md"],
   dict(exit=0, result="found", warn=["has [~] but docs/plan/d-w11/TODO/01-one.md says **Goal**: [x]"])),
+ ("w12", "d/w12", {"docs/plan/d-w12/TODO.md": pergoal_index("- [ ] 01 — one"),
+                   "docs/plan/d-w12/TODO/01-one.md": goalfile(" ")}, ["TODO.md"],
+  dict(exit=0, result="found", subgoals="—",
+       warn=["docs/plan/d-w12/TODO/01-one.md has no subgoals, so goal 01 has no acceptance criteria"])),
+ ("w12b", "d/w12b", {"docs/plan/d-w12b/DO.md": pergoal_index("- [ ] 01 — one"),
+                     "docs/plan/d-w12b/DO/01-one.md": goalfile(" ")}, ["DO.md"],
+  dict(exit=0, result="found", layout="per-goal", nowarn=True)),  # a DO goal file with no tasks is the task
  # edge rules and reading rules
  ("x01", "d/x01", {"docs/plan/a/TODO.md": plan("active", "- [ ] only plan")}, ["TODO.md"],
   dict(exit=0, result="found", rung="4", plan="docs/plan/a/TODO.md", nowarn=True)),  # no docs/plan/TODO.md: rung 3 falls through

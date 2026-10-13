@@ -237,6 +237,11 @@ resolved() {  # resolved <file> <rung> <kind>
     if [ -n "$gm" ] && [ "$gm" != "$nnm" ]; then
       warn "${R_NEXT%% *} has [$nnm] but $R_GOALFILE says **Goal**: [$gm]; the goal file is the source of truth"
     fi
+    # W12: in the TODO model a goal's subgoals are its acceptance criteria, so a goal file
+    # with none is a stub. In the DO model a goal file with no tasks is itself the task.
+    if [ -z "$R_SUB" ] && [ "$TODO" -eq 1 ]; then
+      warn "$R_GOALFILE has no subgoals, so goal $nn has no acceptance criteria: propose them before work starts"
+    fi
   fi
 
   if [ -n "$R_NEXT" ]; then

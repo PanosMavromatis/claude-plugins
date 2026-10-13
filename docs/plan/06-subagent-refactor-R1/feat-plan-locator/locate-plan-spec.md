@@ -143,7 +143,9 @@ W5. Otherwise `result: none`, `rung: —`.
   match of `<plan dir>/<F without .md>/NN-*.md`: none → E10; several → E11. `goal-file:`
   names it, and `subgoals:` lists every item line in it, at any indent, outside fences. If
   its `**Goal**:` marker differs from the index line's, add W11: the goal file is the source
-  of truth (working plan, D2).
+  of truth (working plan, D2). In the TODO model, a goal file with no item lines adds W12
+  (added 2026-10-12, R1a, `feat-goal-file-subgoals`): its goal has no acceptance criteria.
+  A DO goal file with no tasks is the task itself, so the DO model has no W12.
 
 ## Diagnostics — `result: error`, exit 1
 
@@ -201,6 +203,7 @@ The command shows them and carries on.
 | W9 | the path also resolves under `docs/plan/`; the repository-relative one was used |
 | W10 | the explicit path was the root index, followed as rung 3 would |
 | W11 | the index marker on `<index>:<n>` disagrees with the goal file's `**Goal**:` |
+| W12 | the selected goal file holds no subgoals, in the TODO model (added 2026-10-12, R1a) |
 
 ## Exit codes
 
