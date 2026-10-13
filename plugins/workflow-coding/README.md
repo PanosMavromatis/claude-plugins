@@ -2,13 +2,11 @@
 
 A collection of Claude Code commands, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.
 
-Renamed from `workflow-claude` at 0.10.0, so that the name no longer reads as one of Anthropic's own plugins.
-
 ## What's in here
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
 - **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to `CLAUDE.md`, `AGENTS.md`, and `AGENTS.override.md` (root and per-component) once the `docs/agents/` sources exist, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
-- **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
+- **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). One, `export-session.py`, writes `/session-export-full`'s export, never inside the repository. The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
   - `locate-plan.sh` resolves a plan and finds its next item, for `/step`, `/hitl-step` and `/smart-merge`, and checks a revision `/master-plan` has just written. It reports a `problem:` and a `fix:` rather than guessing when a plan convention is broken;
   - `check-plan-index.sh` reports where a per-goal plan's index and goal files disagree, and a one-file plan's open items;
   - `propose-branch-plan.sh` places `/new-branch`'s plan; `propose-merge-record.sh` finds what `/smart-merge` stamps and closes;
@@ -220,6 +218,15 @@ In a monorepo, the same pattern repeats per component (`<path>/CLAUDE.md` backed
 
 Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agents-docs-update` → docs stay in sync without you thinking about it.
 
+### Session commands
+
+Two commands carry a session's work past its end, for the next session or for the record. Neither is part of the branch loop.
+
+| Command                  | Role |
+|--------------------------|------|
+| `/session-handoff`       | Writes `tmp/session-handoff.md` for the next session in three parts: what to keep, what to drop, and where things are, as pointers rather than copies. It first proposes putting into the plan whatever belongs there, and writes once you confirm. Its text also works followed as a plain file, by a session whose plugin lacks the command. The next session reads it first only if the project's instruction file says to. |
+| `/session-export-full [session] [output] [--subagents]` | Exports a session's whole log, compactions included, which `/export` cannot: `<name>.md` to read, the log itself as `<name>.jsonl`, and the session's folder as `<name>.tar.gz`. With no argument it exports the session it runs in, to `~/claude-exports/<directory>/`, and it refuses an output inside the repository. Claude Code deletes a session's log after `cleanupPeriodDays`, so the export is the copy that stays. |
+
 ## Conventions worth knowing
 
 #### Closing a revision
@@ -239,3 +246,10 @@ A revision's master plan is `_TODO.md` (or `_DO.md`), not `TODO.md`, and the und
 - **The PR body is a pointer, not an archive.** `/smart-merge` puts a `Plan:` line in the body rather than pasting contents — GitHub caps PR bodies at 65,536 characters, and the plan file itself lands on `main` anyway. **And it names the plan rather than pointing at a path.** PR bodies are effectively immutable while plan locations are deliberately free, so a path pointer is correct only until the plan next moves — the first filing sweep broke seven at once, including the pointer in the PR that performed the move. A name survives every regrouping and resolves the way the commands resolve a plan. The bodies of PRs #1-#11 predate this and keep their stale paths: read those as names to search for, not paths to follow.
 - **Master-plan access is locate-then-window.** The master plan accumulates every subgoal of every revision and grows without bound; `/smart-merge` and the step commands each need one line out of it. A bundled script reports that line, and the command reads a bounded window around it rather than loading the file. Measured: at 250 subgoals a whole-file read is ~55k tokens and 0.39% of it is the part being edited, and past ~500 subgoals the file exceeds the default 2000-line read limit and truncates — after which a lookup that misses looks exactly like having nothing to do. Hence the second half of the rule: a zero-match lookup is always reported, never passed over in silence.
 - **`docs/git/<flattened-branch>.md` is per-branch scratch.** Created by `/new-branch`, consumed and deleted by `/smart-merge`. It stays in the branch's history (recoverable via SHA) but never lands on `main`.
+
+## Releases
+
+Newest first. A release is `plugin.json`'s version; there are no tags yet.
+
+- **0.10.1** — `/session-handoff` writes a handoff for the next session, and `/session-export-full` exports a session's whole log. The plan scripts survive SIGPIPE: no reader exits before the end of a pipe and kills its writer. `/new-branch` writes each goal file with its subgoals, drafted from the master-plan subgoal's Scope and Acceptance, and `locate-plan.sh` warns on a goal file with none. Every command that grants `git` says how to phrase a command so `allowed-tools` matches it: `git <subcommand>`, never `git -C <path>`, and every command alone.
+- **0.10.0** — renamed from `workflow-claude`, so that the name no longer reads as one of Anthropic's own plugins.

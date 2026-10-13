@@ -23,3 +23,4 @@ Release `workflow-coding` 0.10.1, R1a subgoal 4 and the revision's last: bump `p
 ## Notes
 
 - 2026-10-13: the goal files are written with their subgoals, by hand, since the installed `/new-branch` is still 0.10.0.
+- 2026-10-13, goal 01 closed: `plugin.json` reads 0.10.1. The plugin README gains a Session commands table and a `## Releases` section, newest first, which now also holds 0.10.0's rename; the root README's row names the two commands and links it. The plugin's `CLAUDE.md` describes both, and `claude plugin validate` at 0.10.1 gives the one warning already recorded.

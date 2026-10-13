@@ -8,5 +8,5 @@
 
 ## Goals
 
-- [ ] 01 — Bump workflow-coding to 0.10.1 and document the release
+- [x] 01 — Bump workflow-coding to 0.10.1 and document the release
 - [ ] 02 — Check the release after the merge

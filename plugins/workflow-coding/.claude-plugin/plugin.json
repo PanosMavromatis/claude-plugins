@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "workflow-coding",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "A collection of Claude Code commands, hooks, and scripts bundled together as a plugin, customized for my personal agentic workflow preferences. Applicable to most projects.",
   "author": {
     "name": "Panos Mavromatis",
