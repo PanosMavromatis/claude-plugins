@@ -8,7 +8,7 @@
 
 ## Goals
 
-- [ ] 01 — State the phrasing rule in /hitl-step and /step
+- [x] 01 — State the phrasing rule in /hitl-step and /step
 - [ ] 02 — State it in /new-branch
 - [ ] 03 — State it in every other command that grants git
 - [ ] 04 — Check every command that grants git states the rule

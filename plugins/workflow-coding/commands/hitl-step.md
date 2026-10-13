@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next top-level goal from a docs/plan TODO.md with human-in-the-loop Q&A, logged inline.
 argument-hint: "[count] [plan-path]"
 ---
@@ -150,6 +150,8 @@ acceptance criteria. A goal the user named out of order was passed as `--goal`, 
 **In a per-goal plan, every change to a goal's marker goes goal file first, then index**: `**Goal**:` in the goal file, then the goal's index line. The goal file is the source of truth and the index mirrors it, so a run interrupted between the two leaves a mismatch Step 1 can repair; the other order would lose the edit. The Q&A (3b), notes (3b-bis), subgoal markers and escape-hatch notes all go in the goal file, outdented as Step 2 describes.
 
 Work through the goal and its subgoals. **Every write operation and every external command requires user confirmation first.**
+
+**Phrase each command so `allowed-tools` matches it.** Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): a chain matches none of the entries, so it prompts, and in a headless run it is refused. Read a file with `Read`, not by piping it through `head`.
 
 ### 3a. Research
 

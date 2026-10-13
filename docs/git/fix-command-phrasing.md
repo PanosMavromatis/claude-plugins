@@ -28,3 +28,4 @@ Have sessions phrase each command so the command's `allowed-tools` matches it: `
 ## Notes
 
 - 2026-10-13: the goal files are written with their subgoals, by hand, since the installed `/new-branch` is still 0.10.0.
+- 2026-10-13, goal 01 closed: `/hitl-step` and `/step` open Step 3 with the phrasing rule, and grant `git show` and `git ls-files`, read-only: two of the r8–r10 `git -C` denials (e5's `show`, e4-step's `ls-files`) used subcommands neither command granted even plainly, so the rule alone would not have cleared them. Step 1 stays in lockstep.
