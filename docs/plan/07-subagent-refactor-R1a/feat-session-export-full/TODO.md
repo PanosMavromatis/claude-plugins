@@ -1,6 +1,6 @@
 # feat/session-export-full
 
-**Status**: active
+**Status**: merged — PR #17 — 2026-10-12
 **Created**: 2026-10-12
 **Revision**: 07-subagent-refactor-R1a
 **Subgoal**: 3. `/workflow-coding:session-export-full` exports a session's whole JSONL log, compactions included, as Markdown beside a copy of the raw log and the session's folder, through a script with a suite and a thin command. Subagent transcripts are optional, and the output goes outside the repo.
