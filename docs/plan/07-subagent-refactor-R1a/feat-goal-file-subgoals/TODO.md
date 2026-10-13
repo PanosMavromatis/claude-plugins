@@ -10,6 +10,6 @@
 
 - [x] 01 — Report the subgoal's scope from propose-branch-plan.sh
 - [x] 02 — Warn on a goal file with no subgoals
-- [ ] 03 — Draft each goal's subgoals in /new-branch
+- [~] 03 — Draft each goal's subgoals in /new-branch
 - [ ] 04 — Propose subgoals in /step and /hitl-step
 - [ ] 05 — Check a real /new-branch run's goal files

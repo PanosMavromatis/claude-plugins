@@ -65,7 +65,7 @@ State the inherited default and offer the override in one line — e.g. "Master 
 Act on `result:`. A key with several items continues on lines indented two spaces.
 
 - `ask`: the master plan has open subgoals with no branch yet. Show `candidates:` and ask which one this branch executes, offering standalone as well. Never pick one yourself. Run the script again with `--subgoal <file>:<line>` (the candidate's prefix, exactly as shown) or `--standalone`, before the `--`.
-- `propose`: show `layout:`, `revision:`, `subgoal:`, `dir:`, `index:`, every `goals:` line, `backlink:`, and every `warnings:` line. This is what step 7 writes, and nothing else.
+- `propose`: show `layout:`, `revision:`, `subgoal:`, `scope:`, `dir:`, `index:`, every `goals:` line, `backlink:`, and every `warnings:` line. Apart from `scope:`, this is what step 7 writes, and nothing else. `scope:` is the subgoal's own lines in the master plan, its Scope and Acceptance and any Q&A beneath them, and step 7 drafts each goal's subgoals from it.
 - `error`: relay each `problem:` line with its `fix:` line, and stop before creating anything. A name that is taken means the branch was planned before: offer to resume that plan instead, or go back to step 2 for another name. The fix is the user's to choose; do not work around it.
 - no `result:` line, or no `message:` line (the report's last key, so the report was cut short): show the output and stop. Never act on part of a report.
 
@@ -129,13 +129,23 @@ Unlike the branch doc, **the plan is not deleted at merge** — it lands on `mai
 <each goals: line's index line — the text after its path — in order>
 ```
 
-Leave out `**Revision**:` when `revision:` is `—`. Each goal file, at its `goals:` path, takes the index line's text after its marker as its heading:
+Leave out `**Revision**:` when `revision:` is `—`. Each goal file, at its `goals:` path, takes the index line's text after its marker as its heading, and its subgoals beneath it, at indent 0:
 
 ```markdown
 # <NN — title>
 
 **Goal**: [ ]
+
+- [ ] <a subgoal: one thing that will be true when this goal is done>
+- [ ] <another>
 ```
+
+**Draft each goal's subgoals; never write a stub.** In the TODO model a goal's subgoals are its acceptance criteria. A goal file with none gives `/hitl-step` nothing to check the work against and nothing to tick before closing the goal, and `locate-plan.sh` warns on it (W12). So write every goal file with at least one subgoal:
+- Draft them from `scope:`, sharing its Acceptance out among the goals by what each delivers, and from the scope discussion in step 1. A standalone plan has no `scope:`, so its subgoals come from that discussion alone.
+- Write each as an outcome someone can check, not a step to take: what will be true, so that ticking it is a claim that can be verified.
+- Show every goal file's subgoals with the index and the backlink, before anything is written. The user's edits to them are part of this step's confirmation.
+
+In the DO model a goal file holds tasks, not subgoals. Draft them when the scope splits the goal into steps; otherwise write the goal file without them, since `/step` then takes the goal itself as its one task.
 
 **`layout: legacy`** — one file, at `index:`, as before. For `DO.md`:
 
@@ -190,7 +200,7 @@ Summarize the final state:
 
 - Current branch: `<branch-name>`
 - Doc created at: `docs/git/<flattened-branch>.md`
-- Plan created at: the `index:` path, with its goal files if per-goal, and the backlink if any
+- Plan created at: the `index:` path, with its goal files and their subgoals if per-goal, and the backlink if any
 - Next steps: run `/step` (or `/hitl-step`) to work the plan; `/smart-merge` when ready to merge.
 
 ## Guidelines
