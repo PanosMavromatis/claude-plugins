@@ -93,6 +93,7 @@ result:     propose | ask | error
 layout:     per-goal | legacy
 revision:   <label> | —
 subgoal:    <master file>:<line> <the line, verbatim> | standalone
+scope:      the rest of the subgoal's block, one line each, without its indent | —
 dir:        the branch plan's directory
 index:      <dir>/F
 goals:      <goal file> <its index line>, one per title (per-goal only)
@@ -131,6 +132,11 @@ message:    one sentence for the user
   subgoals. A block is the item line and every following indented, non-blank line, up
   to the next indent-0 line, heading or blank line. `backlink:` names its last line.
   `/smart-merge` step 7 will look the backlink up with the same program.
+- **The scope** (added 2026-10-12, R1a, `feat-goal-file-subgoals`). `scope:` is the rest
+  of the subgoal's block, from the line after the item to the line `backlink:` names,
+  each line verbatim but for its indent: the subgoal's `Scope: … Acceptance: …` and any
+  Q&A or note beneath it. `/new-branch` drafts each goal file's subgoals from it. It is
+  `—` for a standalone plan, an `ask`, an error, or a subgoal with nothing beneath it.
 - **Also reported, and checked:**
   - A legacy subgoal's `revision:` is its `## Subgoals — revision <label>` heading's
     label.

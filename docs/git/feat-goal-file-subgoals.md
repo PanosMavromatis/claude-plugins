@@ -29,3 +29,4 @@ Make `/new-branch` write each per-goal goal file with its subgoals, never a stub
 
 - 2026-10-12: the goal files are written with their subgoals, by hand from the subgoal's Acceptance line, the last branch to need it.
 - 2026-10-12, goal 01: `propose-branch-plan.sh` reports `scope:` after `subgoal:`: the rest of the subgoal's block, each line without its indent, and `—` when there is no subgoal; on R1a subgoal 5 it reports the `Scope: … Acceptance: …` line. The suite has 33 cases and 23 mutants; `b05` was rebuilt, since the scope block moved its context.
+- 2026-10-12, goal 01 closed: the new rules go into the existing specs, amended in place and marked as added by this branch, though they sit in closed R1: `per-goal-layout-spec.md` gains `scope:` in its report and rules, and goal 02's warning goes into `locate-plan-spec.md` the same way.
