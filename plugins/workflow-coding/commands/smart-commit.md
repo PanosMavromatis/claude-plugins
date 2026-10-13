@@ -10,6 +10,8 @@ End-to-end commit workflow: sync documentation with the staged diff via `/workfl
 
 This command delegates all documentation handling to that command with the Skill tool. Do not duplicate or override its steps here — let it run to completion, then resume with the steps below.
 
+**Phrase each command so `allowed-tools` matches it.** Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): Claude Code checks each part of a chain on its own, and one part not granted, a `git -C` or a read outside the repository, makes it prompt for the whole command, or refuse it in a headless run, and hides which part it was. Read a file with `Read`, not by piping it through `head`.
+
 ## Step 1: Sync Documentation
 
 Invoke `/workflow-coding:agents-docs-update` with the Skill tool (skill `workflow-coding:agents-docs-update`), passing this command's `$ARGUMENTS` through unchanged as its arguments. Wait for it to complete its Step 6 (Report) before proceeding.

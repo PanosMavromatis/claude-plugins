@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -48,7 +48,7 @@
+ for path in paths:
+     head, body = split(open(path, encoding="utf-8").read())
+     name = os.path.basename(path)
+-    if "Bash(git " not in allowed_tools(head):
++    if "Bash(git " not in allowed_tools(head) + " ".join(body):
+         print(f"skip  {name} (grants no git)"); continue
+     lacks = [p for p in PHRASES if not any(p in line for line in body)]
+     if lacks:

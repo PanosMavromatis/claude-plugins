@@ -32,7 +32,7 @@ Present the suggested name and ask for confirmation or a correction.
 
 ### 3. Verify preconditions
 
-Run read-only diagnostics:
+Run read-only diagnostics, each alone:
 
 ```bash
 git status
@@ -162,7 +162,7 @@ In the DO model a goal file holds tasks, not subgoals. Draft them when the scope
 - [ ] <second task>
 ```
 
-For `TODO.md`, the same header, then the goals in the form `/hitl-step` reads: each goal at indent 0, and its subgoals beneath it, indented two spaces.
+For `TODO.md`, the same header, then the goals in the form `/hitl-step` reads: each goal at indent 0, and its subgoals beneath it, indented two spaces. The block below is the whole of that form, so there is nothing to look up in `/hitl-step`.
 
 ```markdown
 ## Goals
@@ -192,7 +192,7 @@ Use `Edit`, never `Write`: the master plan is the one file that grows without bo
 
 Explain: the branch doc informs the PR title and body and is deleted at merge; the plan directory is the durable record and stays on `main`.
 
-Run, substituting the real paths — the branch doc, `index:`, every `goals:` path, and the master file `backlink:` names if one was backlinked:
+Run each alone, substituting the real paths — the branch doc, `index:`, every `goals:` path, and the master file `backlink:` names if one was backlinked:
 
 ```bash
 git add docs/git/<flattened-branch>.md <index> <goal file>... <backlinked master file>
@@ -200,9 +200,12 @@ git commit -m "<subject>"
 ```
 
 > **Subject.** The wording below is the message's *content*; its **form** is the
-> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
-> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
-> including why subjects matching this plugin's own templates must be discounted.
+> repository's, not this plugin's. Before committing, run `git log --oneline -20`, alone,
+> and match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted. To
+> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md` whole; never `grep`
+> or `ls` it, or anything else in the plugin's directory: a shell read outside the
+> repository prompts, where `Read` does not.
 >
 > Content: a branch doc and plan are being added for `<branch-name>`.
 
@@ -219,6 +222,7 @@ Summarize the final state:
 
 - **Confirm before every write**: branch creation, file creation, commit.
 - **Read-only commands** (`git status`, `git log`, `git branch`) can run freely.
+- **Phrase each command so `allowed-tools` matches it**, in every step. Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): Claude Code checks each part of a chain on its own, and one part not granted, a `git -C` or a read outside the repository, makes it prompt for the whole command, or refuse it in a headless run, and hides which part it was. Read a file with `Read`, another command's text included: this plugin's commands are at `${CLAUDE_PLUGIN_ROOT}/commands/<name>.md`.
 - **Never leave placeholders** in actual commands — always substitute real branch names.
 - **Respect trivial branches**: if the user wants to skip the doc or the plan for a quick fix, don't insist. Skip step 4 and step 7, create the branch, and note that `/smart-merge` will have less context to work with, and that `/step` will fall back to the master plan.
 - **Don't push the branch doc commit specifically** unless the user says so — but make clear that regular `git push` after each working commit is the expected workflow and needs no special handling here.

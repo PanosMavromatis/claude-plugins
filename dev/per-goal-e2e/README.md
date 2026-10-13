@@ -43,7 +43,11 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   - the proposal ran before `git checkout -b`;
   - each goal file was edited before its index line;
   - the master plan was edited, not rewritten;
-  - every script ran from the copy.
+  - every script ran from the copy;
+  - every command ran alone, and none as `git -C`, in every session, as the commands say:
+    `allowed-tools` matches a command's plain form only, and refuses a whole chain for any
+    one part it does not grant. A chain of granted commands is not refused, but it still
+    fails this check, since the next chain may hold a part that is.
 
   It reports `Grep`, `Glob` and shell searches for reading. On fixtures no session has
   touched, it passes nothing. In the TODO model it also checks that `/new-branch` wrote
@@ -100,3 +104,11 @@ Run `r6`, 2026-10-11, the revision sessions: 102 checks, 0 failing, $2.39. The t
 read by hand, are faithful to the spec. Reading the sessions found what no check had: `c2`'s
 first `--check` failed, because tool output drops the section's trailing blank line and the
 archive's `Write` came out a line short. The archive now drops trailing blank lines.
+
+Run `r11`, 2026-10-13, e1, e3, e4 and e5 after `fix-command-phrasing`: every check passed,
+$5.96. The seven `/new-branch` and step sessions had no permission denials, against 6 in
+`r9` and 2 in `r10`, each caused by a `git -C`, a chain with a part not granted, or a
+search of the plugin's directory. The chain check now runs on every session, and passes
+over a basic regex's `\|`, which it first took for a pipe. Two merge sessions `grep`ped
+`smart-commit.md` at its path before reading it, let through only by `--add-dir /tmp`; the
+commands now say to `Read` it whole.

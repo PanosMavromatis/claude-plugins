@@ -111,11 +111,18 @@ def indents(repo, gdir):
     check(f"{repo}: goal-level blockquotes at indent 0 in {gdir}", not bad, ", ".join(bad))
 
 def alone(sid, cmds):
-    """One Bash call per command. A script's own arguments, and a commit message, may hold
-    the characters a chain is made of."""
-    chained = [c for c in cmds if re.search(r";|&&|\|\||(^|[^|])\|([^|]|$)|2>&1", c)
+    """One Bash call per command, and git run as `git <subcommand>`, as the commands say:
+    allowed-tools matches a command's plain form only, and refuses a whole chain for any one
+    part it does not grant, so a chain of granted commands passes the permission check but
+    fails this one. A script's own arguments, and a commit message, may hold the characters
+    a chain is made of, and a `\\|` is a basic regex's alternation, not a pipe (r11's
+    e1-merge: `grep -n "^## \\|^### " <file>`); a `git -C` is found where a command, or a
+    link in a chain, begins, so a message that mentions one does not count."""
+    chained = [c for c in cmds if re.search(r";|&&|\|\||(^|[^|\\])\|([^|]|$)|2>&1", c)
                and not c.lstrip().startswith((SCRIPTS, "git commit", "gh pr create"))]
     check(f"{sid}: every command ran alone", not chained, "; ".join(c[:100] for c in chained[:3]))
+    dash_c = [c for c in cmds if re.search(r"(^|[;&|(])\s*git\s+-C\b", c)]
+    check(f"{sid}: no command ran git -C", not dash_c, "; ".join(c[:100] for c in dash_c[:3]))
 
 def commits(repo, branch): return [l for l in git(repo, "log", "--format=%h %s", f"main..{branch}").splitlines()]
 
@@ -125,6 +132,7 @@ def per_goal(scen, repo, branch, model, files):
     s1 = common(scen)
     if s1:
         cmds = bash(s1)
+        alone(scen, cmds)
         pi = next((i for i, c in enumerate(cmds) if "propose-branch-plan.sh" in c), None)
         ci = next((i for i, c in enumerate(cmds) if c.strip().startswith("git checkout -b")), None)
         check(f"{scen}: proposed before git checkout -b", pi is not None and ci is not None and pi < ci, f"propose {pi}, checkout {ci}")
@@ -148,6 +156,7 @@ def per_goal(scen, repo, branch, model, files):
     s2 = common(f"{scen}-step")
     if s2:
         cmds = bash(s2)
+        alone(f"{scen}-step", cmds)
         check(f"{scen}-step: re-ran locate-plan.sh between goals", sum("locate-plan.sh" in c for c in cmds) >= 2,
               f"{sum('locate-plan.sh' in c for c in cmds)} runs")
         check(f"{scen}-step: ran check-plan-index.sh", any("check-plan-index.sh" in c for c in cmds))
@@ -173,6 +182,7 @@ def e4():
     print(f"\n== e4: a legacy master plan: /new-branch, then /hitl-step 1  ({E}/r4)")
     s = common("e4")
     if s:
+        alone("e4", bash(s))
         check("e4: the master plan was edited, not rewritten", not any(n == "Write" and p.endswith("docs/plan/TODO.md") for n, p, _ in edits(s)))
     plan = "docs/plan/feat-legacy-notes/TODO.md"
     check("r4: on feat/legacy-notes", git("r4", "branch", "--show-current").strip() == "feat/legacy-notes")
@@ -183,6 +193,7 @@ def e4():
     s2 = common("e4-step")
     if s2:
         cmds = bash(s2)
+        alone("e4-step", cmds)
         check("e4-step: Step 6 ran check-plan-index.sh, and no awk", any("check-plan-index.sh" in c for c in cmds)
               and not any(c.strip().startswith("awk") for c in cmds), "; ".join(c[:80] for c in cmds if "awk" in c))
     rc, out, _ = sh([f"{SCRIPTS}/check-plan-index.sh", "TODO.md", "--", plan], f"{E}/r4")
@@ -197,6 +208,7 @@ def e5():
     s = common("e5")
     idx = "docs/plan/07-rev/feat-half-done/TODO.md"
     if s:
+        alone("e5", bash(s))
         said = " ".join(c[1].get("old_string", "") + c[1].get("new_string", "") for c in s if c[0] == "Edit" and c[1].get("file_path", "").endswith(idx))
         check("e5: the index line was rewritten from the goal file", "- [~] 01 —" in said or "- [x] 01 —" in said, said[:300])
         _, res = session("e5")

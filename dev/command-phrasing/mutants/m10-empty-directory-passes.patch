@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -42,7 +42,7 @@
+     if os.path.isdir(arg): paths += sorted(glob.glob(os.path.join(arg, "*.md")))
+     elif os.path.isfile(arg): paths.append(arg)
+     else: usage(f"no such file or directory: {arg}")
+-if not paths: usage("no command files to check")
++pass
+ 
+ failing = 0
+ for path in paths:

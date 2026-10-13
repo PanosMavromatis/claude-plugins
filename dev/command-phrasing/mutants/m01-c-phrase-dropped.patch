@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -13,7 +13,7 @@
+ 
+ HERE = os.path.dirname(os.path.abspath(__file__))
+ COMMANDS = os.path.join(os.path.dirname(os.path.dirname(HERE)), "plugins", "workflow-coding", "commands")
+-PHRASES = ["never `git -C <path>`", "every command alone"]
++PHRASES = ["every command alone"]
+ 
+ def split(text):
+     """The frontmatter's lines and the body's, or no frontmatter and every line."""

@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -50,7 +50,7 @@
+     name = os.path.basename(path)
+     if "Bash(git " not in allowed_tools(head):
+         print(f"skip  {name} (grants no git)"); continue
+-    lacks = [p for p in PHRASES if not any(p in line for line in body)]
++    lacks = [p for p in PHRASES if p not in " ".join(body)]
+     if lacks:
+         print(f"FAIL  {name} lacks: {'; '.join(lacks)}"); failing += 1
+     else: print(f"ok    {name}")

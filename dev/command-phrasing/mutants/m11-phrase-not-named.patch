@@ -1,0 +1,10 @@
+--- a/check.py
++++ b/check.py
+@@ -52,6 +52,6 @@
+         print(f"skip  {name} (grants no git)"); continue
+     lacks = [p for p in PHRASES if not any(p in line for line in body)]
+     if lacks:
+-        print(f"FAIL  {name} lacks: {'; '.join(lacks)}"); failing += 1
++        print(f"FAIL  {name} lacks a phrase"); failing += 1
+     else: print(f"ok    {name}")
+ print(f"\n{failing} failing"); sys.exit(1 if failing else 0)

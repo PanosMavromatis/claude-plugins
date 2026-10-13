@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count] [plan-path]"
 ---
@@ -112,6 +112,8 @@ The report's `next:` is the **current task**: the first `- [ ]` line, at any ind
 ## Step 3: Execute the Task
 
 Carry out the task described in the current item. Use all available tools as needed.
+
+**Phrase each command so `allowed-tools` matches it.** Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): Claude Code checks each part of a chain on its own, and one part not granted, a `git -C` or a read outside the repository, makes it prompt for the whole command, or refuse it in a headless run, and hides which part it was. Read a file with `Read`, not by piping it through `head`.
 
 ### Asking Follow-up Questions
 

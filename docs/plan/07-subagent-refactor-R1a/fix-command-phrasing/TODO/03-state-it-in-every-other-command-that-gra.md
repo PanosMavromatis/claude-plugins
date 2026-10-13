@@ -1,0 +1,13 @@
+# 03 — State it in every other command that grants git
+
+**Goal**: [x]
+> **Done:** Every command that grants `git` states both halves of the rule in two fixed phrases, `/session-handoff` too; the four `/smart-commit` pointers give its path to `Read`; and the plugin's `CLAUDE.md` records the convention.
+> **Q:** How should the rule be worded across the eight commands, which also sets what goal 04's check looks for: two fixed phrases, "never `git -C <path>`" and "every command alone", placed to fit each command, the `-C` sentence added where a run-alone statement exists and `/step`'s paragraph where none does (A); one paragraph verbatim in all eight, replacing the existing statements (B); or each command's own wording (C)?
+> **A:** A.
+> **Q:** `/session-handoff` grants no `git`, so goal 04 will not check it, but it runs three `git` commands and states the run-alone rule: should it gain the `-C` half too?
+> **A:** Yes, one sentence beside its run-alone paragraph.
+
+- [x] `smart-merge`, `smart-commit`, `master-plan`, `close-revision`, `clean-gone`, `agents-docs-update`, `agents-docs-init` and `agents-docs-codex-init` each state that `git` runs as `git <subcommand>`, never `git -C <path>`, and that every command runs alone; those already stating the run-alone rule gain the `-C` half
+  > **Note:** As answered, in fixed phrases: `smart-merge` (Guidelines), `master-plan` and `close-revision` gain the `-C` sentence beside their run-alone statement, and `/session-handoff` too; `smart-commit`, `clean-gone` (a Guidelines bullet) and the three `agents-docs` commands gain `/step`'s paragraph, `agents-docs-codex-init`'s rewrapped to its ~80 columns with each phrase whole on one line. `agents-docs-init` adds that its dispatcher heredoc is one command and prompts by design, since "nothing appended" could read as forbidding it. The four `/smart-commit` pointers (`smart-merge` twice, `master-plan`, `close-revision`) take `/new-branch`'s `Read`-the-path wording. A prototype of goal 04's check (`fcp03-phrases.py`, in the session's scratchpad) finds both phrases in all 11 commands that grant `git`; before this goal, 8 of them lacked the `-C` phrase.
+- [x] The plugin's `CLAUDE.md`, beside "Scoped `allowed-tools`", says a command granting `git` states the rule, and why `Bash(git -C:*)` is never granted: it would match a `git -C <path> push`
+  > **Note:** A paragraph inside the "Scoped `allowed-tools`" bullet, after its two traps: the rule, its two fixed phrases kept whole on one line so a check can find them, that a command pointing at another gives the path to `Read`, and why `Bash(git -C:*)` is never granted.
