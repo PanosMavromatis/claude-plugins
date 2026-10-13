@@ -1,6 +1,6 @@
 # fix/command-phrasing
 
-**Status**: active
+**Status**: merged — PR #19 — 2026-10-13
 **Created**: 2026-10-13
 **Revision**: 07-subagent-refactor-R1a
 **Subgoal**: 6. Sessions running the plan commands phrase each command so `allowed-tools` matches it: `git` from the repository as `git <subcommand>`, never `git -C <path>`, and every command alone, never chained or piped, in the steps where a command does its work as well as where it runs its scripts.
