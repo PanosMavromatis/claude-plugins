@@ -59,7 +59,15 @@ reader's `slug()` of the title: lowercase, each run of other characters as one `
 # NN — <title>
 
 **Goal**: [ ]
+
+- [ ] <a subgoal>
 ```
+
+**Its subgoals** (added 2026-10-13, R1a, `feat-goal-file-subgoals`). In the TODO model,
+`/new-branch` writes each goal file with at least one subgoal, never a stub, drafted from
+`scope:` and the scope discussion: a goal's subgoals are its acceptance criteria, and
+`locate-plan.sh` warns on a goal file with none (W12). In the DO model a goal file gets
+tasks only when the scope splits the goal; otherwise the goal is its own task.
 
 Everything that sat under a goal in a legacy plan sits in its goal file, **outdented one
 level**:
