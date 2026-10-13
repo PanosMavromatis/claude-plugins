@@ -104,3 +104,11 @@ Run `r6`, 2026-10-11, the revision sessions: 102 checks, 0 failing, $2.39. The t
 read by hand, are faithful to the spec. Reading the sessions found what no check had: `c2`'s
 first `--check` failed, because tool output drops the section's trailing blank line and the
 archive's `Write` came out a line short. The archive now drops trailing blank lines.
+
+Run `r11`, 2026-10-13, e1, e3, e4 and e5 after `fix-command-phrasing`: every check passed,
+$5.96. The seven `/new-branch` and step sessions had no permission denials, against 6 in
+`r9` and 2 in `r10`, each caused by a `git -C`, a chain with a part not granted, or a
+search of the plugin's directory. The chain check now runs on every session, and passes
+over a basic regex's `\|`, which it first took for a pipe. Two merge sessions `grep`ped
+`smart-commit.md` at its path before reading it, let through only by `--add-dir /tmp`; the
+commands now say to `Read` it whole.

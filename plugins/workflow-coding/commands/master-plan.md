@@ -142,8 +142,9 @@ git commit -m "<subject>"
 > repository's, not this plugin's. Before committing, run `git log --oneline -20`, alone,
 > and match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
 > including why subjects matching this plugin's own templates must be discounted. To
-> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md`; never search the
-> plugin's directory with `ls` or `grep`.
+> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md` whole; never `grep`
+> or `ls` it, or anything else in the plugin's directory: a shell read outside the
+> repository prompts, where `Read` does not.
 >
 > Content: revision `<label>` is being opened.
 

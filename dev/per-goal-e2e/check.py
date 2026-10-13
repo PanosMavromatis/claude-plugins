@@ -115,9 +115,10 @@ def alone(sid, cmds):
     allowed-tools matches a command's plain form only, and refuses a whole chain for any one
     part it does not grant, so a chain of granted commands passes the permission check but
     fails this one. A script's own arguments, and a commit message, may hold the characters
-    a chain is made of; a `git -C` is found where a command, or a link in a chain, begins,
-    so a message that mentions one does not count."""
-    chained = [c for c in cmds if re.search(r";|&&|\|\||(^|[^|])\|([^|]|$)|2>&1", c)
+    a chain is made of, and a `\\|` is a basic regex's alternation, not a pipe (r11's
+    e1-merge: `grep -n "^## \\|^### " <file>`); a `git -C` is found where a command, or a
+    link in a chain, begins, so a message that mentions one does not count."""
+    chained = [c for c in cmds if re.search(r";|&&|\|\||(^|[^|\\])\|([^|]|$)|2>&1", c)
                and not c.lstrip().startswith((SCRIPTS, "git commit", "gh pr create"))]
     check(f"{sid}: every command ran alone", not chained, "; ".join(c[:100] for c in chained[:3]))
     dash_c = [c for c in cmds if re.search(r"(^|[;&|(])\s*git\s+-C\b", c)]
