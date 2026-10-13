@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -100,7 +100,7 @@
+ }
+ 
+ fail() {  # fail <rung>: report every violation so far; the rung is the library's, unused
+-  R_RESULT=error; R_REV=""; R_SUB=""; R_SCOPE=""; R_DIR=""; R_INDEX=""; R_GOALS=""; R_BACK=""
++  R_RESULT=error; R_REV=""; R_SUB=""; R_DIR=""; R_INDEX=""; R_GOALS=""; R_BACK=""
+   R_CAND=""
+   if [ "$VIOL" -eq 1 ]; then R_MSG="No plan can be proposed for $BRANCH; see problem and fix."
+   else R_MSG="No plan can be proposed for $BRANCH: $VIOL problems; see problem and fix."; fi

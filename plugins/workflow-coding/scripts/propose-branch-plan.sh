@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Propose where a new branch's plan goes, what its files are called, and where its backlink
-# is inserted, for /new-branch to write.
+# is inserted, for /new-branch to write; and report the subgoal's scope, the lines beneath
+# it, which /new-branch drafts each goal's subgoals from.
 #
 # Placement is a set of rules, so a script decides it and the command writes exactly what
 # the script lists. The root plan decides the layout: a `**Layout**: revisions` index gets
@@ -85,21 +86,22 @@ GSTEM="${MODEL%.md}"
 
 # --- the report -----------------------------------------------------------------
 
-R_RESULT=""; R_LAYOUT=""; R_REV=""; R_SUB=""; R_DIR=""; R_INDEX=""; R_GOALS=""; R_BACK=""
-R_CAND=""; R_WARN=""; R_PROB=""; R_FIX=""; R_MSG=""; VIOL=0
+R_RESULT=""; R_LAYOUT=""; R_REV=""; R_SUB=""; R_SCOPE=""; R_DIR=""; R_INDEX=""; R_GOALS=""
+R_BACK=""; R_CAND=""; R_WARN=""; R_PROB=""; R_FIX=""; R_MSG=""; VIOL=0
 
 finish() {
   emit result "$R_RESULT";     emit layout "$R_LAYOUT";   emit revision "$R_REV"
-  emit subgoal "$R_SUB";       emit dir "$R_DIR";         emit index "$R_INDEX"
-  emit goals "$R_GOALS";       emit backlink "$R_BACK";   emit candidates "$R_CAND"
-  emit warnings "$R_WARN";     emit problem "$R_PROB";    emit fix "$R_FIX"
-  emit message "$R_MSG"
+  emit subgoal "$R_SUB";       emit scope "$R_SCOPE";     emit dir "$R_DIR"
+  emit index "$R_INDEX";       emit goals "$R_GOALS";     emit backlink "$R_BACK"
+  emit candidates "$R_CAND";   emit warnings "$R_WARN";   emit problem "$R_PROB"
+  emit fix "$R_FIX";           emit message "$R_MSG"
   if [ "$R_RESULT" = error ]; then exit 1; fi
   exit 0
 }
 
 fail() {  # fail <rung>: report every violation so far; the rung is the library's, unused
-  R_RESULT=error; R_REV=""; R_SUB=""; R_DIR=""; R_INDEX=""; R_GOALS=""; R_BACK=""; R_CAND=""
+  R_RESULT=error; R_REV=""; R_SUB=""; R_SCOPE=""; R_DIR=""; R_INDEX=""; R_GOALS=""; R_BACK=""
+  R_CAND=""
   if [ "$VIOL" -eq 1 ]; then R_MSG="No plan can be proposed for $BRANCH; see problem and fix."
   else R_MSG="No plan can be proposed for $BRANCH: $VIOL problems; see problem and fix."; fi
   finish
@@ -211,6 +213,13 @@ if [ -n "$SEL" ]; then
   rest="${rest#*"$TAB"}"; last="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"; br="${rest%%"$TAB"*}"
   rest="${rest#*"$TAB"}"; head="${rest%%"$TAB"*}"; text="${rest#*"$TAB"}"
   R_SUB="$f:$n $text"; R_BACK="$f:$last"
+  # The scope is the rest of the subgoal's block, which the backlink goes after: each line
+  # verbatim but for its indent, its Scope and Acceptance and any Q&A or note beneath them.
+  if [ "$last" -gt "$n" ]; then
+    R_SCOPE="$(awk -v a=$((n + 1)) -v b="$last" '
+      NR >= a && NR <= b { sub(/^[ \t]+/, ""); print }' "$f")" \
+      || die "awk failed reading the scope of $f:$n"
+  fi
   if [ -n "$br" ]; then warn "$f:$n already has a branch ($br): the subgoal may have been branched before"; fi
   if [ "$R_LAYOUT" = per-goal ]; then
     R_REV="$(basename "$(dirname "$f")")"

@@ -111,7 +111,7 @@ to `scripts/lib/plan-rules.sh`, the rules it shares with the other plan scripts:
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite   # outside this repository; fixtures are built here
-python3 -I dev/locate-plan/suite.py              # 83 cases, no model, ~30 s
+python3 -I dev/locate-plan/suite.py              # 85 cases, no model, ~30 s
 python3 -I dev/locate-plan/suite.py --mutants    # the suite must catch each mutant, ~4 min
 ```
 
@@ -129,7 +129,7 @@ so run all six suites after a change to it:
 ```bash
 python3 -I dev/check-plan-index/suite.py                 # 39 cases, no model, ~10 s
 python3 -I dev/check-plan-index/suite.py --mutants       # the suite must catch each mutant, ~1 min
-python3 -I dev/propose-branch-plan/suite.py              # 32 cases, no model, ~20 s
+python3 -I dev/propose-branch-plan/suite.py              # 33 cases, no model, ~20 s
 python3 -I dev/propose-branch-plan/suite.py --mutants    # the suite must catch each mutant, ~2 min
 python3 -I dev/propose-merge-record/suite.py             # 37 cases, no model, ~15 s
 python3 -I dev/propose-merge-record/suite.py --mutants   # the suite must catch each mutant, ~2 min

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -215,7 +215,7 @@
+   R_SUB="$f:$n $text"; R_BACK="$f:$last"
+   # The scope is the rest of the subgoal's block, which the backlink goes after: each line
+   # verbatim but for its indent, its Scope and Acceptance and any Q&A or note beneath them.
+-  if [ "$last" -gt "$n" ]; then
++  if false; then
+     R_SCOPE="$(awk -v a=$((n + 1)) -v b="$last" '
+       NR >= a && NR <= b { sub(/^[ \t]+/, ""); print }' "$f")" \
+       || die "awk failed reading the scope of $f:$n"

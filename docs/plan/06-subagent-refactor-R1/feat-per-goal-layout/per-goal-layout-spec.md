@@ -59,7 +59,15 @@ reader's `slug()` of the title: lowercase, each run of other characters as one `
 # NN — <title>
 
 **Goal**: [ ]
+
+- [ ] <a subgoal>
 ```
+
+**Its subgoals** (added 2026-10-13, R1a, `feat-goal-file-subgoals`). In the TODO model,
+`/new-branch` writes each goal file with at least one subgoal, never a stub, drafted from
+`scope:` and the scope discussion: a goal's subgoals are its acceptance criteria, and
+`locate-plan.sh` warns on a goal file with none (W12). In the DO model a goal file gets
+tasks only when the scope splits the goal; otherwise the goal is its own task.
 
 Everything that sat under a goal in a legacy plan sits in its goal file, **outdented one
 level**:
@@ -93,6 +101,7 @@ result:     propose | ask | error
 layout:     per-goal | legacy
 revision:   <label> | —
 subgoal:    <master file>:<line> <the line, verbatim> | standalone
+scope:      the rest of the subgoal's block, one line each, without its indent | —
 dir:        the branch plan's directory
 index:      <dir>/F
 goals:      <goal file> <its index line>, one per title (per-goal only)
@@ -131,6 +140,11 @@ message:    one sentence for the user
   subgoals. A block is the item line and every following indented, non-blank line, up
   to the next indent-0 line, heading or blank line. `backlink:` names its last line.
   `/smart-merge` step 7 will look the backlink up with the same program.
+- **The scope** (added 2026-10-12, R1a, `feat-goal-file-subgoals`). `scope:` is the rest
+  of the subgoal's block, from the line after the item to the line `backlink:` names,
+  each line verbatim but for its indent: the subgoal's `Scope: … Acceptance: …` and any
+  Q&A or note beneath it. `/new-branch` drafts each goal file's subgoals from it. It is
+  `—` for a standalone plan, an `ask`, an error, or a subgoal with nothing beneath it.
 - **Also reported, and checked:**
   - A legacy subgoal's `revision:` is its `## Subgoals — revision <label>` heading's
     label.
@@ -182,7 +196,10 @@ unless a line below says otherwise.
   index.
 - **Step 2.** The command reads the index and `goal-file:` whole. Both are small. A goal
   named out of order is found in the index the command has just read, and passed as
-  `--goal`. No `Grep`.
+  `--goal`. No `Grep`. (Added 2026-10-13, R1a, `feat-goal-file-subgoals`.) In the TODO
+  model, a goal whose `subgoals:` is `—` on a branch plan, per-goal or legacy, gets its
+  subgoals proposed, confirmed and written before Step 3, since Step 4 has nothing to
+  tick without them; a master plan's item never does. The DO model proposes nothing.
 - **Step 3.** On a flip to `[~]`, the command edits `**Goal**:` first, then the index
   line (D2). The goal file takes the Q&A, notes and subgoal markers. Escape hatch 3f:
   - a split goal becomes `NNa`, as a new index line right after NN plus a new goal file;

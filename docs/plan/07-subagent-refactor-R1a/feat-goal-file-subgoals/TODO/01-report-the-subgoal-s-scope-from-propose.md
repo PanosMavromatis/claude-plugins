@@ -1,0 +1,15 @@
+# 01 — Report the subgoal's scope from propose-branch-plan.sh
+
+**Goal**: [x]
+> **Done:** `propose-branch-plan.sh` reports `scope:`, the rest of the selected subgoal's block without its indent, and `—` when no subgoal is selected; 33 cases and 23 mutants pin it, and `per-goal-layout-spec.md` records it as an amendment.
+> **Q:** Which of the subgoal's block lines does `scope:` report: every continuation line, its indent stripped (A), only the non-`>` lines (B), or only the `Scope:` line and its wrapped lines (C)?
+> **A:** A.
+> **Q:** Where is the `scope:` rule written, with `per-goal-layout-spec.md` in closed R1: amended in place, marked as an amendment (A), a new spec beside this branch's plan (B), or no spec, only the script's header and the suite's README (C)?
+> **A:** A.
+
+- [x] `propose-branch-plan.sh` reports `scope:`: the selected subgoal's continuation lines (`Scope: … Acceptance: …`), in the report's two-space continuation form, and `—` for a standalone plan
+  > **Note:** `scope:` follows `subgoal:` and holds the rest of the block `SUBGOALS_AWK` reads, from the line after the item to the block's last, each without its indent, so it ends where `backlink:` points; it is `—` for a standalone plan, an `ask`, an error, or a subgoal with nothing under it. Run on R1a subgoal 5 it reports the `Scope: … Acceptance: …` line and the branch's own backlink. The suite checks the key order exactly (`suite.py:211`), so it fails every case until subgoal 2 adds `scope` to `KEYS`.
+- [x] `dev/propose-branch-plan/` has a case for each, a subgoal with its scope and a standalone plan, and a mutant each case kills
+  > **Note:** `KEYS` gains `scope`, and existing cases grade it: `p03` (legacy, a Scope line and a Q/A beneath it, indent stripped) and `p07` (per-goal, `Scope: … Acceptance: …`) report the block, and `p03b` (a subgoal with nothing under it), `p01` and `p05` (standalone) and `p02` (`ask`) report `—`; a new case, `p11b`, errors after a subgoal is read and must report `—` too. Mutants `b19`–`b23`, one per rule, are each killed by the case aimed at it, and `b05`, whose context the scope block moved, is rebuilt from its own substitution. Subgoal 1's trailing-whitespace strip was dropped: no case could see it, and `subgoal:` is verbatim too. 33 cases pass in 16 s, and 23 mutants are caught in 2 min 11 s.
+- [x] The `scope:` key is recorded in the script's contract: `per-goal-layout-spec.md` sits in closed R1's `feat-per-goal-layout`, so decide where the new rule is written, and log the decision here
+  > **Note:** `per-goal-layout-spec.md` gains `scope:` in its report block, after `subgoal:`, and a rule, **The scope**, marked as added 2026-10-12 by this branch; the script's header and the suite's README name that spec as the contract, and still do. The same decision covers goal 02's warning in `locate-plan-spec.md`, and in this spec the goal-file template under "What is written" (goal 03) and Step 2 under "`/step` and `/hitl-step` on a per-goal plan" (goal 04).

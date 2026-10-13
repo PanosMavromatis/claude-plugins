@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -217,7 +217,7 @@
+   # verbatim but for its indent, its Scope and Acceptance and any Q&A or note beneath them.
+   if [ "$last" -gt "$n" ]; then
+     R_SCOPE="$(awk -v a=$((n + 1)) -v b="$last" '
+-      NR >= a && NR <= b { sub(/^[ \t]+/, ""); print }' "$f")" \
++      NR >= a && NR <= b { print }' "$f")" \
+       || die "awk failed reading the scope of $f:$n"
+   fi
+   if [ -n "$br" ]; then warn "$f:$n already has a branch ($br): the subgoal may have been branched before"; fi

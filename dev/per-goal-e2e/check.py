@@ -137,6 +137,10 @@ def per_goal(scen, repo, branch, model, files):
     want = {f"docs/git/{flat}.md", idx, master, *gfs}   # as /new-branch says: the branch name, flattened
     check(f"{repo}: /new-branch committed the doc, index, {len(gfs)} goal files and the backlink", got == want and len(gfs) == 2,
           f"committed {sorted(got)}; want {sorted(want)}")
+    if model == "TODO.md":   # a DO goal file with no tasks is the task itself, so only TODO's must hold subgoals
+        stubs = [g for g in gfs if not first or not re.search(r"(?m)^- \[ \] ", git(repo, "show", f"{first[0]}:{g}"))]
+        check(f"{repo}: /new-branch wrote each goal file with a subgoal", bool(gfs) and not stubs,
+              f"no `- [ ]` subgoal in {stubs or 'any: there are no goal files'}")
     master_plan_change(repo, master, branch, 9, 10)
     head = open(f"{E}/{repo}/{idx}").read() if os.path.exists(f"{E}/{repo}/{idx}") else ""
     for line in ("**Status**: active", "**Revision**: 07-rev", "**Layout**: per-goal", "**Subgoal**: 2. Plan directory structure"):
