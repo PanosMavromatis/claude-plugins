@@ -1,6 +1,8 @@
 # 05 — Check a real /new-branch run's goal files
 
 **Goal**: [~]
+> **Q:** The r9 run passed every functional check but failed five "no permission denials" checks, one pre-existing (e5), one plausibly this branch's (e4 searched the plugin for what step 7's one-line legacy "three-tier structure" means), three like variance: fix e4's cause and re-run e4 (A), re-run all four unchanged to measure variance (B), or close subgoal 2 as is with a note (C)?
+> **A:** A.
 
 - [x] `dev/per-goal-e2e/check.py` fails a `/new-branch` run that leaves a goal file with no `- [ ]` subgoal
   > **Note:** `per_goal()` gains a check, TODO model only, that reads each goal file from the branch's first commit, as `/new-branch` wrote it, since the step session ticks the subgoals afterwards and goal 04's Step 2 could fill a stub in. Tried on a scratchpad clone of the fresh `r1` fixture, outside the repository: two stub goal files fail it, naming both; one `- [ ]` subgoal in each passes it, and no other check's result changes.

@@ -162,7 +162,19 @@ In the DO model a goal file holds tasks, not subgoals. Draft them when the scope
 - [ ] <second task>
 ```
 
-For `TODO.md`, use the same header and the three-tier structure `/hitl-step` expects (top-level goals at indent 0, subgoals indented beneath them).
+For `TODO.md`, the same header, then the goals in the form `/hitl-step` reads: each goal at indent 0, and its subgoals beneath it, indented two spaces.
+
+```markdown
+## Goals
+
+- [ ] <first goal from the scope discussion>
+  - [ ] <a subgoal: one thing that will be true when this goal is done>
+  - [ ] <another>
+- [ ] <second goal>
+  - [ ] <a subgoal>
+```
+
+The rule for goal files binds here too, since this is the TODO model: every goal gets at least one subgoal, drafted the same way, never a goal on its own.
 
 Either way, the `**Status**: active` line is load-bearing: `/step` and `/hitl-step` use it to filter merged plans out of their disambiguation prompt, and `/smart-merge` rewrites it to `merged` at merge time. Always write it.
 
