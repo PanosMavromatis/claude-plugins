@@ -146,6 +146,17 @@ python3 -I dev/export-session/suite.py                   # 25 cases, no model, ~
 python3 -I dev/export-session/suite.py --mutants         # the suite must catch each mutant, ~9 s
 ```
 
+Check the commands' phrasing after a change to a command's `allowed-tools` or to the text
+that states the rule: every command granting `git` must say to run it as
+`git <subcommand>`, never `git -C <path>`, and to run every command alone, since
+`allowed-tools` matches only the plain, single command:
+
+```bash
+python3 -I dev/command-phrasing/check.py                 # the plugin's commands, ~0.1 s
+python3 -I dev/command-phrasing/suite.py                 # 35 cases, no model, ~1 s
+python3 -I dev/command-phrasing/suite.py --mutants       # the suite must catch each mutant, ~2 s
+```
+
 `dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step`, `/smart-merge`,
 `/master-plan`, `/open-revision` and `/close-revision` headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
 runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,

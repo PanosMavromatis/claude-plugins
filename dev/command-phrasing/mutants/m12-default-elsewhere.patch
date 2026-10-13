@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -12,7 +12,7 @@
+ import glob, os, sys
+ 
+ HERE = os.path.dirname(os.path.abspath(__file__))
+-COMMANDS = os.path.join(os.path.dirname(os.path.dirname(HERE)), "plugins", "workflow-coding", "commands")
++COMMANDS = os.path.join(HERE, "commands")
+ PHRASES = ["never `git -C <path>`", "every command alone"]
+ 
+ def split(text):

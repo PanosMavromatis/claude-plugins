@@ -1,0 +1,11 @@
+--- a/check.py
++++ b/check.py
+@@ -18,7 +18,7 @@
+ def split(text):
+     """The frontmatter's lines and the body's, or no frontmatter and every line."""
+     lines = text.split("\n")
+-    if lines[0] == "---" and "---" in lines[1:]:
++    if True:
+         end = lines.index("---", 1)
+         return lines[1:end], lines[end + 1:]
+     return [], lines

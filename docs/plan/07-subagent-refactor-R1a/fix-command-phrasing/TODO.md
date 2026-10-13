@@ -11,5 +11,5 @@
 - [x] 01 — State the phrasing rule in /hitl-step and /step
 - [x] 02 — State it in /new-branch
 - [x] 03 — State it in every other command that grants git
-- [ ] 04 — Check every command that grants git states the rule
+- [x] 04 — Check every command that grants git states the rule
 - [ ] 05 — Run e1, e3, e4 and e5 with no phrasing denials
