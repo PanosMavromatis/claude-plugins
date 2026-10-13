@@ -30,8 +30,8 @@ SHELLS = [s for s in ("/bin/bash", "/opt/homebrew/bin/bash") if os.access(s, os.
 if "--once" in sys.argv: SHELLS = SHELLS[:1]
 def h(label): return hashlib.sha1(label.encode()).hexdigest()[:8]
 AWK127 = f"{W}/bin/{h('pbp-awk-127')}"
-KEYS = ["result", "layout", "revision", "subgoal", "dir", "index", "goals", "backlink", "candidates",
-        "warnings", "problem", "fix", "message"]
+KEYS = ["result", "layout", "revision", "subgoal", "scope", "dir", "index", "goals", "backlink",
+        "candidates", "warnings", "problem", "fix", "message"]
 
 LEGACY = """# Master plan
 
@@ -77,21 +77,22 @@ LONG = "Rewrite Step 1 of both step commands so they call the new script"
 # id, files on the case's branch, arguments after the script (or a special), expectations
 C = [
  ("p01", {"README.md": "x\n"}, ["TODO.md", "feat/x"],
-  dict(exit=0, result="propose", layout="legacy", revision="—", subgoal="standalone", dir="docs/plan/feat-x",
+  dict(exit=0, result="propose", layout="legacy", revision="—", subgoal="standalone", scope=[], dir="docs/plan/feat-x",
        index="docs/plan/feat-x/TODO.md", goals=[], backlink="—", warnings=[])),
  ("p02", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x"],
-  dict(exit=0, result="ask", layout="legacy", dir="—", cand=["docs/plan/TODO.md:11 - [ ] Open and free",
+  dict(exit=0, result="ask", layout="legacy", scope=[], dir="—", cand=["docs/plan/TODO.md:11 - [ ] Open and free",
        "docs/plan/TODO.md:15 - [~] In progress and free"], msg="--subgoal <file>:<line>, or pass --standalone")),
  ("p03", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x", "--subgoal", "docs/plan/TODO.md:11", "--", "A", "B"],
   dict(exit=0, result="propose", layout="legacy", revision="03-lifecycle", subgoal="docs/plan/TODO.md:11 - [ ] Open and free",
+       scope=["Scope: a continuation line.", "> **Q:** a question?", "> **A:** an answer."],
        dir="docs/plan/feat-x", goals=[], backlink="docs/plan/TODO.md:14", warnings=[])),
  ("p03b", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x", "--subgoal", "docs/plan/TODO.md:15"],
-  dict(exit=0, result="propose", backlink="docs/plan/TODO.md:15")),
+  dict(exit=0, result="propose", scope=[], backlink="docs/plan/TODO.md:15")),
  ("p04", {"docs/plan/TODO.md": ALL_TAKEN}, ["TODO.md", "feat/x"],
   dict(exit=0, result="propose", subgoal="standalone", backlink="—",
        warn=["no open subgoal in docs/plan/TODO.md is without a branch, so the plan is standalone"])),
  ("p05", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x", "--standalone"],
-  dict(exit=0, result="propose", subgoal="standalone", revision="—", backlink="—", warnings=[])),
+  dict(exit=0, result="propose", subgoal="standalone", scope=[], revision="—", backlink="—", warnings=[])),
  ("p06", {"docs/plan/TODO.md": INDEX("- [~] 07-rev — open", "- [x] 05-old — closed"),
           "docs/plan/07-rev/_TODO.md": REVMASTER.format(label="07-rev"), "docs/plan/05-old/_TODO.md": REVMASTER.format(label="05-old")},
   ["TODO.md", "feat/x", "--", "One"],
@@ -101,6 +102,7 @@ C = [
   ["TODO.md", "feat/plan-dirs", "--subgoal", "docs/plan/07-rev/_TODO.md:9", "--", "Write the spec", "Build it", LONG],
   dict(exit=0, result="propose", layout="per-goal", revision="07-rev",
        subgoal="docs/plan/07-rev/_TODO.md:9 - [ ] 2. Plan directory structure",
+       scope=["Scope: everything. Acceptance: it works."],
        dir="docs/plan/07-rev/feat-plan-dirs", index="docs/plan/07-rev/feat-plan-dirs/TODO.md",
        goals=["docs/plan/07-rev/feat-plan-dirs/TODO/01-write-the-spec.md - [ ] 01 — Write the spec",
               "docs/plan/07-rev/feat-plan-dirs/TODO/02-build-it.md - [ ] 02 — Build it",
@@ -119,6 +121,9 @@ C = [
   dict(exit=1, result="error", prob=["no goal titles were given"], fix=["pass the Scope items as titles, after --"])),
  ("p11", {"docs/plan/TODO.md": INDEX("- [x] 05-old — closed")}, ["TODO.md", "feat/x", "--", "One", "  ", "Three"],
   dict(exit=1, result="error", prob=["title 2 is empty"])),
+ ("p11b", {"docs/plan/TODO.md": INDEX("- [~] 07-rev — open"), "docs/plan/07-rev/_TODO.md": REVMASTER.format(label="07-rev")},
+  ["TODO.md", "feat/x", "--subgoal", "docs/plan/07-rev/_TODO.md:9", "--", "One", "  "],
+  dict(exit=1, result="error", subgoal="—", scope=[], prob=["title 2 is empty"])),
  ("p12", {"docs/plan/TODO.md": LEGACY, "docs/plan/grp/feat-x/TODO.md": "# old\n"}, ["TODO.md", "feat/x"],
   dict(exit=1, result="error", prob=["a plan named feat-x already exists: docs/plan/grp/feat-x/TODO.md"],
        fix=["branch feat/x has been planned before: resume that plan, or pick another branch name"])),
@@ -212,6 +217,7 @@ def grade(exp, r):
     one = lambda k: "\n".join(rep[k]); allv = lambda k: [] if rep[k] == ["—"] else rep[k]
     for k in ("result", "layout", "revision", "subgoal", "dir", "index", "backlink"):
         if k in exp and one(k) != exp[k]: probs.append(f"{k}: want {exp[k]!r} got {one(k)!r}")
+    if "scope" in exp and allv("scope") != exp["scope"]: probs.append(f"scope {allv('scope')} want {exp['scope']}")
     if "goals" in exp and allv("goals") != exp["goals"]: probs.append(f"goals {allv('goals')} want {exp['goals']}")
     if "goals_first" in exp and (not allv("goals") or allv("goals")[0] != exp["goals_first"]): probs.append(f"first goal {allv('goals')[:1]}")
     if "goals_last" in exp and (not allv("goals") or allv("goals")[-1] != exp["goals_last"]): probs.append(f"last goal {allv('goals')[-1:]}")

@@ -1,0 +1,11 @@
+--- a/propose-branch-plan.sh
++++ b/propose-branch-plan.sh
+@@ -231,7 +231,7 @@
+     R_DIR="$PD/$FLAT"
+   fi
+ else
+-  R_SUB=standalone; R_DIR="$PD/$FLAT"
++  R_SUB=standalone; R_SCOPE=standalone; R_DIR="$PD/$FLAT"
+ fi
+ R_INDEX="$R_DIR/$MODEL"
+ 

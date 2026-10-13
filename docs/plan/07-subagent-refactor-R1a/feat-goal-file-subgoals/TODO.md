@@ -8,7 +8,7 @@
 
 ## Goals
 
-- [ ] 01 — Report the subgoal's scope from propose-branch-plan.sh
+- [~] 01 — Report the subgoal's scope from propose-branch-plan.sh
 - [ ] 02 — Warn on a goal file with no subgoals
 - [ ] 03 — Draft each goal's subgoals in /new-branch
 - [ ] 04 — Propose subgoals in /step and /hitl-step
