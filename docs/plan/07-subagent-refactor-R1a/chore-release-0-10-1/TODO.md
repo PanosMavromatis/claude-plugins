@@ -1,6 +1,6 @@
 # chore/release-0-10-1
 
-**Status**: active
+**Status**: merged — PR #20 — 2026-10-13
 **Created**: 2026-10-13
 **Revision**: 07-subagent-refactor-R1a
 **Subgoal**: 4. Release `workflow-coding` 0.10.1: bump the version and document the two new commands.
