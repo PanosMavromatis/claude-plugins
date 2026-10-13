@@ -8,13 +8,14 @@ standalone repository.
 
 | Plugin | What it does |
 |---|---|
-| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources. Applicable to most projects. |
+| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources, and commands that hand a session to the next or export its whole log. Applicable to most projects. |
 | [`dp-compile`](plugins/dp-compile) | Staged translation of dynamic-programming kernels — formalization → Python → Cython → CPU-parallel → CUDA — enforcing equivalence against the reference implementation at every stage. Requires a `dp-compile.toml` at the consumer's repository root. |
 
 `dp-compile` declares `workflow-coding` in its `dependencies`: it delegates branches, plans,
 commits and merges rather than reimplementing them, so installing one installs both.
 
-`workflow-coding` was named `workflow-claude` before 0.10.0.
+`workflow-coding` was named `workflow-claude` before 0.10.0. Its releases are listed in
+[its README](plugins/workflow-coding/README.md#releases).
 
 ## Using it
 
