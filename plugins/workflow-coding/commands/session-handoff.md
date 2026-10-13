@@ -14,7 +14,9 @@ have the command yet. So it takes no arguments, names no plugin path and needs n
 tools. If the user said what the handoff is for, take that from the conversation.
 
 **Run every command alone**: one `Bash` call per command, never chained with `&&`, `;` or
-a pipe, so each one's failure is seen.
+a pipe, so each one's failure is seen. Run `git` in the repository as `git <subcommand>`,
+never `git -C <path>`: a permission matches the plain form only, so `git -C <path> status`
+is refused where `git status` is granted.
 
 ## 1. Put on disk what belongs there
 

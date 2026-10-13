@@ -26,8 +26,10 @@ revision whose earlier items have all merged. The script refuses on open items a
 net, not as the judgement.
 
 **Run every command alone**: one `Bash` call per command, never chained with `&&`, `;` or
-a pipe, so each is matched against `allowed-tools` and its failure is seen. Pass today's
-date, `YYYY-MM-DD`, as `--date` to every run of the script, the same date each time.
+a pipe, so each is matched against `allowed-tools` and its failure is seen. Run `git` in
+the repository as `git <subcommand>`, never `git -C <path>`: a permission matches the
+plain form only, so `git -C <path> status` is refused where `git status` is granted. Pass
+today's date, `YYYY-MM-DD`, as `--date` to every run of the script, the same date each time.
 
 ## 1. Propose
 
@@ -107,9 +109,11 @@ git commit -m "<subject>"
 The moves are already staged by `git mv`.
 
 > **Subject.** The wording below is the message's *content*; its **form** is the
-> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
-> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
-> including why subjects matching this plugin's own templates must be discounted.
+> repository's, not this plugin's. Before committing, run `git log --oneline -20`, alone,
+> and match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted. To
+> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md`; never search the
+> plugin's directory with `ls` or `grep`.
 >
 > Content: revision `<label>` is being closed.
 

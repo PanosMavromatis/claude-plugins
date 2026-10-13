@@ -131,9 +131,11 @@ git commit -m "<subject>"
 ```
 
 > **Subject.** The wording below is the message's *content*; its **form** is the
-> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
-> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
-> including why subjects matching this plugin's own templates must be discounted.
+> repository's, not this plugin's. Before committing, run `git log --oneline -20`, alone,
+> and match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted. To
+> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md`; never search the
+> plugin's directory with `ls` or `grep`.
 >
 > Content: the branch doc is being removed because the branch is merging to `main`.
 
@@ -227,9 +229,11 @@ git push
 ```
 
 > **Subject.** The wording below is the message's *content*; its **form** is the
-> repository's, not this plugin's. Before committing, read `git log --oneline -20` and
-> match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
-> including why subjects matching this plugin's own templates must be discounted.
+> repository's, not this plugin's. Before committing, run `git log --oneline -20`, alone,
+> and match the dominant subject form — `/smart-commit` Step 3 states the rule in full,
+> including why subjects matching this plugin's own templates must be discounted. To
+> read it, `Read` `${CLAUDE_PLUGIN_ROOT}/commands/smart-commit.md`; never search the
+> plugin's directory with `ls` or `grep`.
 >
 > Content: the merge of `<branch>` is being recorded in the plans, naming the PR number.
 
@@ -360,6 +364,9 @@ Summarize:
   nothing chained (`;`, `&&`), piped or appended (`2>&1`, `echo $?`). `allowed-tools`
   matches a single command, so a chain matches none of its entries: it prompts, and in a
   headless run it is refused. Read an exit status from the call's result instead.
+  Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session
+  already runs in the repository, and a permission matches the plain form only, so
+  `git -C <path> status` is refused where `git status` is granted.
 - **Announce every MCP→`gh` fallback**, naming the repo and the operation. See "GitHub access" above — a silent fallback defeats the point of a narrowly-scoped PAT.
 - **Never use placeholders in actual commands** — always substitute the real branch name, PR number, title, etc.
 - **If anything unexpected happens** (merge conflicts, auth errors, divergent branches, failed push), stop immediately and explain before proceeding.

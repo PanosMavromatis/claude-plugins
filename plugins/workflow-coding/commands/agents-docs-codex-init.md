@@ -11,6 +11,15 @@ Claude Code as the primary implementer. In a monorepo layout, generate one
 sidecar per component (in addition to the root) so component-scoped reviews have
 focused context. Work through the steps below in order.
 
+**Phrase each command so `allowed-tools` matches it.** Run `git` in the
+repository as `git <subcommand>`, never `git -C <path>`: the session already
+runs in the repository, and a permission matches the plain form only, so
+`git -C <path> status` is refused where `git status` is granted.
+Run every command alone, one `Bash` call each, with nothing chained (`;`,
+`&&`), piped (`|`) or appended (`2>&1`): a chain matches none of the entries,
+so it prompts, and in a headless run it is refused. Read a file with `Read`,
+not by piping it through `head`.
+
 ---
 
 ## Step 1 — Detect targets
