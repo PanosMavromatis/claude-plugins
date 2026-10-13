@@ -23,3 +23,4 @@ branch plans — and their PR numbers refer to the archived
 - [x] 05-subagent-refactor-R0 — closed. See `docs/plan/05-subagent-refactor-R0/_TODO.md`.
 - [x] 06-subagent-refactor-R1 — closed. See `docs/plan/06-subagent-refactor-R1/_TODO.md`.
 - [x] 07-subagent-refactor-R1a — Session handoff and full-log export commands, and the plan scripts' SIGPIPE fix; workflow-coding 0.10.1
+- [~] 08-subagent-refactor-R2 — Documentation agents and AGENTS.md, /smart-compact and /memory-check, and R1a's follow-ups; workflow-coding 0.11.0
