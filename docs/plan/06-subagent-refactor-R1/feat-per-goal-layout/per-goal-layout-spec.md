@@ -196,7 +196,10 @@ unless a line below says otherwise.
   index.
 - **Step 2.** The command reads the index and `goal-file:` whole. Both are small. A goal
   named out of order is found in the index the command has just read, and passed as
-  `--goal`. No `Grep`.
+  `--goal`. No `Grep`. (Added 2026-10-13, R1a, `feat-goal-file-subgoals`.) In the TODO
+  model, a goal whose `subgoals:` is `—` on a branch plan, per-goal or legacy, gets its
+  subgoals proposed, confirmed and written before Step 3, since Step 4 has nothing to
+  tick without them; a master plan's item never does. The DO model proposes nothing.
 - **Step 3.** On a flip to `[~]`, the command edits `**Goal**:` first, then the index
   line (D2). The goal file takes the Q&A, notes and subgoal markers. Escape hatch 3f:
   - a split goal becomes `NNa`, as a new index line right after NN plus a new goal file;

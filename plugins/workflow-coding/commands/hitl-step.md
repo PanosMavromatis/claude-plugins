@@ -131,6 +131,17 @@ acceptance criteria. A goal the user named out of order was passed as `--goal`, 
   single-file plan sits in its goal file, **outdented one level**: the goal's own `>`
   lines at indent 0, directly under `**Goal**:` and before the first subgoal; its
   subgoals at indent 0; and each subgoal's `>` lines at indent 2 beneath it.
+- **A goal with no subgoals** (`kind: branch` and `subgoals: —`) has no acceptance
+  criteria: nothing to check the work against, and nothing for Step 4 to tick before it
+  closes the goal. In a per-goal plan `locate-plan.sh` also warns on it (W12). Propose its
+  subgoals before Step 3:
+  - draft them from the goal's text, any `>` lines under it, and the plan's
+    `**Subgoal**:` line, each an outcome someone can check, not a step to take;
+  - show them, and write them once the user confirms: at indent 0 under `**Goal**:` and
+    its `>` lines in a goal file, or indented beneath the goal in a one-file plan.
+
+  A master plan's item never gets them: its acceptance criteria are its Scope line, and
+  its work becomes a branch.
 
 ## Step 3: Execute the Goal
 
