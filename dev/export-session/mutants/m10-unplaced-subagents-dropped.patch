@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -209,7 +209,7 @@
+        "the operator's answers to multiple-choice questions, compaction summaries, and one-line "
+        "entries for tool actions. It omits tool output, system reminders and hidden reasoning.\n"]
+ out += render(load(src), subs=subs)
+-if subs:   # subagents whose spawning call the log does not hold
++if False:   # subagents whose spawning call the log does not hold
+     out.append("## Subagents whose call is not in the log\n")
+     out += [subagent(s) for s in subs.values()]
+ os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)

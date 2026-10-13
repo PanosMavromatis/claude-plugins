@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -217,7 +217,7 @@
+     f.write("\n".join(out))
+ shutil.copyfile(src, base + ".jsonl")   # the raw log: tool output, reasoning and token counts
+ archived = os.path.isdir(folder)
+-if archived:   # large tool outputs and subagent transcripts live only here
++if False:   # large tool outputs and subagent transcripts live only here
+     with tarfile.open(base + ".tar.gz", "w:gz") as t:
+         t.add(folder, arcname=os.path.basename(base))
+ print(dst, sum(1 for s in out if s.startswith("## Operator —")), "operator messages,",

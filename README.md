@@ -139,6 +139,13 @@ python3 -I dev/close-revision/suite.py                   # 65 cases, no model, ~
 python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~15 min
 ```
 
+Test the session-log renderer, `scripts/export-session.py`, after any change to it:
+
+```bash
+python3 -I dev/export-session/suite.py                   # 25 cases, no model, ~1 s
+python3 -I dev/export-session/suite.py --mutants         # the suite must catch each mutant, ~9 s
+```
+
 `dev/per-goal-e2e/` runs the real `/new-branch`, `/hitl-step`, `/step`, `/smart-merge`,
 `/master-plan`, `/open-revision` and `/close-revision` headless on fresh fixture repositories, and grades what they leave behind; `/smart-merge`
 runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are real sessions,

@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -204,7 +204,7 @@
+                                                       desc=meta.get("description", ""))
+ found = len(subs)
+ 
+-out = [f"# Session {os.path.basename(dst).removesuffix('.md').removesuffix('-full')} — full transcript\n\nRendered from the Claude Code session log "
++out = [f"# Session {'m2-tier-1a'} — full transcript\n\nRendered from the Claude Code session log "
+        f"`{src.split('/')[-1]}`. It contains the operator's messages, the assistant's visible replies, "
+        "the operator's answers to multiple-choice questions, compaction summaries, and one-line "
+        "entries for tool actions. It omits tool output, system reminders and hidden reasoning.\n"]

@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -193,7 +193,7 @@
+             + "\n".join(blocks) + "\n</details>\n")
+ 
+ subs = {}
+-if subagents:
++if True:
+     for m in sorted(glob.glob(os.path.join(glob.escape(src.removesuffix(".jsonl")), "subagents", "*.meta.json"))):
+         try:
+             with open(m, encoding="utf-8") as f: meta = json.load(f)

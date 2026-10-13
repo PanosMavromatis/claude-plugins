@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -79,7 +79,7 @@
+ else:   # a directory, or the default one: the export is named for the session
+     title = next(iter(names(src)), None)
+     name = (title if isinstance(title, str) and title else os.path.basename(src).removesuffix(".jsonl")).replace("/", "-")
+-    out_dir = out_arg or os.path.join(os.path.expanduser("~"), "claude-exports", os.path.basename(os.getcwd()))
++    out_dir = out_arg or os.path.join(os.path.expanduser("~"), "exports", os.path.basename(os.getcwd()))
+     dst = os.path.join(out_dir, name + ".md")
+ 
+ def repo_of(p):   # the git working tree holding p, if any

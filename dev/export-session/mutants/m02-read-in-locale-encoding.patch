@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -108,7 +108,7 @@
+     return f"- `{name}`" + (f": {str(detail)[:160]}" if detail else "")
+ 
+ def load(path):
+-    with open(path, encoding="utf-8") as log:
++    with open(path) as log:
+         lines = log.readlines()
+     records = []
+     for line in lines:

@@ -1,0 +1,11 @@
+--- a/export-session.py
++++ b/export-session.py
+@@ -55,7 +55,7 @@
+ 
+ def names(log):   # the session's current name: the one /rename left in <uuid>/custom-title.json
+     try:
+-        with open(log.removesuffix(".jsonl") + "/custom-title.json", encoding="utf-8") as f: return {json.load(f).get("customTitle")}
++        with open(log, encoding="utf-8") as f: return {json.loads(l).get("customTitle") for l in f if '"custom-title"' in l}
+     except (OSError, ValueError, AttributeError): return set()
+ 
+ if arg.endswith(".jsonl"):
