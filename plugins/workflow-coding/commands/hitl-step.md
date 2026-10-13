@@ -151,7 +151,7 @@ acceptance criteria. A goal the user named out of order was passed as `--goal`, 
 
 Work through the goal and its subgoals. **Every write operation and every external command requires user confirmation first.**
 
-**Phrase each command so `allowed-tools` matches it.** Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): a chain matches none of the entries, so it prompts, and in a headless run it is refused. Read a file with `Read`, not by piping it through `head`.
+**Phrase each command so `allowed-tools` matches it.** Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session already runs in the repository, and a permission matches the plain form only, so `git -C <path> status` is refused where `git status` is granted. Run every command alone, one `Bash` call each, with nothing chained (`;`, `&&`), piped (`|`) or appended (`2>&1`): Claude Code checks each part of a chain on its own, and one part not granted, a `git -C` or a read outside the repository, makes it prompt for the whole command, or refuse it in a headless run, and hides which part it was. Read a file with `Read`, not by piping it through `head`.
 
 ### 3a. Research
 

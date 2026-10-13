@@ -43,7 +43,11 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   - the proposal ran before `git checkout -b`;
   - each goal file was edited before its index line;
   - the master plan was edited, not rewritten;
-  - every script ran from the copy.
+  - every script ran from the copy;
+  - every command ran alone, and none as `git -C`, in every session, as the commands say:
+    `allowed-tools` matches a command's plain form only, and refuses a whole chain for any
+    one part it does not grant. A chain of granted commands is not refused, but it still
+    fails this check, since the next chain may hold a part that is.
 
   It reports `Grep`, `Glob` and shell searches for reading. On fixtures no session has
   touched, it passes nothing. In the TODO model it also checks that `/new-branch` wrote

@@ -4,8 +4,9 @@
 says how to phrase a command so `allowed-tools` matches it: the two fixed phrases the
 plugin's `CLAUDE.md` names under "Scoped `allowed-tools`", ``never `git -C <path>` `` and
 `every command alone`, each whole on one line of the command's body. `allowed-tools`
-matches the plain, single command, so a session that runs `git -C <path> status`, or
-chains `git log …; grep …`, is refused what its command grants. The reasoning, and the
+matches a command's plain form only, and checks a chain part by part, so a session that
+runs `git -C <path> status`, or chains a granted `git log` with a `grep` it is not
+granted, is refused what its command grants. The reasoning, and the
 end-to-end runs that found those refusals, are in the `fix-command-phrasing` branch plan.
 It lives here, outside the plugin, so it doesn't ship with it.
 

@@ -361,9 +361,10 @@ Summarize:
   `allowed-tools`" in the plugin's `CLAUDE.md`.
 - **Read-only commands run freely**: `git status`, `git log`, `git diff`, `git branch`, `gh pr view`, `gh pr list`, and the read-only GitHub MCP tools (`pull_request_read`, `list_pull_requests`, `get_me`, `search_repositories`).
 - **Run every command alone**: each `git`, `gh` and script command as its own call, with
-  nothing chained (`;`, `&&`), piped or appended (`2>&1`, `echo $?`). `allowed-tools`
-  matches a single command, so a chain matches none of its entries: it prompts, and in a
-  headless run it is refused. Read an exit status from the call's result instead.
+  nothing chained (`;`, `&&`), piped or appended (`2>&1`, `echo $?`). Claude Code checks
+  each part of a chain on its own, and one part not granted makes it prompt for the whole
+  command, or refuse it in a headless run, and hides which part it was. Read an exit
+  status from the call's result instead.
   Run `git` in the repository as `git <subcommand>`, never `git -C <path>`: the session
   already runs in the repository, and a permission matches the plain form only, so
   `git -C <path> status` is refused where `git status` is granted.

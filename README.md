@@ -149,7 +149,8 @@ python3 -I dev/export-session/suite.py --mutants         # the suite must catch 
 Check the commands' phrasing after a change to a command's `allowed-tools` or to the text
 that states the rule: every command granting `git` must say to run it as
 `git <subcommand>`, never `git -C <path>`, and to run every command alone, since
-`allowed-tools` matches only the plain, single command:
+`allowed-tools` matches a command's plain form only, and refuses a whole chain for any
+one part it does not grant:
 
 ```bash
 python3 -I dev/command-phrasing/check.py                 # the plugin's commands, ~0.1 s
