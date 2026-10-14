@@ -20,7 +20,9 @@ R2 subgoal 5. The plan commands' `allowed-tools` grant tools their sessions neve
 - R2 subgoal 5: `docs/plan/08-subagent-refactor-R2/_TODO.md:55`
 - `/agents-docs-update`, `/agents-docs-init` and `/agents-docs-codex-init` are left to subgoals 8 and 9, which rewrite or remove them
 - `smart-commit.md` also grants `Glob` and `Grep`, which the Scope does not list
-- The e2e merge sessions allow `Bash(rm /tmp/pr-body-:*)` by `--allowedTools`, yet the `rm` is denied even so (run r4), and `check.py` reports it as a documented gate
+- The e2e merge sessions allow `Bash(rm /tmp/pr-body-:*)` by `--allowedTools`, but `:*` is a trailing ` *`, so the rule never matched `rm /tmp/pr-body-<branch>.md`; that is why r4 saw it denied "even when allowed"
 - The e2e run is paid; the user runs it
 
 ## Notes
+
+- 2026-10-14, goal 01: a command's `allowed-tools` grant lasts one turn, clearing with the user's next message, measured with `dev/grant-lifetime/` headless (run2) and interactively; so a write made after the user replies to a CONFIRM FIRST step runs under the user's own settings, not the command's grant. Recorded in the plugin's `CLAUDE.md` beside the convention, with the `:*` trap
