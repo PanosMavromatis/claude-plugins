@@ -11,7 +11,7 @@ R2 subgoal 3. `locate-plan.sh` and `propose-branch-plan.sh` report a single-file
 ## Scope
 
 - `lib/plan-rules.sh`'s `LAYOUT_V`; `locate-plan.sh`, its suite under `dev/locate-plan/`, and `locate-plan-spec.md`; `check-plan-index.sh`, which branches on the value
-- `propose-branch-plan.sh` (`:150–151`) and its suite under `dev/propose-branch-plan/`
+- `propose-branch-plan.sh` (`:150–151`), its suite under `dev/propose-branch-plan/`, and its report in `per-goal-layout-spec.md`
 - the commands that read the value: `smart-merge.md:83`, `new-branch.md:150`, and Step 1 of `/step` and `/hitl-step`, kept byte-identical
 - every suite of a script that sources `lib/plan-rules.sh`
 

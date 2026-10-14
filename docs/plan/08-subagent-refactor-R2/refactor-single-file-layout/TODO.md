@@ -9,5 +9,5 @@
 ## Goals
 
 - [x] 01 — locate-plan.sh reports single-file
-- [ ] 02 — propose-branch-plan.sh reports single-file
+- [x] 02 — propose-branch-plan.sh reports single-file
 - [ ] 03 — The commands read single-file, Step 1 kept in lockstep
