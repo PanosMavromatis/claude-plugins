@@ -1,6 +1,6 @@
 # feat/master-plan-checks
 
-**Status**: active
+**Status**: merged — PR #26 — 2026-10-14
 **Created**: 2026-10-14
 **Revision**: 08-subagent-refactor-R2
 **Subgoal**: 4. `/master-plan` checks a draft's fidelity and form within its grants: `plan-drafter` returns, beside the draft, a trace tagging each subgoal with the spec item it carries, and a read-only script checks the draft's form.
