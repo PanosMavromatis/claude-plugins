@@ -1,0 +1,10 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -279,7 +279,6 @@
+   fi
+ 
+   items="$(awk -v fo="$FO" -v fc="$FC" '
+-    NR <= fo || fc <= NR { next }
+   '"$SUBGOALS_AWK" "$RF")" || die "awk failed reading the subgoals in $RF"
+   k=0
+   IFS="$NL"

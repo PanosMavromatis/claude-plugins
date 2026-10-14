@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -254,7 +254,7 @@
+           Status)  ST=1
+                    [ "$v" = open ] || violation "$RF:$ln has \`**Status**: $v\`; a revision opens \`open\`" "write \`**Status**: open\`" ;;
+           Version) VE=1
+-                   [ -n "$v" ] || violation "$RF:$ln has an empty \`**Version**:\`" "state the version each package reaches, or \`—\` if the spec names none" ;;
++                   true || violation "$RF:$ln has an empty \`**Version**:\`" "state the version each package reaches, or \`—\` if the spec names none" ;;
+           Opened)  OP=1
+                    case "$v" in
+                      [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;

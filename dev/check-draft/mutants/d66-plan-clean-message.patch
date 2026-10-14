@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -437,7 +437,7 @@
+ if [ "$VIOL" -eq 0 ]; then
+   R_RESULT=clean
+   if [ "$PLAN" -eq 1 ]; then
+-    R_MSG="The plan has subdividing.md's form, with $N subgoals."
++    R_MSG="The draft has subdividing.md's form, with $N subgoals."
+   else
+     if [ -n "$SPEC" ]; then how="every tag names a part of $SPEC"; else how="its tags were not checked against a spec"; fi
+     R_MSG="The draft has subdividing.md's form and its trace covers its $N subgoals; $how."

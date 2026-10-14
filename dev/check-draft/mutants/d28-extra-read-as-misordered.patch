@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -342,7 +342,7 @@
+   for rec in $TNS; do
+     ln="${rec%%"$TAB"*}"; n="${rec#*"$TAB"}"
+     if [ "$n" -eq "$e" ] && [ "$e" -le "$N" ]; then e=$((e + 1)); continue; fi
+-    if [ "$N" -lt "$n" ] || [ "$n" -eq 0 ]; then
++    if false; then
+       violation "$RF:$ln traces subgoal $n, which the draft does not have" "trace only the draft's subgoals, 1 to $N"
+     else
+       violation "$RF:$ln traces subgoal $n where subgoal $e is next" "give each subgoal one trace line, in the draft's order"

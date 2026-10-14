@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -313,7 +313,7 @@
+     fi
+   done
+   unset IFS
+-  for ln in $BDS; do
++  for ln in ; do
+     violation "$RF:$ln is a \`> **Branch:**\` or \`> **Done:**\` line" "remove it: /new-branch and /smart-merge write those, once the revision is committed"
+   done
+   N="$k"

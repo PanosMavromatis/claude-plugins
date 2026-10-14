@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -135,7 +135,7 @@
+     }
+     { sub(/\r$/, "") }
+     /^[ \t]+## Draft[ \t]*$/ && !fr { fr = NR; print "FR\t" NR }
+-    /^## / && !open && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
++    /^## / && !open { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
+     sec == "## Draft" && /^~~~/ {
+       if (!open && !done) {
+         open = 1; info = $0; sub(/^~~~[ \t]*/, "", info); sub(/[ \t]+$/, "", info)

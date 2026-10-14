@@ -6,7 +6,7 @@ it, and each session's tool calls from its stream-json.
 Read-only: it runs git reads and the plugin copy's own read-only scripts in the fixtures.
 Prints PASS or FAIL per check, a line per finding worth reading (a denial, a Grep), and
 exits non-zero if any check failed."""
-import hashlib, itertools, json, os, re, shutil, subprocess, sys
+import difflib, hashlib, itertools, json, os, re, shutil, subprocess, sys
 
 W = os.environ.get("LOCATE_PLAN_WORK") or sys.exit("set LOCATE_PLAN_WORK")
 W = os.path.realpath(W); RUN = os.environ.get("RUN") or sys.exit("set RUN=<tag>")
@@ -373,7 +373,154 @@ def drafter(sid, calls, label, previous):
     pr = dr[0].get("prompt", "") if dr else ""
     for what, v in (("the spec", f"docs/spec/{label}.md"), ("the previous revision", previous)):
         if v != "—": check(f"{sid}: the drafter's prompt names {what}, {v}", v in pr, pr[:200])
-    check(f"{sid}: the session left the spec to the drafter", not any(wrote(f"docs/spec/{label}.md", ("Read",))(n, i) for n, i in calls))
+    # Step 4 may read a doubtful subgoal's window of the spec, as where: gives it; never all of it.
+    rs = [i for n, i in calls if wrote(f"docs/spec/{label}.md", ("Read",))(n, i)]
+    for i in rs: print(f"      {sid}: read the spec from line {i.get('offset', 1)}, {i.get('limit', 'every')} lines")
+    check(f"{sid}: the session left the spec to the drafter, reading a window of it at most", all(i.get("limit") for i in rs),
+          f"{len(rs)} reads, {sum(not i.get('limit') for i in rs)} of them whole")
+    # An unresolved tag has no window: it is the user's question, not a search (r13's m1, m2).
+    srch = [c for c in bash(calls) if f"docs/spec/{label}.md" in c and re.match(r"\s*(grep|rg|find|awk|sed|cat|head|tail)\b", c)]
+    check(f"{sid}: no shell read or search of the spec", not srch, "; ".join(c[:120] for c in srch[:3]))
+
+def failed(sid):
+    """The session's own tool calls whose result was an error, by their index in session()'s
+    list. A Write that failed wrote nothing (r13's m3: a file left by m2, not read first)."""
+    ids, bad = [], set()
+    for line in open(f"{OUT}/{sid}.jsonl"):
+        try: d = json.loads(line)
+        except ValueError: continue
+        if d.get("parent_tool_use_id"): continue
+        content = (d.get("message") or {}).get("content")
+        for c in content if isinstance(content, list) else []:
+            if not isinstance(c, dict): continue
+            if d.get("type") == "assistant" and c.get("type") == "tool_use": ids.append(c.get("id"))
+            elif c.get("type") == "tool_result" and c.get("is_error"): bad.add(c.get("tool_use_id"))
+    return {k for k, u in enumerate(ids) if u in bad}
+
+# /master-plan writes plan-drafter's reply to reply.md (a fresh one to reply-2.md) and checks it.
+REPLY = re.compile(r"(^|[/-])reply(-2)?\.md$")
+
+def replies(sid):
+    """plan-drafter's replies, in order, as it returned them: the tool result's bare content. The
+    session sees each in a frame (a hand-back note, an agentId and usage trailer, and every line
+    indented two spaces), which the reply file must not keep."""
+    uses, out = set(), []
+    for line in open(f"{OUT}/{sid}.jsonl"):
+        try: d = json.loads(line)
+        except ValueError: continue
+        if d.get("parent_tool_use_id"): continue
+        content = (d.get("message") or {}).get("content")
+        for c in content if isinstance(content, list) else []:
+            if not isinstance(c, dict): continue
+            if c.get("type") == "tool_use" and (c.get("input") or {}).get("subagent_type") == "workflow-coding:plan-drafter": uses.add(c.get("id"))
+            elif c.get("type") == "tool_result" and c.get("tool_use_id") in uses:
+                raw = (d.get("tool_use_result") or {}).get("content")
+                out.append("".join(b.get("text", "") for b in raw if isinstance(b, dict)) if isinstance(raw, list) else str(raw or ""))
+    return out
+
+def copied(sid, calls, reps):
+    """Each reply file holds plan-drafter's reply line for line: a copy that drops a mistake
+    hides it from the check, and one that adds a mistake, or keeps the frame, blames the drafter
+    for it. A file written more than once is compared as last written, and a rewrite reported;
+    a Write that failed wrote nothing, and is reported, not counted."""
+    paths, last, bad = [], {}, failed(sid)
+    for k, (n, inp) in enumerate(calls):
+        p = inp.get("file_path", "")
+        if n in ("Write", "Edit", "MultiEdit") and REPLY.search(p):
+            if k in bad: print(f"      {sid}: a {n} of {p} failed (call {k})"); continue
+            if p not in last: paths.append(p)
+            last.setdefault(p, []).append((n, inp))
+    check(f"{sid}: a reply file for each of plan-drafter's {len(reps)} replies", bool(reps) and len(paths) == len(reps), f"reply files {paths}")
+    norm = lambda s: s.replace("\r\n", "\n").rstrip("\n").split("\n")
+    for k, (p, r) in enumerate(zip(paths, reps), 1):
+        ws = last[p]
+        if len(ws) > 1: print(f"      {sid}: {p} written {len(ws)} times: {[n for n, _ in ws]}")
+        n, inp = ws[-1]
+        diff = [] if n != "Write" else [l for l in difflib.unified_diff(norm(r), norm(inp.get("content", "")), n=0, lineterm="")
+                                        if l[:1] in "+-" and l[:3] not in ("+++", "---")]
+        check(f"{sid}: reply file {k} is plan-drafter's reply, line for line", n == "Write" and not diff,
+              f"last changed by {n}" if n != "Write" else "; ".join(l[:100] for l in diff[:4]))
+
+def units(spec):
+    """Each spec unit's lines: a `N. ` line at the margin begins one, which runs to the line
+    before the next, or to the end."""
+    L = spec.split("\n"); starts = [i for i, l in enumerate(L, 1) if re.match(r"^\d+\. ", l)]
+    return [(s, starts[k + 1] - 1 if k + 1 < len(starts) else len(L)) for k, s in enumerate(starts)]
+
+def traced(sid, repo, label, reply, k):
+    """The trace, by the copy's own check-draft.sh on the bare reply against the fixture's spec:
+    every subgoal traced, every tag resolving. Then each subgoal's tags must point at the unit
+    whose file its title names: a quoted phrase by the line where: gives, a heading tag by the unit's
+    number after the heading. One heading spans this spec, so where: alone cannot tell the
+    units apart for a heading tag."""
+    if not os.access(f"{SCRIPTS}/check-draft.sh", os.X_OK):     # a run from before the trace
+        check(f"{sid}: reply {k}: the copy has check-draft.sh to check the trace with", False, SCRIPTS); return
+    rel = f"docs/spec/{label}.md"; spec = open(f"{E}/{repo}/{rel}").read()
+    os.makedirs(f"{E}/_replies", exist_ok=True); f = f"{E}/_replies/{sid}-{k}.md"
+    open(f, "w").write(reply)
+    rep = report(sh([f"{SCRIPTS}/check-draft.sh", f, "--spec", rel, "--label", label], f"{E}/{repo}")[1])
+    ok = rep.get("result") == ["clean"]
+    check(f"{sid}: reply {k} passes the copy's check-draft.sh against the spec ({(rep.get('tags') or ['?'])[0]})", ok,
+          "; ".join((rep.get("problem") or [])[:3]) or (rep.get("message") or ["no report"])[0])
+    fence = reply.split("~~~markdown", 1)[-1].split("\n~~~", 1)[0].split("\n")
+    sub = fence[fence.index("## Subgoals") + 1:] if "## Subgoals" in fence else []
+    items = [i for i, l in enumerate(sub) if l.startswith("- [")]
+    texts = [" ".join([sub[i]] + list(itertools.takewhile(lambda l: l.startswith("  "), sub[i + 1:]))) for i in items]
+    U = units(spec); heads = sorted((re.sub(r"^#+\s+", "", l).strip() for l in spec.split("\n") if re.match(r"^#+\s", l)), key=len, reverse=True)
+    point = {}
+    for w in rep.get("where") or []:
+        m = re.match(r"^(\d+)\. \S+?:(\d+)(?:-(\d+))? (.*)$", w)
+        if not m: continue
+        n, a, tag = int(m[1]), int(m[2]), m[4]
+        if m[3] is None: us = {u for u, (s, e) in enumerate(U, 1) if s <= a <= e}
+        else:
+            rest = next((tag[len(h):] for h in heads if tag.startswith(h)), tag)
+            us = {int(x) for x in re.findall(r"(?<![\d.])\d+(?![\d.])", rest)} & set(range(1, len(U) + 1))
+        point.setdefault(n, set()).update(us)
+    # The unit a subgoal carries is the one its title names: a Scope or Acceptance line also
+    # names the files it builds on (subgoal 2's acceptance names CHANGELOG.md).
+    wrong = []
+    for n, (i, t) in enumerate(zip(items, texts), 1):
+        named = {u for u, name in enumerate(SPEC_UNITS, 1) if name in sub[i]} or {u for u, name in enumerate(SPEC_UNITS, 1) if name in t}
+        if named and not point.get(n, set()) & named: wrong.append(f"subgoal {n} names units {sorted(named)}, its tags point at {sorted(point.get(n, set()))}")
+    check(f"{sid}: reply {k}: each subgoal's tags point at the unit whose file it names", ok and not wrong,
+          "; ".join(wrong[:3]) or "the check above failed")
+
+def checked(sid, calls, plan, writes, add):
+    """Step 3 checked each reply file, against the spec, before anything was written to the
+    repository; step 6 checked the plan as written, after its last write; and a real run, step
+    7, checked it again with nothing written between that and `git add`. A dry run has no add."""
+    cd = at(calls, ran("check-draft.sh"))
+    rp = [i for i in cd if "--plan" not in calls[i][1]["command"]]
+    pp = [i for i in cd if "--plan" in calls[i][1]["command"] and plan in calls[i][1]["command"]]
+    bad = failed(sid)
+    tried = at(calls, lambda n, i: n in ("Write", "Edit", "MultiEdit") and bool(REPLY.search(i.get("file_path", ""))))
+    rw = [j for j in tried if j not in bad]
+    first, last = (min(writes), max(writes)) if writes else (None, None)
+    check(f"{sid}: check-draft.sh ran on the reply file with --spec, after writing it and before writing the plan",
+          bool(rp) and bool(rw) and rw[0] < rp[0] and first is not None and rp[0] < first and all("--spec" in calls[i][1]["command"] for i in rp),
+          f"reply writes {rw[:2]}, reply checks {rp[:3]}, first plan write {first}")
+    # Each check reads the reply just written: the last write before it succeeded, and came
+    # after the drafter's last reply. A check beside a failed Write reads an older file.
+    ag = at(calls, lambda n, i: n in ("Agent", "Task"))
+    stale = []
+    for i in rp:
+        w = [j for j in tried if j < i]; a = [j for j in ag if j < i]
+        if not w or w[-1] in bad or (a and w[-1] < a[-1]): stale.append(i)
+    check(f"{sid}: each check of a reply file came after that reply's Write succeeded", bool(rp) and not stale,
+          f"the checks at calls {stale} follow a failed Write, or none since the drafter's last reply")
+    after = [i for i in pp if last is not None and last < i and (add is None or i < add)]
+    need = 1 if add is None else 2
+    check(f"{sid}: check-draft.sh --plan ran on {plan} after its last write" + (", and again before git add" if add is not None else ""),
+          len(after) >= need, f"last write {last}, --plan runs {pp}, git add {add}")
+
+def drafted(sid, calls, repo, label, plan, writes, add):
+    """Everything /master-plan's checks of the draft leave in a session: the reply files, the
+    trace, and the order of check-draft.sh's runs."""
+    reps = replies(sid)
+    copied(sid, calls, reps)
+    for k, r in enumerate(reps, 1): traced(sid, repo, label, r, k)
+    checked(sid, calls, plan, writes, add)
 
 def opened(sid, repo, label, alias=False):
     """A real /master-plan: proposed, drafted, the root plan from --render, the revision from
@@ -398,6 +545,8 @@ def opened(sid, repo, label, alias=False):
         check(f"{sid}: locate-plan.sh and propose-revision.sh re-ran after the writes, before the commit",
               last is not None and bool(cm) and any(last < i < cm[0] for i in lp) and any(last < i < cm[0] for i in rp),
               f"last write {last}, locate {lp}, propose {p}, commit {cm[:1]}")
+        ad = at(calls, lambda n, i: n == "Bash" and bool(re.match(r"\s*git add\b", i.get("command", ""))))
+        drafted(sid, calls, repo, label, rev, rw + vw, ad[0] if ad else None)
         check(f"{sid}: no push", not any(c.lstrip().startswith("git push") for c in bash(calls)))
     check(f"{repo}: on {br}", git(repo, "branch", "--show-current").strip() == br, git(repo, "branch", "--show-current").strip())
     one_commit(repo, br, [ROOT, rev])
@@ -421,6 +570,7 @@ def dry(sid, repo, label, path):
     if calls:
         alone(sid, bash(calls))
         drafter(sid, calls, label, "—")
+        drafted(sid, calls, repo, label, f"{path}/_TODO.md", at(calls, wrote(f"{path}/_TODO.md")), None)
         check(f"{sid}: no branch, no staging, no commit",
               not at(calls, lambda n, i: n == "Bash" and re.match(r"\s*git (checkout -b|add|commit)\b", i.get("command", ""))))
         check(f"{sid}: the report says a real run would refuse", bool(re.search(r"refus", said(sid), re.I)), said(sid)[:300])

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -261,7 +261,7 @@
+                      *) violation "$RF:$ln has \`**Opened**: $v\`, not a date" "write the date the revision opens, as YYYY-MM-DD" ;;
+                    esac ;;
+           Spec)    SP=1
+-                   [ -n "$v" ] || violation "$RF:$ln has an empty \`**Spec**:\`" "name the spec: its path, \`pasted\` or \`conversation\`" ;;
++                   true || violation "$RF:$ln has an empty \`**Spec**:\`" "name the spec: its path, \`pasted\` or \`conversation\`" ;;
+         esac ;;
+       BD) BDS="${BDS:+$BDS$NL}$ln" ;;                        # reported after the subgoals
+       SA) SAS="${SAS:+$SAS$NL}$ln" ;;

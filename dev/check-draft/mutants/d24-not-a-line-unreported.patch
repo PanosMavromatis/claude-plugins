@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -332,7 +332,7 @@
+   typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
+   case "$typ" in
+     TE) violation "$RF:$ln has an empty tag" "tag the subgoal with the spec item it carries, or drop the empty tag" ;;
+-    TX) violation "$RF:$ln is not a trace line: \`$val\`" "write each trace line as \`- N. <tag>\`, with \`; \` between tags" ;;
++    TX) : "$RF:$ln is not a trace line: \`$val\`" "write each trace line as \`- N. <tag>\`, with \`; \` between tags" ;;
+   esac
+ done
+ unset IFS

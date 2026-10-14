@@ -1,0 +1,10 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -399,7 +399,6 @@
+       nb[NR] = last                                        # the last line, to here, not blank
+     }
+     /^[ \t]*(```|~~~)/ { fence = !fence; next }
+-    fence { next }
+     /^#+[ \t]/ {
+       h = $0; sub(/^#+[ \t]+/, "", h); sub(/[ \t]+$/, "", h)
+       if (h != "") {

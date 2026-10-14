@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -297,7 +297,7 @@
+     fi
+     k=$((k + 1))
+     case "$txt" in
+-      "- [ ] $k. "?*) ;;
++      "- [ ] "*) ;;
+       *) violation "$RF:$ln reads \`$txt\`, where subgoal $k should begin \`- [ ] $k. \`" "number the subgoals from 1, in order, each \`- [ ] N. <what the branch delivers>\`" ;;
+     esac
+     if [ "$last" -eq "$ln" ]; then

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -84,7 +84,7 @@
+ [ $NPOS -eq 1 ] && [ -n "$RF" ] || usage "give one file: the drafter's reply as written, or with --plan the plan file"
+ [ "$PLAN" -eq 0 ] || [ -z "$SPEC" ] || usage "--spec checks a reply's trace, and a plan file has none"
+ case "$LABEL" in *[[:space:]]*) usage "a label holds no whitespace, got '$LABEL'" ;; esac
+-if [ "$PLAN" -eq 1 ]; then INPUT=plan; WHAT="the plan"; else INPUT=reply; WHAT="the draft"; fi
++if [ "$PLAN" -eq 1 ]; then INPUT=plan; WHAT="the draft"; else INPUT=reply; WHAT="the draft"; fi
+ 
+ # --- the report -----------------------------------------------------------------
+ 

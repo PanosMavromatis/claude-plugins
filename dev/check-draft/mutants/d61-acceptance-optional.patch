@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -229,7 +229,7 @@
+       print "HD\t" NR "\t" k "\t" v
+     }
+     /^[ \t]*> \*\*(Branch|Done):\*\*/ { print "BD\t" NR }
+-    /^[ \t]+Scope: .*Acceptance: / { print "SA\t" NR }
++    /^[ \t]+Scope: / { print "SA\t" NR }
+   ' "$RF")" || die "awk failed reading the draft in $RF"
+ 
+   DHS=""; SAS=""; BDS=""; ST=""; VE=""; OP=""; SP=""

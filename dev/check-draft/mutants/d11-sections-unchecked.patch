@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -184,7 +184,7 @@
+     FRAMED=1
+     violation "$RF:$FR has \`## Draft\` indented: the reply was copied inside the frame Claude Code puts around a subagent's report" \
+       "write the reply again as plan-drafter returned it, without the hand-back note before it, the agentId and usage lines after it, or the indent on every line"
+-  elif [ "$HEADS" != "$WANT" ]; then
++  elif false; then
+     got="$(printf '%s' "$HEADS" | awk 'BEGIN { ORS = "" } { print (NR == 1 ? "" : ", ") $0 }')" || die "awk failed listing the reply's sections"
+     violation "the reply's sections are ${got:-none}, not ## Draft, ## Trace, ## Left out and ## Questions in that order" \
+       "return the four sections, in that order, and nothing else"

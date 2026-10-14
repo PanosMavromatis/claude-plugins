@@ -90,6 +90,15 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   are not counted as the session's), left the spec to the drafter, written the root plan
   from `--render`, and run its checks after the last write and before the one commit. `c2`
   alone is allowed `git mv`, the gate `/close-revision` leaves to the prompt.
+- **The draft checks** (`m*`). `/master-plan` writes plan-drafter's reply to a file and
+  checks it with `check-draft.sh` before the review, then checks the plan file with
+  `--plan` after the writes and, in a real run, again before `git add`; `check.py` checks
+  that order. It also checks that each reply file holds plan-drafter's reply line for
+  line: the bare reply is the tool result's `tool_use_result.content`, while the session
+  sees it in a frame (a hand-back note, an agentId and usage trailer, every line indented
+  two spaces) that the file must not keep. Only a `Write` that succeeded counts: each check
+  of a reply must follow its reply's successful `Write`, and no session reads or searches
+  the spec from the shell.
 - **What they do not test: the review.** `/master-plan` step 4 is where a user reads the draft,
   and the fixture's `CLAUDE.md` approves it in advance. So the draft is graded on form
   (`subdividing.md`'s), on the spec's settled decision being copied, and on a tripwire: each
@@ -97,7 +106,10 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
   unit, never an invented one, since nearly any extra subgoal names `CHANGELOG.md`. Read the
   drafts after a run (`git -C m1 show chore/open-08-next:docs/plan/08-next/_TODO.md`). A
   scenario that spawns an agent needs a content check or a named reader, not a form check
-  alone.
+  alone. The trace is graded as well: the copy's `check-draft.sh` runs on each bare reply
+  against the fixture's spec, so every subgoal is traced and every tag resolves, and each
+  subgoal's tags must point at the unit its title names, by a quoted phrase's `where:`
+  line, or by the item number after a heading, since the spec has one heading.
 
 Run `r1`, 2026-10-10:
 - e1, e3 and e5 passed every check, with no `Grep`, `Glob` or shell searches.
@@ -124,3 +136,27 @@ $7.78. Each of the ten sessions that commit `Read` `smart-commit.md` before its 
 commit, and none of the 13 touched the plugin's directory from the shell, where `r11`'s
 merge sessions had `grep`ped it twice; regraded, `r11` fails the new check on exactly
 those two. The five reworded pointers hold.
+
+Run `r13`, 2026-10-14, m1, m2 and m3 on `/master-plan`'s new checks (`32b0ac3`): $3.00, no
+permission denials, 7 checks failing. The new flow held: each reply file was plan-drafter's
+reply line for line, without the frame, checked before the plan was written, and `--plan`
+ran twice before `git add`; m3's fresh reply fixed three subgoals that ran past two lines.
+No headless session had a scratchpad: all three wrote to `/tmp`, unrefused. Three findings,
+fixed after the run:
+- plan-drafter tagged the spec's numbered units, which sit under no heading of their own,
+  as `The work, in order: item N`, which names nothing (0 of 3, 0 of 4 and 1 of 4 resolved);
+  m3's fresh reply quoted the items instead and resolved all 4;
+- with no `where:` window for those tags, m1 and m2 `grep`ped the spec;
+- m2 and m3, sharing the label `04-next`, shared `/tmp/master-plan-04-next-reply.md`, so
+  m3's check, sent beside a `Write` that failed, read m2's reply.
+
+`check.py` now also fails a shell read or search of the spec, and a reply check that does
+not follow its reply's successful `Write`; regraded, `r13` fails 11.
+
+Run `r14`, 2026-10-14, m1, m2 and m3 after the fixes (`cbc836e`): every check passed, $2.44,
+no permission denials. Each first reply's tags were quoted phrases, and resolved (3 of 3,
+4 of 4, 3 of 3); no session searched the spec, each reading one window of it through
+`Read`; each reply file was named by its repository and checked only after its `Write`
+succeeded. The drafts, read by hand, are faithful to the spec. m1 and m3 each settled one
+decision the spec leaves open, that the script runs from no hook or CI, as the review's
+answer to the drafter's question about it, not as the drafter's guess.

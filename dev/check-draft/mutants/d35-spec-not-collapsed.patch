@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -394,7 +394,7 @@
+       return 0
+     }
+     {
+-      sub(/\r$/, ""); s = $0; gsub(/[ \t]+/, " ", s); sub(/^ /, "", s); sub(/ $/, "", s)
++      sub(/\r$/, ""); s = $0; sub(/^ /, "", s); sub(/ $/, "", s)
+       if (s != "") { cs[++nc] = length(all) + 1; cl[nc] = NR; all = all " " s; last = NR }
+       nb[NR] = last                                        # the last line, to here, not blank
+     }

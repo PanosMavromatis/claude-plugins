@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -211,7 +211,7 @@
+ # lines alone, so a draft is read as /new-branch and /smart-merge will read the file.
+ 
+ N=""
+-if [ "$DRAFT" -eq 1 ] && [ "$FC" -eq $((FO + 1)) ]; then
++if false; then
+   violation "$WHAT is empty" "write the whole plan file: \`# Revision <label>\`, its header and its three sections"
+   DRAFT=0
+ fi

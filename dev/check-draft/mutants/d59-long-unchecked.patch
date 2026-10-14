@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -303,7 +303,7 @@
+     if [ "$last" -eq "$ln" ]; then
+       violation "subgoal $k, at $RF:$ln, has no \`Scope: … Acceptance: …\` line in its block" \
+         "put that line directly under it, indented two spaces, with no blank line between"
+-    elif [ "$last" -ne $((ln + 1)) ]; then
++    elif false; then
+       violation "subgoal $k, at $RF:$ln, runs to line $last: a subgoal is two lines" "write its scope and acceptance as one \`Scope: … Acceptance: …\` line"
+     else
+       case "$NL$SAS$NL" in

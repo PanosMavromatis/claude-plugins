@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -376,7 +376,7 @@
+         p = substr(g, 2); j = index(p, "\""); if (!j) return 0
+         p = substr(p, 1, j - 1); gsub(/[ \t]+/, " ", p); sub(/^ /, "", p); sub(/ $/, "", p)
+         if (p == "" || !(x = index(all, p))) return 0
+-        for (k = 1; k < nc && cs[k + 1] < x; k++) ;
++        for (k = 1; k < nc && cs[k] < x; k++) ;
+         at = cl[k]; return 1
+       }
+       if (index(g, "§") == 1) {

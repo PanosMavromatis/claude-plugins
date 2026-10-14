@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -199,7 +199,7 @@
+     violation "the draft's fence, opened at $RF:$FO, is never closed" "close it with a \`~~~\` line"
+   else
+     DRAFT=1
+-    [ "$INFO" = markdown ] || violation "$RF:$FO opens the draft's fence as \`~~~$INFO\`" "open it as \`~~~markdown\`"
++    true || violation "$RF:$FO opens the draft's fence as \`~~~$INFO\`" "open it as \`~~~markdown\`"
+   fi
+   for ln in $XF; do
+     violation "$RF:$ln opens a second fence under ## Draft" "keep the whole plan file in one fence"

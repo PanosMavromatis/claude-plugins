@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -289,7 +289,7 @@
+     r="${r#*"$TAB"}"                                       # the marker: the line says it
+     last="${r%%"$TAB"*}"; r="${r#*"$TAB"}"
+     r="${r#*"$TAB"}"                                       # branches: F6 reports them
+-    hd="${r%%"$TAB"*}"; txt="${r#*"$TAB"}"; txt="${txt%"$CR"}"
++    hd="${r%%"$TAB"*}"; txt="${r#*"$TAB"}"; txt="${txt}"
+     if [ "$hd" != "## Subgoals" ]; then
+       violation "$RF:$ln is a checkbox under ${hd:-no heading}, outside ## Subgoals: \`$txt\`" \
+         "write it as a plain \`- \` bullet: the plan scripts count every \`- [ ] \` line at the margin as a subgoal"

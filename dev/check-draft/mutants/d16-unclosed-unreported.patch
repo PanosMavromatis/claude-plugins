@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -195,7 +195,7 @@
+     case "$NL$HEADS$NL" in
+       *"$NL## Draft$NL"*) violation "## Draft holds no ~~~markdown fence" "put the whole plan file in one \`~~~markdown\` fence under ## Draft" ;;
+     esac
+-  elif [ "$UF" -eq 1 ]; then
++  elif false; then
+     violation "the draft's fence, opened at $RF:$FO, is never closed" "close it with a \`~~~\` line"
+   else
+     DRAFT=1

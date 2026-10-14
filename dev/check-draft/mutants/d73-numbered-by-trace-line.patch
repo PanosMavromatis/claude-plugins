@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -413,7 +413,7 @@
+         if (L[i] == "") continue
+         t++; ln = L[i]; sub(/\t.*$/, "", ln); sg = L[i]; sub(/^[^\t]*\t/, "", sg)
+         g = sg; sub(/^[^\t]*\t/, "", g); sub(/\t.*$/, "", sg)
+-        if (ok(g)) { r++; print "W\t" sg "\t" at "\t" g } else print "U\t" ln "\t" g
++        if (ok(g)) { r++; print "W\t" ln "\t" at "\t" g } else print "U\t" ln "\t" g
+       }
+       print "N\t" r "\t" t
+     }
