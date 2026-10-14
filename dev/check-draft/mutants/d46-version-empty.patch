@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -238,7 +238,7 @@
+@@ -246,7 +246,7 @@
            Status)  ST=1
                     [ "$v" = open ] || violation "$RF:$ln has \`**Status**: $v\`; a revision opens \`open\`" "write \`**Status**: open\`" ;;
            Version) VE=1

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -226,7 +226,7 @@
+@@ -234,7 +234,7 @@
            [ "$val" = "# Revision $LABEL" ] || violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision $LABEL\`" "begin $WHAT \`# Revision $LABEL\`"
          else
            case "$val" in

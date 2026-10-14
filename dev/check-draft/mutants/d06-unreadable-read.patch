@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -99,7 +99,7 @@
+@@ -107,7 +107,7 @@
  readable() {  # readable <file> <what it should be>: E15's check, a missing file named as such
    if [ ! -e "$1" ]; then violation "$1 does not exist" "pass $2"; fail ""; fi
    if [ ! -f "$1" ]; then violation "$1 is not a file" "pass $2"; fail ""; fi

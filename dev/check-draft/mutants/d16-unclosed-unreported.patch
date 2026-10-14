@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -179,7 +179,7 @@
+@@ -187,7 +187,7 @@
      case "$NL$HEADS$NL" in
        *"$NL## Draft$NL"*) violation "## Draft holds no ~~~markdown fence" "put the whole plan file in one \`~~~markdown\` fence under ## Draft" ;;
      esac

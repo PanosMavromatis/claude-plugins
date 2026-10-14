@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -287,7 +287,7 @@
+@@ -295,7 +295,7 @@
      if [ "$last" -eq "$ln" ]; then
        violation "subgoal $k, at $RF:$ln, has no \`Scope: … Acceptance: …\` line in its block" \
          "put that line directly under it, indented two spaces, with no blank line between"

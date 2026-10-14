@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -414,7 +414,7 @@
+   for rec in $out; do
+     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; a="${rest%%"$TAB"*}"; b="${rest#*"$TAB"}"
+     case "$typ" in
+-      U) UN=$((UN + 1))
++      U) :
+          violation "$RF:$a has the tag \`$b\`, which names nothing in $SPEC" \
+            "tag with a heading or § as $SPEC writes it, or a phrase copied from it verbatim; a subgoal no part of the spec supports is a question, not a subgoal" ;;
+       W) R_WHERE="${R_WHERE:+$R_WHERE$NL}$a. $SPEC:${b%%"$TAB"*} ${b#*"$TAB"}" ;;

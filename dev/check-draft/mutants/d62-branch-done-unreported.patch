@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -297,7 +297,7 @@
+@@ -305,7 +305,7 @@
      fi
    done
    unset IFS

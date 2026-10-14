@@ -10,8 +10,9 @@ case, on the draft's form, runs on both: as a reply, the draft in its fence with
 that covers it (its id ends in r), and as a plan file, the draft alone (p). A draft's line
 k is line k of the plan and line k + 3 of the reply. Every case runs twice under each shell
 found and must print the same thing each time. Every report is checked for key order, exit
-code, problem and fix text, one fix per problem, the message its input calls for, nothing
-on stderr, no absolute paths, and that no file was changed. --mutants applies each patch in
+code, problem and fix text, one fix per problem, each resolved tag's where: window, the
+message its input calls for, nothing on stderr, no absolute paths, and that no file was
+changed. --mutants applies each patch in
 mutants/ to a copy of the script and its library, scripts/lib/plan-rules.sh, and runs the
 suite on it once: each must fail it, and a patch that no longer applies is reported stale.
 A patch names its file relative to scripts/."""
@@ -31,7 +32,7 @@ SHELLS = [s for s in ("/bin/bash", "/opt/homebrew/bin/bash") if os.access(s, os.
 if "--once" in sys.argv: SHELLS = SHELLS[:1]
 def h(label): return hashlib.sha1(label.encode()).hexdigest()[:8]
 AWK127 = f"{W}/bin/{h('cd-awk-127')}"
-KEYS = ["result", "input", "file", "spec", "subgoals", "tags", "problem", "fix", "message"]
+KEYS = ["result", "input", "file", "spec", "subgoals", "tags", "where", "problem", "fix", "message"]
 EQUIVALENT = set()
 
 # The draft: line k is line k of a plan file and line k + 3 of a reply.
@@ -80,8 +81,9 @@ NAMED = "names nothing in spec.md"
 # --- the reply: its sections, its fence, its trace ------------------------------------
 rcase("s01", reply(), result="clean", subgoals="2", tags="3, not checked: no spec given", spec="—",
       msg="its trace covers its 2 subgoals; its tags were not checked against a spec")
+WHERE = ["1. spec.md:5-8 §2.1 The changelog", '1. spec.md:7 "Keep a Changelog"', "2. spec.md:10-16 Form checks, first item"]
 rcase("s01b", reply(), "--spec", "spec.md", "--label", "09-next", result="clean", spec="spec.md",
-      tags="3 of 3 resolve", msg="every tag names a part of spec.md")
+      tags="3 of 3 resolve", where=WHERE, msg="every tag names a part of spec.md")
 rcase("s02", reply(secs=("Draft", "Trace", "Questions")), result="problems", nprob=1, subgoals="2",
       prob=["the reply's sections are ## Draft, ## Trace, ## Questions, not ## Draft, ## Trace, ## Left out and ## Questions in that order"],
       fix=["return the four sections, in that order, and nothing else"])
@@ -124,25 +126,38 @@ rcase("s18", reply(), crlf=True, result="clean", subgoals="2", tags="3, not chec
 
 # --- the tags, against the spec -------------------------------------------------------
 def tcase(cid, trace, spec="spec.md", **exp): rcase(cid, reply(trace=trace), "--spec", spec, spec=spec, **exp)
-tcase("t01", ['- 1. "Keep a Changelog"', "- 2. Form checks"], result="clean", tags="2 of 2 resolve")
-tcase("t02", ["- 1. “Keep a Changelog”", "- 2. Form checks"], result="clean", tags="2 of 2 resolve")
+tcase("t01", ['- 1. "Keep a Changelog"', "- 2. Form checks"], result="clean", tags="2 of 2 resolve",
+      where=['1. spec.md:7 "Keep a Changelog"', "2. spec.md:10-16 Form checks"])
+tcase("t02", ["- 1. “Keep a Changelog”", "- 2. Form checks"], result="clean", tags="2 of 2 resolve",
+      where=['1. spec.md:7 "Keep a Changelog"', "2. spec.md:10-16 Form checks"])
 tcase("t03", ["- 1. §2.1; §9.9", "- 2. §2"], result="problems", nprob=1, tags="2 of 3 resolve",
+      where=["1. spec.md:5-8 §2.1", "2. spec.md:3-8 §2"],
       prob=["{f}:{t1} has the tag `§9.9`, which " + NAMED],
       fix=["tag with a heading or § as spec.md writes it, or a phrase copied from it verbatim"])
 tcase("t04", ["- 1. Form checksum", "- 2. Form checks: the first item"], result="problems", nprob=1,
       tags="1 of 2 resolve", prob=["{f}:{t1} has the tag `Form checksum`, which " + NAMED])
 tcase("t05", ["- 1. Fenced heading", "- 2. Form checks"], result="problems", nprob=1,
       prob=["{f}:{t1} has the tag `Fenced heading`, which " + NAMED])
-tcase("t06", ['- 1. "check the draft; then the trace"', "- 2. §2.1"], result="clean", tags="2 of 2 resolve")
+tcase("t06", ['- 1. "check the draft; then the trace"', "- 2. §2.1"], result="clean", tags="2 of 2 resolve",
+      where=['1. spec.md:12 "check the draft; then the trace"', "2. spec.md:5-8 §2.1"])
 tcase("t07", ['- 1. "Keep a Changelog', "- 2. Form checks"], result="problems", nprob=1, tags="1 of 2 resolve",
       prob=['{f}:{t1} has the tag `"Keep a Changelog`, which ' + NAMED])
 tcase("t08", ["- 1. § intro", "- 2. Form checks"], result="problems", nprob=1, prob=["{f}:{t1} has the tag `§ intro`"])
-tcase("t09", TRACE, spec="spec-crlf.md", result="clean", tags="3 of 3 resolve")
+tcase("t09", TRACE, spec="spec-crlf.md", result="clean", tags="3 of 3 resolve",
+      where=[w.replace("spec.md", "spec-crlf.md") for w in WHERE])
 tcase("t10", ['- 1. "  "', "- 2. Form checks"], result="problems", nprob=1, prob=['{f}:{t1} has the tag `"  "`'])
-tcase("t11", ["- 1. Form checks;first item", "- 2. §2"], result="clean", tags="2 of 2 resolve")
-tcase("t12", ['- 1. "Keep  a Changelog"', "- 2. §2"], result="clean", tags="2 of 2 resolve")
+tcase("t11", ["- 1. Form checks;first item", "- 2. §2"], result="clean", tags="2 of 2 resolve",
+      where=["1. spec.md:10-16 Form checks;first item", "2. spec.md:3-8 §2"])
+tcase("t12", ['- 1. "Keep  a Changelog"', "- 2. §2"], result="clean", tags="2 of 2 resolve",
+      where=['1. spec.md:7 "Keep  a Changelog"', "2. spec.md:3-8 §2"])
 tcase("t13", ["- 1. 2.1 The changelog, its first line", "- 2. The changelog"], result="problems", nprob=1,
-      tags="1 of 2 resolve", prob=["{f}:{t2} has the tag `The changelog`"])
+      tags="1 of 2 resolve", where=["1. spec.md:5-8 2.1 The changelog, its first line"],
+      prob=["{f}:{t2} has the tag `The changelog`"])
+tcase("t15", ['- 1. "A spec"', '- 2. "Fenced heading"'], result="clean", tags="2 of 2 resolve",
+      where=['1. spec.md:1 "A spec"', '2. spec.md:15 "Fenced heading"'])
+rcase("t16", reply(edit(DRAFT, 3, "**Status**: active"), ["- 1. §9.9", "- 2. §2"]), "--spec", "spec.md", spec="spec.md",
+      result="problems", nprob=2, tags="1 of 2 resolve", where=["2. spec.md:3-8 §2"],
+      prob=["{f}:{d3} has `**Status**: active`", "{f}:{t1} has the tag `§9.9`, which " + NAMED])
 case("t14", {}, ["s01/reply.md", "--spec", "nope.md"], result="error", input="reply", spec="nope.md", subgoals="—",
      tags="—", nprob=1, prob=["nope.md does not exist"], fix=["pass the spec's path"])
 
@@ -281,9 +296,11 @@ def run(args, exp, shell):
     finally:
         if chmod: os.chmod(chmod, 0o644)
 
-# What the message says to do next, by result and input.
+# What the message says to do next, by result and input; a reply's problems in its tags
+# alone are questions for the user.
 NEXT = {("clean", "reply"): "The draft has subdividing.md's form", ("clean", "plan"): "The plan has subdividing.md's form",
         ("problems", "reply"): "ask plan-drafter once for a fresh reply", ("problems", "plan"): "correct the plan file, then check it again",
+        ("problems", "tags"): "in tags alone: ask the user, for each tag that names nothing in",
         ("error", "reply"): "The reply could not be checked", ("error", "plan"): "The plan could not be checked"}
 
 def grade(exp, r):
@@ -305,6 +322,8 @@ def grade(exp, r):
     if exp.get("input") == "plan": exp = {"spec": "—", "tags": "—", **exp}    # a plan file has no trace
     for k in ("result", "input", "file", "spec", "subgoals", "tags"):
         if k in exp and one(k) != exp[k]: probs.append(f"{k}: want {exp[k]!r} got {one(k)!r}")
+    if "where" in exp and allv("where") != exp["where"]: probs.append(f"where: want {exp['where']} got {allv('where')}")
+    if one("spec") == "—" and allv("where"): probs.append(f"where without a spec: {allv('where')}")
     for k, key in (("prob", "problem"), ("fix", "fix")):
         for w in exp.get(k, []):
             w = w.format_map(fm)
@@ -315,7 +334,8 @@ def grade(exp, r):
     if res == "clean" and allv("problem"): probs.append("a problem on a clean result")
     if res in ("problems", "error") and not allv("problem"): probs.append(f"{res} without a problem")
     if "msg" in exp and exp["msg"].format_map(fm) not in one("message"): probs.append(f"message lacks {exp['msg']!r}: {one('message')!r}")
-    nxt = NEXT.get((res, one("input")))
+    tags_alone = res == "problems" and one("input") == "reply" and all("which names nothing in" in p for p in allv("problem"))
+    nxt = NEXT.get((res, "tags" if tags_alone else one("input")))
     if nxt is None or nxt not in one("message"): probs.append(f"message lacks {nxt!r} for {res} on a {one('input')}: {one('message')!r}")
     for k in KEYS:
         for v in rep[k]:

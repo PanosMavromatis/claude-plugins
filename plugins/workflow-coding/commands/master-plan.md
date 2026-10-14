@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-revision.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit, Agent, AskUserQuestion
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-revision.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-draft.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit, Agent, AskUserQuestion
 argument-hint: "<label> [spec] [--dry-run <path>]"
 description: Open a revision, drafting its master plan from a specification.
 ---
@@ -59,27 +59,60 @@ if there are any.
 - **Nothing.** Ask for what the revision is for, any decisions already settled, and the
   units of work, and pass the answers on as the spec.
 
-## 3. Draft
+## 3. Draft, and check it
 
 Spawn the drafter with the `Agent` tool, `subagent_type: workflow-coding:plan-drafter`.
 Its prompt gives: the label; today's date; the file name, `_TODO.md` or `_DO.md` from
 `revision:`; the spec (the path, or the text); the root plan (`root:`, unless `layout:`
 is `none`); and the previous revision's master plan (`previous:`, unless it is `—`).
 
-It returns `## Draft`, `## Left out` and `## Questions`. Check that the draft is one
-`~~~markdown` fence holding the form `references/subdividing.md` gives: `# Revision
-<label>`, `**Status**: open`, `**Version**:`, `**Opened**:`, `**Spec**:`, then
-`## Preamble`, `## Settled decisions` and `## Subgoals`, every subgoal `- [ ] N. …` with an
-indented `Scope: … Acceptance: …` line. Anything else, ask for a fresh draft once, saying
-what was wrong, and stop if the second is wrong too.
+It returns `## Draft`, `## Trace`, `## Left out` and `## Questions`. A script checks the
+reply, so do not judge its form yourself. Write the reply to a file exactly as returned:
+a line corrected in the copy hides the drafter's mistake from the check. Use `reply.md`
+in the scratchpad directory your system prompt names, or
+`/tmp/master-plan-<label>-reply.md` if it names none; outside the repository, the file is
+never committed and needs no cleanup. If the spec is pasted text or the conversation,
+write the text you passed the drafter to `spec.md` beside it (in `/tmp`,
+`/tmp/master-plan-<label>-spec.md`), so the trace's quoted phrases can be checked
+against it. Then run:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/check-draft.sh <the reply file> --spec <the spec file> --label <label>
+```
+
+`--spec` takes the spec's path as given, or the `spec.md` just written. Read-only, it
+reports in ten `key: value` lines: `result`, `input`, `file`, `spec`, `subgoals`, `tags`,
+`where`, `problem`, `fix`, `message`; a key with several items continues on lines
+indented two spaces.
+
+- **`result: clean`.** Go on to step 4.
+- **`result: problems`, in tags alone**, as `message:` says. Go on to step 4, where each
+  tag that names nothing in the spec is a question.
+- **`result: problems`, otherwise.** Spawn the drafter once more, with the same prompt
+  and each `problem:` line with its `fix:` line. Write its reply to `reply-2.md` beside
+  the first, and check it the same way. If it still has problems other than tags, show
+  them and stop.
+- **`result: error`, or no `result:` or `message:` line.** Show the output and stop.
 
 ## 4. Review
 
-Show the three sections as returned. Then work through `## Questions` with the user, one
-at a time (`AskUserQuestion` suits a choice between options). Apply each answer, and
-every edit the user asks for — merge, split, reorder, drop — to the draft text here.
-Spawn the drafter again only if the user asks for a fresh draft. Show the whole draft
-again after a round of edits, and repeat until the user approves it.
+Show the draft, the trace and `## Left out` as returned. Then work through the questions
+with the user, one at a time (`AskUserQuestion` suits a choice between options): the
+drafter's `## Questions`, and one for each tag the check could not resolve, since a
+subgoal no part of the spec supports may be invented.
+
+Judge the draft's fidelity from the trace, not by reading the spec. Every subgoal is
+tagged, and every tag that resolved names a real part of the spec; whether that part
+supports its subgoal is the judgement left. Where a subgoal is in doubt, its scope
+reaching past what its tag names, read only that part. `where:` gives each tag's lines:
+`N. <spec>:<from>-<to>` for a § or heading's section, `N. <spec>:<line>` for the line a
+quoted phrase begins on. `Read` the spec with that `offset` and `limit`, about 20 lines
+for a phrase, and never whole. Raise what you find as a question.
+
+Apply each answer, and every edit the user asks for — merge, split, reorder, drop — to
+the draft text here. Spawn the drafter again only if the user asks for a fresh draft, and
+check its reply as step 3 does. Show the whole draft again after a round of edits, and
+repeat until the user approves it.
 
 Agree the root-plan line's note with the draft: one line, no tab, saying what the
 revision is for. The line will read `- [~] <label> — <note>`.
@@ -98,7 +131,7 @@ revision is for. The line will read `- [~] <label> — <note>`.
    and write its output, exactly, to `<path>/<root's file name>`. Suggest
    `diff <root> <path>/<root's file name>` to see the change.
 
-Then go to step 8.
+Then go to step 6.
 
 **A real run** writes on a branch. The root plan lives on `main`, where branch
 protection commonly forbids direct commits. On `main`, propose:
@@ -115,7 +148,15 @@ first. Then:
 
 ## 6. Check, before committing
 
-Both must pass, each run alone:
+Check the plan as written, alone:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/check-draft.sh --plan <the plan file> --label <label>
+```
+
+It takes `revision:`, or in a dry run `<path>/<revision's file name>`, and must report
+`result: clean`: the review's edits kept the form. A dry run checks nothing more, and
+goes to step 8. A real run must also pass these two, each run alone:
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh <TODO.md|DO.md> -- <the revision: path>
@@ -128,10 +169,22 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/propose-revision.sh <label>
 - `propose-revision.sh` must now refuse, with `problem:` saying the root plan already
   lists the label: the index reads, and it holds the new line.
 
-If either fails, relay its `problem:` and `fix:`, do not commit, and offer to correct the
-written file. Never commit a revision the commands cannot read.
+If a check fails, relay its `problem:` and `fix:`, do not commit, and offer to correct the
+written file; then run every check again. Never commit a revision the commands cannot
+read.
 
 ## 7. Commit — CONFIRM FIRST
+
+Once the user approves the commit, run the form check once more, alone, immediately
+before `git add`, whether or not an edit was mentioned:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/check-draft.sh --plan <the revision: path> --label <label>
+```
+
+The file may have been edited since step 6 outside this session, by hand or by an
+editor's formatter on save, and nothing tells the session so. If the check is not
+`clean`, relay its `problem:` and `fix:` lines and do not commit. Then:
 
 ```bash
 git add <root> <revision>
@@ -154,7 +207,7 @@ Do not push: the branch reaches `main` through `/smart-merge`.
 
 - The label, its `**Version**:` line, and how many subgoals it has.
 - What the root plan gained: created, a line appended, or converted.
-- A dry run: the two files written, and the `diff` to run.
+- A dry run: the two files written, the form check's result, and the `diff` to run.
 - A real run: the branch and commit, and that `/smart-merge` must land it before
   `/new-branch`, run from `main`, can see the revision.
 - The first `/new-branch` to run: subgoal 1's text.

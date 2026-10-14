@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -315,7 +315,7 @@
+@@ -323,7 +323,7 @@
  for rec in $TBAD; do
    typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
    case "$typ" in

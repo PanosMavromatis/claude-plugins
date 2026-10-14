@@ -1,7 +1,7 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -149,7 +149,7 @@
-       tag(NR, t)
+@@ -157,7 +157,7 @@
+       tag(NR, d + 0, t)
      }
      END { if (open) print "UF" }
 -  ' "$RF")" || die "awk failed reading $RF"

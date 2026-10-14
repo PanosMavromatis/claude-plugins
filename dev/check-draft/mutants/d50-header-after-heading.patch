@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -207,7 +207,7 @@
+@@ -215,7 +215,7 @@
      /^[ \t]*```/ { fence = !fence; next }
      fence { next }
      /^## / { if (!hd) hd = NR; h = $0; sub(/[ \t]+$/, "", h); print "DH\t" NR "\t" h; next }

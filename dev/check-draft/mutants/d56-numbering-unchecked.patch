@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -281,7 +281,7 @@
+@@ -289,7 +289,7 @@
      fi
      k=$((k + 1))
      case "$txt" in

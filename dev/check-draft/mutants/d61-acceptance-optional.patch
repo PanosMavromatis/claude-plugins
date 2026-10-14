@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -213,7 +213,7 @@
+@@ -221,7 +221,7 @@
        print "HD\t" NR "\t" k "\t" v
      }
      /^[ \t]*> \*\*(Branch|Done):\*\*/ { print "BD\t" NR }

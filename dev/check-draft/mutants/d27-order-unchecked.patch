@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -325,7 +325,7 @@
+@@ -333,7 +333,7 @@
    IFS="$NL"
    for rec in $TNS; do
      ln="${rec%%"$TAB"*}"; n="${rec#*"$TAB"}"

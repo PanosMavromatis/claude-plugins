@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -177,7 +177,7 @@
+@@ -185,7 +185,7 @@
  
    if [ -z "$FO" ]; then
      case "$NL$HEADS$NL" in

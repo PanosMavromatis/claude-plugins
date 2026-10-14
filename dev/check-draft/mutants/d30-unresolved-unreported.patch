@@ -1,11 +1,11 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -379,7 +379,7 @@
-       for (i = 1; i <= n; i++) {
+@@ -405,7 +405,7 @@
          if (L[i] == "") continue
-         t++; ln = L[i]; sub(/\t.*$/, "", ln); g = L[i]; sub(/^[^\t]*\t/, "", g)
--        if (ok(g)) r++; else print "U\t" ln "\t" g
-+        r++
+         t++; ln = L[i]; sub(/\t.*$/, "", ln); sg = L[i]; sub(/^[^\t]*\t/, "", sg)
+         g = sg; sub(/^[^\t]*\t/, "", g); sub(/\t.*$/, "", sg)
+-        if (ok(g)) { r++; print "W\t" sg "\t" at "\t" g } else print "U\t" ln "\t" g
++        if (ok(g)) { r++; print "W\t" sg "\t" at "\t" g } else r++
        }
        print "N\t" r "\t" t
      }

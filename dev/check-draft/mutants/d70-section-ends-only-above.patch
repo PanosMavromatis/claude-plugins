@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -360,7 +360,7 @@
+   out="$(TAGS="$TGS" awk '
+     function sect(j,    k, e) {
+       e = NR
+-      for (k = j + 1; k <= nh; k++) if (hv[k] <= hv[j]) { e = hl[k] - 1; break }
++      for (k = j + 1; k <= nh; k++) if (hv[k] < hv[j]) { e = hl[k] - 1; break }
+       return hl[j] "-" nb[e]
+     }
+     function ok(g,    p, j, x, k, rest, c) {

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -395,7 +395,7 @@
+     /^#+[ \t]/ {
+       h = $0; sub(/^#+[ \t]+/, "", h); sub(/[ \t]+$/, "", h)
+       if (h != "") {
+-        hs[++nh] = h; hl[nh] = NR; v = $0; sub(/[ \t].*$/, "", v); hv[nh] = length(v)
++        hs[++nh] = h; hl[nh] = NR; v = $0; sub(/[ \t].*$/, "", v); hv[nh] = 2
+         hn[nh] = match(h, /^[0-9]+(\.[0-9]+)*/) ? substr(h, 1, RLENGTH) : ""
+       }
+     }

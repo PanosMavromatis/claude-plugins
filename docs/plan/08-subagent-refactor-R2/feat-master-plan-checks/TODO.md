@@ -10,5 +10,5 @@
 
 - [x] 01 — plan-drafter returns a trace beside the draft
 - [x] 02 — A read-only script checks a draft's form
-- [ ] 03 — /master-plan runs the form check and judges fidelity from the trace
+- [x] 03 — /master-plan runs the form check and judges fidelity from the trace
 - [ ] 04 — The e2e grader checks the trace, and an m1-m3 run is clean

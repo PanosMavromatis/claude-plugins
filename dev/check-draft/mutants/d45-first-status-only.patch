@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -210,7 +210,7 @@
+@@ -218,7 +218,7 @@
      !hd && /^\*\*(Status|Version|Opened|Spec)\*\*:/ {
        k = $0; sub(/^\*\*/, "", k); sub(/\*\*:.*$/, "", k)
        v = $0; sub(/^\*\*[A-Za-z]+\*\*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v)

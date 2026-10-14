@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -168,7 +168,7 @@
+@@ -176,7 +176,7 @@
    unset IFS
  
    WANT="## Draft$NL## Trace$NL## Left out$NL## Questions"

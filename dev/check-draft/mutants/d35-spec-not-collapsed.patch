@@ -1,11 +1,11 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -374,7 +374,7 @@
-       if (match(h, /^[0-9]+(\.[0-9]+)*/)) num[substr(h, 1, RLENGTH)] = 1
+@@ -386,7 +386,7 @@
+       return 0
      }
-     END {
--      gsub(/[ \t]+/, " ", all)
-+      all = all
-       n = split(ENVIRON["TAGS"], L, "\n"); r = 0; t = 0
-       for (i = 1; i <= n; i++) {
-         if (L[i] == "") continue
+     {
+-      sub(/\r$/, ""); s = $0; gsub(/[ \t]+/, " ", s); sub(/^ /, "", s); sub(/ $/, "", s)
++      sub(/\r$/, ""); s = $0; sub(/^ /, "", s); sub(/ $/, "", s)
+       if (s != "") { cs[++nc] = length(all) + 1; cl[nc] = NR; all = all " " s; last = NR }
+       nb[NR] = last                                        # the last line, to here, not blank
+     }

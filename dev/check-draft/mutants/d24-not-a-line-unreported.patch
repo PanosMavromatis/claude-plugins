@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -316,7 +316,7 @@
+@@ -324,7 +324,7 @@
    typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
    case "$typ" in
      TE) violation "$RF:$ln has an empty tag" "tag the subgoal with the spec item it carries, or drop the empty tag" ;;

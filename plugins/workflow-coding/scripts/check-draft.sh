@@ -30,6 +30,13 @@
 #      collapsed; §N names a heading numbered N; any other tag starts with a heading's
 #      text. Headings inside fenced blocks do not count.
 #
+# With --spec, where: names the part of the spec each resolved tag points to, so that a
+# subgoal in doubt is checked by reading that window alone: `N. <spec>:<from>-<to> <tag>`
+# for a § or heading, its section up to the next heading at its level or above, less
+# trailing blank lines; `N. <spec>:<line> <tag>` for a quoted phrase, the line it begins on.
+# N is the subgoal the trace line tags. A reply whose only problems are tags that resolve
+# nowhere is a question for the user, not a fresh reply, and its message says so.
+#
 # READ-ONLY. Writes nothing and runs no git; paths are taken as given. Of the library it
 # uses die, violation, emit, need_file and SUBGOALS_AWK. Deterministic, Bash 3.2.
 #
@@ -79,19 +86,20 @@ if [ "$PLAN" -eq 1 ]; then INPUT=plan; WHAT="the plan"; else INPUT=reply; WHAT="
 
 # --- the report -----------------------------------------------------------------
 
-R_RESULT=""; R_SUBS=""; R_TAGS=""; R_WARN=""; R_PROB=""; R_FIX=""; R_MSG=""
+R_RESULT=""; R_SUBS=""; R_TAGS=""; R_WHERE=""; R_WARN=""; R_PROB=""; R_FIX=""; R_MSG=""
 VIOL=0
 
 finish() {
   emit result "$R_RESULT";   emit input "$INPUT";       emit file "$RF"
   emit spec "$SPEC";         emit subgoals "$R_SUBS";   emit tags "$R_TAGS"
-  emit problem "$R_PROB";    emit fix "$R_FIX";         emit message "$R_MSG"
+  emit where "$R_WHERE";     emit problem "$R_PROB";    emit fix "$R_FIX"
+  emit message "$R_MSG"
   if [ "$R_RESULT" = clean ]; then exit 0; fi
   exit 1
 }
 
 fail() {  # fail <rung>: the file could not be checked; the rung is the library's, unused
-  R_RESULT=error; R_SUBS=""; R_TAGS=""
+  R_RESULT=error; R_SUBS=""; R_TAGS=""; R_WHERE=""
   R_MSG="The $INPUT could not be checked; see problem and fix."
   finish
 }
@@ -105,7 +113,7 @@ if [ "$PLAN" -eq 1 ]; then readable "$RF" "the plan file as /master-plan wrote i
 else readable "$RF" "the file /master-plan wrote the drafter's reply to"; fi
 if [ -n "$SPEC" ]; then readable "$SPEC" "the spec's path, as the draft's **Spec**: names it"; fi
 
-HEADS=""; FO=""; FC=""; INFO=""; XF=""; UF=0; TNS=""; TGS=""; TBAD=""; NTAG=0
+HEADS=""; FO=""; FC=""; INFO=""; XF=""; UF=0; TNS=""; TGS=""; TBAD=""; NTAG=0; UN=0
 TRACE=0; DRAFT=0
 if [ "$PLAN" -eq 1 ]; then
   # The whole file is the draft, as if fenced: line 1 opens it, a line past its last
@@ -119,9 +127,9 @@ else
   # quotes, curly quotes read as straight ones.
 
   out="$(awk '
-    function tag(ln, s) {
+    function tag(ln, n, s) {
       sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s)
-      if (s == "") print "TE\t" ln; else print "TG\t" ln "\t" s
+      if (s == "") print "TE\t" ln; else print "TG\t" ln "\t" n "\t" s
     }
     { sub(/\r$/, "") }
     /^## / && !open && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
@@ -143,10 +151,10 @@ else
       for (i = 1; i <= m; i++) {
         c = substr(rest, i, 1)
         if (c == "\"") q = !q
-        if (!q && c == ";" && substr(rest, i + 1, 1) == " ") { tag(NR, t); t = ""; i++; continue }
+        if (!q && c == ";" && substr(rest, i + 1, 1) == " ") { tag(NR, d + 0, t); t = ""; i++; continue }
         t = t c
       }
-      tag(NR, t)
+      tag(NR, d + 0, t)
     }
     END { if (open) print "UF" }
   ' "$RF")" || die "awk failed reading $RF"
@@ -346,40 +354,58 @@ if [ "$PLAN" -eq 1 ]; then
 elif [ -z "$SPEC" ]; then
   R_TAGS="$NTAG, not checked: no spec given"
 else
+  # all is the spec on one line, whitespace collapsed, so a phrase wrapped across lines is
+  # found; cs[k] is where line cl[k] starts in it, so a match maps back to its line. A
+  # heading's section runs to the next heading at its level or above, or to the end.
   out="$(TAGS="$TGS" awk '
-    function ok(g,    p, j, rest, c) {
+    function sect(j,    k, e) {
+      e = NR
+      for (k = j + 1; k <= nh; k++) if (hv[k] <= hv[j]) { e = hl[k] - 1; break }
+      return hl[j] "-" nb[e]
+    }
+    function ok(g,    p, j, x, k, rest, c) {
       if (substr(g, 1, 1) == "\"") {
         p = substr(g, 2); j = index(p, "\""); if (!j) return 0
         p = substr(p, 1, j - 1); gsub(/[ \t]+/, " ", p); sub(/^ /, "", p); sub(/ $/, "", p)
-        return p != "" && index(all, p) != 0
+        if (p == "" || !(x = index(all, p))) return 0
+        for (k = 1; k < nc && cs[k + 1] < x; k++) ;
+        at = cl[k]; return 1
       }
       if (index(g, "§") == 1) {
         rest = substr(g, length("§") + 1)
         if (!match(rest, /^[0-9]+(\.[0-9]+)*/)) return 0
-        return (substr(rest, 1, RLENGTH) in num)
+        rest = substr(rest, 1, RLENGTH)
+        for (j = 1; j <= nh; j++) if (hn[j] == rest) { at = sect(j); return 1 }
+        return 0
       }
       for (j = 1; j <= nh; j++)
         if (index(g, hs[j]) == 1) {
           c = substr(g, length(hs[j]) + 1, 1)
-          if (c == "" || c !~ /[A-Za-z0-9]/) return 1
+          if (c == "" || c !~ /[A-Za-z0-9]/) { at = sect(j); return 1 }
         }
       return 0
     }
-    { sub(/\r$/, ""); all = all " " $0 }
+    {
+      sub(/\r$/, ""); s = $0; gsub(/[ \t]+/, " ", s); sub(/^ /, "", s); sub(/ $/, "", s)
+      if (s != "") { cs[++nc] = length(all) + 1; cl[nc] = NR; all = all " " s; last = NR }
+      nb[NR] = last                                        # the last line, to here, not blank
+    }
     /^[ \t]*(```|~~~)/ { fence = !fence; next }
     fence { next }
     /^#+[ \t]/ {
       h = $0; sub(/^#+[ \t]+/, "", h); sub(/[ \t]+$/, "", h)
-      if (h != "") hs[++nh] = h
-      if (match(h, /^[0-9]+(\.[0-9]+)*/)) num[substr(h, 1, RLENGTH)] = 1
+      if (h != "") {
+        hs[++nh] = h; hl[nh] = NR; v = $0; sub(/[ \t].*$/, "", v); hv[nh] = length(v)
+        hn[nh] = match(h, /^[0-9]+(\.[0-9]+)*/) ? substr(h, 1, RLENGTH) : ""
+      }
     }
     END {
-      gsub(/[ \t]+/, " ", all)
       n = split(ENVIRON["TAGS"], L, "\n"); r = 0; t = 0
       for (i = 1; i <= n; i++) {
         if (L[i] == "") continue
-        t++; ln = L[i]; sub(/\t.*$/, "", ln); g = L[i]; sub(/^[^\t]*\t/, "", g)
-        if (ok(g)) r++; else print "U\t" ln "\t" g
+        t++; ln = L[i]; sub(/\t.*$/, "", ln); sg = L[i]; sub(/^[^\t]*\t/, "", sg)
+        g = sg; sub(/^[^\t]*\t/, "", g); sub(/\t.*$/, "", sg)
+        if (ok(g)) { r++; print "W\t" sg "\t" at "\t" g } else print "U\t" ln "\t" g
       }
       print "N\t" r "\t" t
     }
@@ -388,8 +414,10 @@ else
   for rec in $out; do
     typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; a="${rest%%"$TAB"*}"; b="${rest#*"$TAB"}"
     case "$typ" in
-      U) violation "$RF:$a has the tag \`$b\`, which names nothing in $SPEC" \
+      U) UN=$((UN + 1))
+         violation "$RF:$a has the tag \`$b\`, which names nothing in $SPEC" \
            "tag with a heading or § as $SPEC writes it, or a phrase copied from it verbatim; a subgoal no part of the spec supports is a question, not a subgoal" ;;
+      W) R_WHERE="${R_WHERE:+$R_WHERE$NL}$a. $SPEC:${b%%"$TAB"*} ${b#*"$TAB"}" ;;
       N) R_TAGS="$a of $b resolve" ;;
     esac
   done
@@ -410,6 +438,7 @@ else
   R_RESULT=problems
   if [ "$VIOL" -eq 1 ]; then many="1 problem"; else many="$VIOL problems"; fi
   if [ "$PLAN" -eq 1 ]; then R_MSG="$many: correct the plan file, then check it again before the commit."
+  elif [ "$UN" -eq "$VIOL" ]; then R_MSG="$many in tags alone: ask the user, for each tag that names nothing in $SPEC, whether the spec supports its subgoal."
   else R_MSG="$many: ask plan-drafter once for a fresh reply, naming each."; fi
 fi
 finish

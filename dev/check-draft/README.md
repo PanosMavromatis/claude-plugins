@@ -14,8 +14,8 @@ a change to the library means running this suite with the other library suites.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite            # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/check-draft/suite.py              # 115 cases, twice under each Bash found (~10 s)
-python3 -I dev/check-draft/suite.py --mutants    # 67 mutants, every one must be caught (~2 min)
+python3 -I dev/check-draft/suite.py              # 117 cases, twice under each Bash found (~10 s)
+python3 -I dev/check-draft/suite.py --mutants    # 78 mutants, every one must be caught (~2 min)
 ```
 
 `-v` prints each report, and case ids select cases. `--script PATH` tests another copy,
@@ -30,7 +30,7 @@ absent. Only BSD userland has been tested.
   - `u10`, `u10b`: an `awk` that exits 127, first on `PATH`.
 - **The cases** come in five groups:
   - `s`: the reply's sections, its fence and its trace;
-  - `t`: the trace's tags, against the spec;
+  - `t`: the trace's tags, against the spec, and the window of the spec each points to;
   - `f`: the draft's form. Each runs on both inputs: as a reply (its id ends `r`), the draft
     in its fence with a trace that covers it, and as a plan file (`p`), the draft alone. A
     draft's line k is line k of the plan and line k + 3 of the reply;
@@ -40,7 +40,9 @@ absent. Only BSD userland has been tested.
   - key order and exit code;
   - the `problem:` and `fix:` text;
   - **one fix per problem**, since a command relays them in pairs;
-  - the message its input calls for: a fresh reply from `plan-drafter`, or a corrected
+  - the `where:` window of each resolved tag, and no `where:` without a spec;
+  - the message its input calls for: a fresh reply from `plan-drafter`, questions for the
+    user when the only problems are tags that name nothing in the spec, or a corrected
     plan file;
   - nothing on stderr beside a report, and no absolute paths;
   - that no file was changed;

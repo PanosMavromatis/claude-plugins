@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -183,7 +183,7 @@
+@@ -191,7 +191,7 @@
      violation "the draft's fence, opened at $RF:$FO, is never closed" "close it with a \`~~~\` line"
    else
      DRAFT=1

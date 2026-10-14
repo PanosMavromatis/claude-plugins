@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -236,7 +236,7 @@
+@@ -244,7 +244,7 @@
          k="${val%%"$TAB"*}"; v="${val#*"$TAB"}"
          case "$k" in
            Status)  ST=1
