@@ -11,8 +11,8 @@ R2 subgoal 4. `/master-plan` checks a draft against `subdividing.md`'s form by r
 ## Scope
 
 - `agents/plan-drafter.md` and `references/subdividing.md`: the trace, beside the draft, never in `_TODO.md`
-- a new read-only form-check script under `scripts/`, using `lib/plan-rules.sh`'s item-block rule, which also resolves each trace tag against the spec, with its suite under `dev/`
-- `commands/master-plan.md` step 3: run the script, judge fidelity from the trace
+- a new read-only form-check script, `scripts/check-draft.sh`, using `lib/plan-rules.sh`'s item-block rule: it checks the drafter's reply, resolving each trace tag against the spec, and with `--plan` the plan file as written; its suite is under `dev/check-draft/`
+- `commands/master-plan.md`: step 3 runs the script on the reply and judges fidelity from the trace; the written plan is checked with `--plan`, and again after the commit is approved, so edits made outside the session are caught
 - `dev/per-goal-e2e/check.py` for the m scenarios, and an m1–m3 run
 
 ## Context
@@ -24,3 +24,6 @@ R2 subgoal 4. `/master-plan` checks a draft against `subdividing.md`'s form by r
 - The e2e run is paid; the user runs it
 
 ## Notes
+
+- 2026-10-14, goal 02: the script also reads the written plan (`--plan`), since the review's edits, a hand edit or a formatter's save would otherwise reach the commit unchecked; tags are checked only in the reply, where the trace matches the draft as returned
+- 2026-10-14, goal 02: checking an open revision's plan after later edits is deferred to a new R2 subgoal 13, so the release moves to 14

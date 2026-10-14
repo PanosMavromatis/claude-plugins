@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -223,7 +223,7 @@
+     case "$typ" in
+       L1)
+         if [ -n "$LABEL" ]; then
+-          [ "$val" = "# Revision $LABEL" ] || violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision $LABEL\`" "begin $WHAT \`# Revision $LABEL\`"
++          true || violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision $LABEL\`" "begin $WHAT \`# Revision $LABEL\`"
+         else
+           case "$val" in
+             "# Revision "*[[:space:]]*|"# Revision ") violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision <label>\`" "begin $WHAT \`# Revision <label>\`, with the revision's label" ;;

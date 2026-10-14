@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -325,7 +325,7 @@
+   IFS="$NL"
+   for rec in $TNS; do
+     ln="${rec%%"$TAB"*}"; n="${rec#*"$TAB"}"
+-    if [ "$n" -eq "$e" ] && [ "$e" -le "$N" ]; then e=$((e + 1)); continue; fi
++    if true; then e=$((e + 1)); continue; fi
+     if [ "$N" -lt "$n" ] || [ "$n" -eq 0 ]; then
+       violation "$RF:$ln traces subgoal $n, which the draft does not have" "trace only the draft's subgoals, 1 to $N"
+     else

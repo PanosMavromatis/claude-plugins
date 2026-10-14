@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -284,7 +284,7 @@
+       "- [ ] $k. "?*) ;;
+       *) violation "$RF:$ln reads \`$txt\`, where subgoal $k should begin \`- [ ] $k. \`" "number the subgoals from 1, in order, each \`- [ ] N. <what the branch delivers>\`" ;;
+     esac
+-    if [ "$last" -eq "$ln" ]; then
++    if false; then
+       violation "subgoal $k, at $RF:$ln, has no \`Scope: … Acceptance: …\` line in its block" \
+         "put that line directly under it, indented two spaces, with no blank line between"
+     elif [ "$last" -ne $((ln + 1)) ]; then

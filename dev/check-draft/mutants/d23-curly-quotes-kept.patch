@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -138,7 +138,7 @@
+       if (!match($0, /^- [0-9]+\.([ \t]|$)/)) { print "TX\t" NR "\t" $0; next }
+       d = $0; sub(/^- /, "", d); sub(/\..*$/, "", d)
+       print "TN\t" NR "\t" (d + 0)
+-      rest = substr($0, RLENGTH + 1); gsub(/“|”/, "\"", rest)
++      rest = substr($0, RLENGTH + 1)
+       t = ""; q = 0; m = length(rest)
+       for (i = 1; i <= m; i++) {
+         c = substr(rest, i, 1)

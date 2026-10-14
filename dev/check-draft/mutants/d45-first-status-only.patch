@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -210,7 +210,7 @@
+     !hd && /^\*\*(Status|Version|Opened|Spec)\*\*:/ {
+       k = $0; sub(/^\*\*/, "", k); sub(/\*\*:.*$/, "", k)
+       v = $0; sub(/^\*\*[A-Za-z]+\*\*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v)
+-      print "HD\t" NR "\t" k "\t" v
++      if (!(k in seen)) print "HD\t" NR "\t" k "\t" v; seen[k] = 1
+     }
+     /^[ \t]*> \*\*(Branch|Done):\*\*/ { print "BD\t" NR }
+     /^[ \t]+Scope: .*Acceptance: / { print "SA\t" NR }

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -103,7 +103,7 @@
+ }
+ if [ "$PLAN" -eq 1 ]; then readable "$RF" "the plan file as /master-plan wrote it"
+ else readable "$RF" "the file /master-plan wrote the drafter's reply to"; fi
+-if [ -n "$SPEC" ]; then readable "$SPEC" "the spec's path, as the draft's **Spec**: names it"; fi
++if false; then readable "$SPEC" "the spec's path, as the draft's **Spec**: names it"; fi
+ 
+ HEADS=""; FO=""; FC=""; INFO=""; XF=""; UF=0; TNS=""; TGS=""; TBAD=""; NTAG=0
+ TRACE=0; DRAFT=0

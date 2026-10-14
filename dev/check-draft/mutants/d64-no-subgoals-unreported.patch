@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -303,7 +303,7 @@
+   N="$k"
+   if [ "$N" -eq 0 ]; then
+     case "$NL$DHS$NL" in
+-      *"$NL## Subgoals$NL"*) violation "$WHAT has no subgoals under ## Subgoals" "subdivide the spec into subgoals, each \`- [ ] N. …\` with its \`Scope: … Acceptance: …\` line" ;;
++      *"$NL## Nothing$NL"*) violation "$WHAT has no subgoals under ## Subgoals" "subdivide the spec into subgoals, each \`- [ ] N. …\` with its \`Scope: … Acceptance: …\` line" ;;
+     esac
+   fi
+ fi

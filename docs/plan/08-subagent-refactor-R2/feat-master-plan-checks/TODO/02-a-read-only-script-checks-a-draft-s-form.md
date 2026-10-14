@@ -1,8 +1,21 @@
 # 02 — A read-only script checks a draft's form
 
-**Goal**: [ ]
+**Goal**: [x]
+> **Q:** What does the script read: the drafter's whole reply in one file (A), the draft and the trace as two files (B), or the written `_TODO.md` after step 5 (C)?
+> **A:** A: the reply, verbatim, so one write serves both checks and the reply's four sections are checked too: `check-draft.sh <reply> [--spec <path>] [--label <label>]`.
+> **Q:** How strictly does a tag resolve: phrases with whitespace collapsed, `§N` to a numbered heading, any other tag to a heading's text, fenced headings skipped (A); one-line exact phrases (B); or quotes only (C)?
+> **A:** A: normalized, since spec prose wraps across lines.
+> **Q:** Checked only as the drafter returned it, the plan reaches the commit after the review's edits, a hand edit or a formatter's rewrite on save, none of them checked (a side agent's note). Should the script also read the plan file, and should that run replace the one before review?
+> **A:** Also read it, with `--plan <file>`, and keep both runs. The trace matches only the draft as returned, so tags can be checked only before review, where an unresolved one becomes a question and a form slip costs one redraft. The run before the commit catches what edits break.
+> **Q:** `--plan` checks the opening form, so once `/new-branch` and `/smart-merge` have written to a revision it would flag a healthy plan, and nothing checks later edits to it (a side agent's note). Should this branch cover an open revision's plan too?
+> **A:** No, a later subgoal: R2 gains 13, a mode for a revision in progress and something to run it, before the release, which becomes 14. Goal 02 keeps to the opening form.
+> **Done:** `check-draft.sh` checks the opening form in plan-drafter's reply, with its sections, fence and trace, and given the spec its tags, and with `--plan` in the plan file as written, each problem with its line and a fix. Its suite and 67 mutants are in `dev/check-draft/`. Goal 03 adds both runs to `/master-plan`, the second after the commit is approved.
 
-- [ ] A read-only script under `scripts/` checks a draft file's form (the header lines, the three sections in order, every subgoal a two-line `- [ ] N.` and `Scope: … Acceptance: …` block, no checkbox among the settled decisions), and reports each violation with its line, in the plan scripts' report style
-- [ ] It reads subgoal blocks with `lib/plan-rules.sh`'s item-block rule, so the check and the parsers cannot disagree
-- [ ] Given the spec's path, it resolves each trace tag, a § or heading the spec contains or a quoted phrase found in it verbatim, and reports each tag it cannot resolve; whether a real section supports the subgoal stays a judgement
-- [ ] Its suite under `dev/` passes, with a case for each rule, a blank line inside a subgoal among them, and `--mutants` catches every mutant
+- [x] A read-only script under `scripts/` checks a draft's form, in the drafter's reply and, with `--plan`, in the plan file as written (the header lines, the three sections in order, every subgoal a two-line `- [ ] N.` and `Scope: … Acceptance: …` block, no checkbox among the settled decisions), and reports each violation with its line, in the plan scripts' report style
+  > **Note:** `scripts/check-draft.sh` reads a reply, or with `--plan` a plan file. A reply's sections and fence (S1–S2) and its trace (T1–T2) are checked only in a reply; the form (F1–F6) in both. Each problem is reported with its line and one fix, and the message asks for a corrected plan file or for one fresh reply. Exits: 0 clean, 1 problems, 2 usage, 3 a tool failed. A second fence is reported once, at its opening line, and every header line before the first heading is checked, so a repeated `**Status**:` is caught.
+- [x] It reads subgoal blocks with `lib/plan-rules.sh`'s item-block rule, so the check and the parsers cannot disagree
+  > **Note:** Subgoal blocks are read with `SUBGOALS_AWK`, limited to the draft's lines, so a checkbox under the reply's `## Left out` is not counted (case s17, mutant d54). The library's first line now names the script; the six other library suites pass unchanged.
+- [x] Given the spec's path, it resolves each trace tag, a § or heading the spec contains or a quoted phrase found in it verbatim, and reports each tag it cannot resolve; whether a real section supports the subgoal stays a judgement
+  > **Note:** Whitespace is collapsed, since spec prose wraps; curly quotes are straightened; `§N` resolves only to a numbered heading, and a heading tag only at a word boundary; fenced headings are skipped; a `; ` inside quotes does not split a tag; a CRLF spec reads the same; an empty phrase never resolves, since BSD awk's `index(s, "")` returns 1. A plan file reports `tags: —`: it has no trace.
+- [x] Its suite under `dev/` passes, with a case for each rule in each input, a blank line inside a subgoal among them, and `--mutants` catches every mutant
+  > **Note:** `dev/check-draft/` has 115 cases in five groups; its 28 form cases each run as a reply and as a plan, and f16/f16b cover a blank line inside a subgoal. `--mutants` caught all 67, run from the repo on 2026-10-14. The README names the six mutants killed by a crash that is their own rule's symptom.

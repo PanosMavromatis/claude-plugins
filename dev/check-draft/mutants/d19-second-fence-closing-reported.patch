@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -131,7 +131,7 @@
+         print "FO\t" NR "\t" info; next
+       }
+       if (open && $0 ~ /^~~~[ \t]*$/) { open = 0; done = 1; print "FC\t" NR; next }
+-      if (!open) { if (!extra) print "XF\t" NR; extra = !extra; next }
++      if (!open) { print "XF\t" NR; extra = !extra; next }
+     }
+     open || extra { next }
+     sec == "## Trace" && /[^ \t]/ {

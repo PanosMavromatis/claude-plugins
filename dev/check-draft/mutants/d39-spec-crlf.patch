@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -365,7 +365,7 @@
+         }
+       return 0
+     }
+-    { sub(/\r$/, ""); all = all " " $0 }
++    { all = all " " $0 }
+     /^[ \t]*(```|~~~)/ { fence = !fence; next }
+     fence { next }
+     /^#+[ \t]/ {

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -292,7 +292,7 @@
+     else
+       case "$NL$SAS$NL" in
+         *"$NL$((ln + 1))$NL"*) ;;
+-        *) violation "$RF:$((ln + 1)) is not \`Scope: … Acceptance: …\`" "write subgoal $k's second line as \`Scope: <what it touches>. Acceptance: <the check>.\`" ;;
++        *) : "$RF:$((ln + 1)) is not \`Scope: … Acceptance: …\`" "write subgoal $k's second line as \`Scope: <what it touches>. Acceptance: <the check>.\`" ;;
+       esac
+     fi
+   done

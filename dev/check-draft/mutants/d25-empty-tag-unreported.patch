@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -315,7 +315,7 @@
+ for rec in $TBAD; do
+   typ="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; ln="${rest%%"$TAB"*}"; val="${rest#*"$TAB"}"
+   case "$typ" in
+-    TE) violation "$RF:$ln has an empty tag" "tag the subgoal with the spec item it carries, or drop the empty tag" ;;
++    TE) : "$RF:$ln has an empty tag" "tag the subgoal with the spec item it carries, or drop the empty tag" ;;
+     TX) violation "$RF:$ln is not a trace line: \`$val\`" "write each trace line as \`- N. <tag>\`, with \`; \` between tags" ;;
+   esac
+ done

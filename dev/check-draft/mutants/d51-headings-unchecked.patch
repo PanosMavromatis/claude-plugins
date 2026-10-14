@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -256,7 +256,7 @@
+     case "$k" in Status) v="$ST" ;; Version) v="$VE" ;; Opened) v="$OP" ;; Spec) v="$SP" ;; esac
+     [ -n "$v" ] || violation "$WHAT has no \`**$k**:\` line before its first ## heading" "add it to the header, in the order Status, Version, Opened, Spec"
+   done
+-  if [ "$DHS" != "## Preamble$NL## Settled decisions$NL## Subgoals" ]; then
++  if false; then
+     got="$(printf '%s' "$DHS" | awk 'BEGIN { ORS = "" } { print (NR == 1 ? "" : ", ") $0 }')" || die "awk failed listing the draft's headings"
+     violation "$WHAT's ## headings are ${got:-none}, not ## Preamble, ## Settled decisions and ## Subgoals in that order" \
+       "use subdividing.md's three sections, in that order, and no others"

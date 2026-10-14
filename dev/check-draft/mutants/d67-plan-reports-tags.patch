@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -342,7 +342,7 @@
+ # --- the tags, against the spec ---------------------------------------------------
+ 
+ if [ "$PLAN" -eq 1 ]; then
+-  R_TAGS=""                                                # a plan file has no trace
++  R_TAGS="$NTAG, not checked: no spec given"
+ elif [ -z "$SPEC" ]; then
+   R_TAGS="$NTAG, not checked: no spec given"
+ else

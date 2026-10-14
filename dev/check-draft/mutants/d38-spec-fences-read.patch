@@ -1,0 +1,10 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -367,7 +367,6 @@
+     }
+     { sub(/\r$/, ""); all = all " " $0 }
+     /^[ \t]*(```|~~~)/ { fence = !fence; next }
+-    fence { next }
+     /^#+[ \t]/ {
+       h = $0; sub(/^#+[ \t]+/, "", h); sub(/[ \t]+$/, "", h)
+       if (h != "") hs[++nh] = h

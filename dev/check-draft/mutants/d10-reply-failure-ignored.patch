@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -149,7 +149,7 @@
+       tag(NR, t)
+     }
+     END { if (open) print "UF" }
+-  ' "$RF")" || die "awk failed reading $RF"
++  ' "$RF")" || true
+ 
+   IFS="$NL"
+   for rec in $out; do

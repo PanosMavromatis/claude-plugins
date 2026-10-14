@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -110,7 +110,7 @@
+ if [ "$PLAN" -eq 1 ]; then
+   # The whole file is the draft, as if fenced: line 1 opens it, a line past its last
+   # closes it.
+-  FO=0; FC="$(awk 'END { print NR + 1 }' "$RF")" || die "awk failed counting the lines of $RF"
++  FO=0; FC="$(awk 'END { print NR + 1 }' "$RF")" || true
+   DRAFT=1
+ else
+   # --- the reply: its sections, the draft's fence, the trace's lines ------------------

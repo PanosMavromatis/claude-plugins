@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -207,7 +207,7 @@
+     /^[ \t]*```/ { fence = !fence; next }
+     fence { next }
+     /^## / { if (!hd) hd = NR; h = $0; sub(/[ \t]+$/, "", h); print "DH\t" NR "\t" h; next }
+-    !hd && /^\*\*(Status|Version|Opened|Spec)\*\*:/ {
++    /^\*\*(Status|Version|Opened|Spec)\*\*:/ {
+       k = $0; sub(/^\*\*/, "", k); sub(/\*\*:.*$/, "", k)
+       v = $0; sub(/^\*\*[A-Za-z]+\*\*:[ \t]*/, "", v); sub(/[ \t]+$/, "", v)
+       print "HD\t" NR "\t" k "\t" v

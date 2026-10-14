@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -142,7 +142,7 @@
+       t = ""; q = 0; m = length(rest)
+       for (i = 1; i <= m; i++) {
+         c = substr(rest, i, 1)
+-        if (c == "\"") q = !q
++        if (c == "\"") q = q
+         if (!q && c == ";" && substr(rest, i + 1, 1) == " ") { tag(NR, t); t = ""; i++; continue }
+         t = t c
+       }

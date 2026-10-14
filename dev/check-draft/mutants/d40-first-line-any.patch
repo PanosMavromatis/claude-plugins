@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -227,7 +227,7 @@
+         else
+           case "$val" in
+             "# Revision "*[[:space:]]*|"# Revision ") violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision <label>\`" "begin $WHAT \`# Revision <label>\`, with the revision's label" ;;
+-            "# Revision "?*) ;;
++            *) ;;
+             *) violation "$RF:$ln, $WHAT's first line, reads \`$val\`, not \`# Revision <label>\`" "begin $WHAT \`# Revision <label>\`, with the revision's label" ;;
+           esac
+         fi ;;

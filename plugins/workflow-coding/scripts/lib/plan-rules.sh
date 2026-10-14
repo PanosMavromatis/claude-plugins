@@ -1,4 +1,4 @@
-# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-plan-index.sh, close-revision.sh,
+# Plan-convention rules shared by the plan scripts: locate-plan.sh, check-draft.sh, check-plan-index.sh, close-revision.sh,
 # propose-branch-plan.sh, propose-merge-record.sh and propose-revision.sh. Sourced, never run. A rule that more than one of them
 # applies is defined here once, because copies drift: a slug computed one way by the
 # writer and another by the reader names a goal file the reader cannot find (E10).

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -124,7 +124,7 @@
+       if (s == "") print "TE\t" ln; else print "TG\t" ln "\t" s
+     }
+     { sub(/\r$/, "") }
+-    /^## / && !open && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
++    /^## / && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
+     sec == "## Draft" && /^~~~/ {
+       if (!open && !done) {
+         open = 1; info = $0; sub(/^~~~[ \t]*/, "", info); sub(/[ \t]+$/, "", info)

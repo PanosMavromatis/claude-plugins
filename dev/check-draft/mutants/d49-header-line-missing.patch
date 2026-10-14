@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -252,7 +252,7 @@
+     esac
+   done
+   unset IFS
+-  for k in Status Version Opened Spec; do
++  for k in Status Version Opened; do
+     case "$k" in Status) v="$ST" ;; Version) v="$VE" ;; Opened) v="$OP" ;; Spec) v="$SP" ;; esac
+     [ -n "$v" ] || violation "$WHAT has no \`**$k**:\` line before its first ## heading" "add it to the header, in the order Status, Version, Opened, Spec"
+   done

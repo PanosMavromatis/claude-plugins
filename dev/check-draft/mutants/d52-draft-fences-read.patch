@@ -1,0 +1,10 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -205,7 +205,6 @@
+     { sub(/\r$/, "") }
+     NR == fo + 1 { print "L1\t" NR "\t" $0 }
+     /^[ \t]*```/ { fence = !fence; next }
+-    fence { next }
+     /^## / { if (!hd) hd = NR; h = $0; sub(/[ \t]+$/, "", h); print "DH\t" NR "\t" h; next }
+     !hd && /^\*\*(Status|Version|Opened|Spec)\*\*:/ {
+       k = $0; sub(/^\*\*/, "", k); sub(/\*\*:.*$/, "", k)

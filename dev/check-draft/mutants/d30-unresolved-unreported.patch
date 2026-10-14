@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -379,7 +379,7 @@
+       for (i = 1; i <= n; i++) {
+         if (L[i] == "") continue
+         t++; ln = L[i]; sub(/\t.*$/, "", ln); g = L[i]; sub(/^[^\t]*\t/, "", g)
+-        if (ok(g)) r++; else print "U\t" ln "\t" g
++        r++
+       }
+       print "N\t" r "\t" t
+     }
