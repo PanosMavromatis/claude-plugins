@@ -1,6 +1,6 @@
 # feat/memory-check
 
-**Status**: active
+**Status**: merged — PR #28 — 2026-10-14
 **Created**: 2026-10-14
 **Revision**: 08-subagent-refactor-R2
 **Subgoal**: 6. `/memory-check` per §4.8: a read-only `scripts/memory-check.sh` reports the size of each plan file a command reads whole, against a threshold. It comes with a suite and a thin command.
