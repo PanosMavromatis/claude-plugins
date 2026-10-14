@@ -71,13 +71,16 @@ reply, so do not judge its form yourself. Write the reply to a file exactly as r
 a line corrected in the copy hides the drafter's mistake from the check. Claude Code hands
 a subagent's report back in a frame, a hand-back note before it, `agentId:` and `<usage>`
 lines after it and two spaces before every line: write the report alone, without the
-frame or its indent, so that `## Draft` starts its line. Use `reply.md`
-in the scratchpad directory your system prompt names, or
-`/tmp/master-plan-<label>-reply.md` if it names none; outside the repository, the file is
-never committed and needs no cleanup. If the spec is pasted text or the conversation,
-write the text you passed the drafter to `spec.md` beside it (in `/tmp`,
-`/tmp/master-plan-<label>-spec.md`), so the trace's quoted phrases can be checked
-against it. Then run:
+frame or its indent, so that `## Draft` starts its line. Use `reply.md` in the scratchpad
+directory your system prompt names or, if it names none,
+`/tmp/master-plan-<repository>-<label>-reply.md`, `<repository>` being the name of the
+repository's directory; outside the repository, the file is never committed and needs no
+cleanup. A file of that name may be left from an earlier run: `Read` it first, or `Write`
+refuses to replace it. If the spec is pasted text or the conversation, write the text you
+passed the drafter to `spec.md` beside it (in `/tmp`, the same name ending `-spec.md`), so
+the trace's quoted phrases can be checked against it. Once each `Write` has succeeded, run
+the check on its own, never beside a `Write`, since a check sent with a `Write` that fails
+reads whatever file was there before:
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/scripts/check-draft.sh <the reply file> --spec <the spec file> --label <label>
@@ -105,7 +108,8 @@ indented two spaces.
 Show the draft, the trace and `## Left out` as returned. Then work through the questions
 with the user, one at a time (`AskUserQuestion` suits a choice between options): the
 drafter's `## Questions`, and one for each tag the check could not resolve, since a
-subgoal no part of the spec supports may be invented.
+subgoal no part of the spec supports may be invented. Ask it as it stands: the check has
+already looked for the tag in the spec, so do not search the spec for it yourself.
 
 Judge the draft's fidelity from the trace, not by reading the spec. Every subgoal is
 tagged, and every tag that resolved names a real part of the spec; whether that part

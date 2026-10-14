@@ -378,6 +378,24 @@ def drafter(sid, calls, label, previous):
     for i in rs: print(f"      {sid}: read the spec from line {i.get('offset', 1)}, {i.get('limit', 'every')} lines")
     check(f"{sid}: the session left the spec to the drafter, reading a window of it at most", all(i.get("limit") for i in rs),
           f"{len(rs)} reads, {sum(not i.get('limit') for i in rs)} of them whole")
+    # An unresolved tag has no window: it is the user's question, not a search (r13's m1, m2).
+    srch = [c for c in bash(calls) if f"docs/spec/{label}.md" in c and re.match(r"\s*(grep|rg|find|awk|sed|cat|head|tail)\b", c)]
+    check(f"{sid}: no shell read or search of the spec", not srch, "; ".join(c[:120] for c in srch[:3]))
+
+def failed(sid):
+    """The session's own tool calls whose result was an error, by their index in session()'s
+    list. A Write that failed wrote nothing (r13's m3: a file left by m2, not read first)."""
+    ids, bad = [], set()
+    for line in open(f"{OUT}/{sid}.jsonl"):
+        try: d = json.loads(line)
+        except ValueError: continue
+        if d.get("parent_tool_use_id"): continue
+        content = (d.get("message") or {}).get("content")
+        for c in content if isinstance(content, list) else []:
+            if not isinstance(c, dict): continue
+            if d.get("type") == "assistant" and c.get("type") == "tool_use": ids.append(c.get("id"))
+            elif c.get("type") == "tool_result" and c.get("is_error"): bad.add(c.get("tool_use_id"))
+    return {k for k, u in enumerate(ids) if u in bad}
 
 # /master-plan writes plan-drafter's reply to reply.md (a fresh one to reply-2.md) and checks it.
 REPLY = re.compile(r"(^|[/-])reply(-2)?\.md$")
@@ -403,11 +421,13 @@ def replies(sid):
 def copied(sid, calls, reps):
     """Each reply file holds plan-drafter's reply line for line: a copy that drops a mistake
     hides it from the check, and one that adds a mistake, or keeps the frame, blames the drafter
-    for it. A file written more than once is compared as last written, and a rewrite reported."""
-    paths, last = [], {}
-    for n, inp in calls:
+    for it. A file written more than once is compared as last written, and a rewrite reported;
+    a Write that failed wrote nothing, and is reported, not counted."""
+    paths, last, bad = [], {}, failed(sid)
+    for k, (n, inp) in enumerate(calls):
         p = inp.get("file_path", "")
         if n in ("Write", "Edit", "MultiEdit") and REPLY.search(p):
+            if k in bad: print(f"      {sid}: a {n} of {p} failed (call {k})"); continue
             if p not in last: paths.append(p)
             last.setdefault(p, []).append((n, inp))
     check(f"{sid}: a reply file for each of plan-drafter's {len(reps)} replies", bool(reps) and len(paths) == len(reps), f"reply files {paths}")
@@ -473,11 +493,22 @@ def checked(sid, calls, plan, writes, add):
     cd = at(calls, ran("check-draft.sh"))
     rp = [i for i in cd if "--plan" not in calls[i][1]["command"]]
     pp = [i for i in cd if "--plan" in calls[i][1]["command"] and plan in calls[i][1]["command"]]
-    rw = at(calls, lambda n, i: n in ("Write", "Edit", "MultiEdit") and bool(REPLY.search(i.get("file_path", ""))))
+    bad = failed(sid)
+    tried = at(calls, lambda n, i: n in ("Write", "Edit", "MultiEdit") and bool(REPLY.search(i.get("file_path", ""))))
+    rw = [j for j in tried if j not in bad]
     first, last = (min(writes), max(writes)) if writes else (None, None)
     check(f"{sid}: check-draft.sh ran on the reply file with --spec, after writing it and before writing the plan",
           bool(rp) and bool(rw) and rw[0] < rp[0] and first is not None and rp[0] < first and all("--spec" in calls[i][1]["command"] for i in rp),
           f"reply writes {rw[:2]}, reply checks {rp[:3]}, first plan write {first}")
+    # Each check reads the reply just written: the last write before it succeeded, and came
+    # after the drafter's last reply. A check beside a failed Write reads an older file.
+    ag = at(calls, lambda n, i: n in ("Agent", "Task"))
+    stale = []
+    for i in rp:
+        w = [j for j in tried if j < i]; a = [j for j in ag if j < i]
+        if not w or w[-1] in bad or (a and w[-1] < a[-1]): stale.append(i)
+    check(f"{sid}: each check of a reply file came after that reply's Write succeeded", bool(rp) and not stale,
+          f"the checks at calls {stale} follow a failed Write, or none since the drafter's last reply")
     after = [i for i in pp if last is not None and last < i and (add is None or i < add)]
     need = 1 if add is None else 2
     check(f"{sid}: check-draft.sh --plan ran on {plan} after its last write" + (", and again before git add" if add is not None else ""),

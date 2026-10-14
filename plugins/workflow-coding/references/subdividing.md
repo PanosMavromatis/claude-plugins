@@ -92,8 +92,10 @@ or items it carries, so the review can judge fidelity without re-reading the spe
 - One line per subgoal, in the draft's order: `- N. <tag>`, with `; ` between tags when
   the subgoal carries several items.
 - A tag names the item in the spec's own terms, so a check can find it in the spec: a §
-  or heading as the spec writes it, plus the item, for a document (`§4.5 item 2`), or a
-  quoted phrase copied verbatim, one line at most, for pasted text or the conversation.
+  or heading as the spec writes it, plus the item, for an item under a heading of its own
+  (`§4.5 item 2`); otherwise a quoted phrase copied verbatim from the item, one line at
+  most, as for pasted text or the conversation. A line that only introduces a list, such
+  as "The work, in order:", is not a heading: quote the item instead.
 - Every subgoal has a tag. A subgoal no spec item supports is invented, and is a question
   instead ("Nothing is invented", above).
 - The trace and the left-out list are counterparts: one says where each subgoal came

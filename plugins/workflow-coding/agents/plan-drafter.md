@@ -42,9 +42,10 @@ Return these four sections, in this order, and nothing else:
 1. `## Draft`: the whole plan file in one `~~~markdown` fence, in the form
    `subdividing.md` gives.
 2. `## Trace`: one `- N. <tag>` line per subgoal, in order, with `; ` between several
-   tags: a § or heading as the spec writes it, plus the item, for a document, or a quoted
-   phrase copied verbatim for pasted text or the conversation. `subdividing.md`'s "The
-   trace" gives the rules.
+   tags: a § or heading as the spec writes it, plus the item, for an item under a heading
+   of its own, and otherwise, in a document as in pasted text or the conversation, a
+   quoted phrase copied verbatim from the item. `subdividing.md`'s "The trace" gives the
+   rules.
 3. `## Left out`: one bullet per part of the spec the draft does not carry, saying where
    it is (heading or line) and why: deferred, already done, out of scope, or not plan
    material. Write `none` if nothing was left out.
