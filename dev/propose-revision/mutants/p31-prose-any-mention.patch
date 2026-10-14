@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -287,7 +287,7 @@
+     # time, since a sentence may wrap between the command and its verb, and warn: only the
+     # user can reword free text.
+     out="$(awk '
+-      function flush() { if (cmd && verb) print cmd; cmd = verb = 0 }
++      function flush() { if (cmd) print cmd; cmd = verb = 0 }
+       { sub(/\r$/, ""); low = tolower(" " $0) }
+       /^[ \t]*```/ { flush(); fence = !fence; next }
+       fence { next }

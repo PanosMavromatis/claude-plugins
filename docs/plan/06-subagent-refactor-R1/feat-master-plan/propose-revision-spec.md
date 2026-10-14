@@ -73,6 +73,14 @@ first, or convert by hand"). Otherwise `change: convert`, rendered as the root p
 4. the new line after the last revision line;
 5. every other line unchanged.
 
+Prose a legacy close left, carried over by 5, may describe that close. A paragraph outside
+fenced blocks, a run of non-blank lines, that names `/close-revision` and a word starting
+`extract` or `move`, in any case and at a word's start, warns once, naming its first line
+that names `/close-revision`: `<root>:<n> describes the legacy close, which extracts or
+moves a revision; under a revisions index /close-revision only stamps, so reword it once
+converted`. It is checked only once nothing refuses, and it warns rather than rewrites:
+only the user can reword free text.
+
 Matching is whole-label and literal throughout (`ENVIRON`, never `-v`), and a trailing CR
 is dropped on read. Rendered output is LF. The label refusals read fenced lines too, as
 `open-revision.sh` did: refusing a label an example mentions errs safe. The open-section

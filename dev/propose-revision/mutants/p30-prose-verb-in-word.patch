@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -293,7 +293,7 @@
+       fence { next }
+       /^[ \t]*$/ { flush(); next }
+       !cmd && index($0, "/close-revision") { cmd = NR }
+-      low ~ /[^a-z](extract|move)/ { verb = 1 }
++      low ~ /(extract|move)/ { verb = 1 }
+       END { flush() }
+     ' "$ROOT_PLAN")" || die "awk failed reading the prose of $ROOT_PLAN"
+     for n in $out; do

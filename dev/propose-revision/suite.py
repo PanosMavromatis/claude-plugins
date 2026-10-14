@@ -118,6 +118,28 @@ CL = {"docs/plan/TODO.md": CLOSED_LEGACY, "docs/plan/03-b/_TODO.md": "# Revision
       "docs/plan/04-c/_TODO.md": "# Revision 04-c\n"}
 CL_NOPREV = {"docs/plan/TODO.md": CLOSED_LEGACY, "docs/plan/03-b/_TODO.md": "# Revision 03-b\n"}
 
+# Prose a legacy close left is carried over, and warns a paragraph at a time: a sentence
+# still true, one wrapped across lines, a fenced copy, and a pointer.
+PROSE = """# Master plan
+
+**Status**: active
+
+Run `/close-revision` once a revision is finished; it removes nothing.
+
+A finished revision is closed
+by `/close-revision`, which then
+moves it into `docs/plan/<label>/`.
+
+```markdown
+`/close-revision` moves a revision.
+```
+
+## Closed revisions
+
+- **Revision 01-a** — closed. See `docs/plan/01-a/_TODO.md`.
+"""
+def legacy_prose(n): return f"docs/plan/TODO.md:{n} describes the legacy close, which extracts or moves a revision; under a revisions index /close-revision only stamps, so reword it once converted"
+
 NOSTATUS = "# Master plan\n\nProse.\n\n## Closed revisions\n\n- **Revision 01-a** — closed.\n"
 NOSTATUS_AFTER = "# Master plan\n\n**Layout**: revisions\n\nProse.\n\n## Revisions\n\n- [x] 01-a — closed.\n- [~] 02-b — next\n"
 LAYOUT_LEGACY = "# Master plan\n\n**Status**: active\n**Layout**: legacy\n\n## Closed revisions\n\n- **Revision 01-a**\n"
@@ -218,7 +240,7 @@ C = [
  ("l13", crlf(OL), ["06-here"], dict(exit=1, rep=rep(result="refused", problem="docs/plan/TODO.md:20 lists revision 06-here as closed"), any=["layout", "root", "revision", "fix"])),
  # legacy, nothing open: the conversion
  ("c01", CL, ["05-new"], dict(exit=0, rep=rep(result="proposed", layout="legacy", root="docs/plan/TODO.md",
-     revision="docs/plan/05-new/_TODO.md", previous="docs/plan/04-c/_TODO.md", change="convert"))),
+     revision="docs/plan/05-new/_TODO.md", previous="docs/plan/04-c/_TODO.md", change="convert", warnings=legacy_prose(14)))),
  ("c02", CL, ["05-new", "--render", "the next one"], dict(exit=0, out=CLOSED_LEGACY_AFTER)),
  ("c03", {"docs/plan/TODO.md": NOSTATUS}, ["02-b", "--render", "next"], dict(exit=0, out=NOSTATUS_AFTER)),
  ("c04", {"docs/plan/TODO.md": LAYOUT_LEGACY}, ["02-b", "--render", "next"], dict(exit=0, out=LAYOUT_LEGACY_AFTER)),
@@ -232,13 +254,18 @@ C = [
  ("c09", {"docs/plan/TODO.md": BADPTR_SPACE}, ["02-b"], dict(exit=1, rep=rep(result="error",
      problem="docs/plan/TODO.md:5 is a closed pointer that would not convert"), prefix=["problem"], any=["layout", "root", "revision", "fix"])),
  ("c10", crlf(CL), ["05-new", "--render", "the next one"], dict(exit=0, out=CLOSED_LEGACY_AFTER)),
- ("c11", CL_NOPREV, ["05-new"], dict(exit=0, rep=rep(result="proposed", previous="—", change="convert"), any=["layout", "root", "revision"])),
+ ("c11", CL_NOPREV, ["05-new"], dict(exit=0, rep=rep(result="proposed", previous="—", change="convert", warnings=legacy_prose(14)), any=["layout", "root", "revision"])),
  # The refusals read fenced lines too, as open-revision.sh did: refusing a label an example
  # mentions errs safe. The open-section check and the conversion skip fences, and must.
  ("c12", CL, ["98-fenced"], dict(exit=1, rep=rep(result="refused", problem="docs/plan/TODO.md:9 lists revision 98-fenced as closed"), any=["layout", "root", "revision", "fix"])),
  ("c14", CL, ["99-example"], dict(exit=1, rep=rep(result="refused", problem="docs/plan/TODO.md:8 already has a section for revision 99-example"), any=["layout", "root", "revision", "fix"])),
  ("c13", CL, ["03-b"], dict(exit=1, rep=rep(result="refused", problem="docs/plan/TODO.md:17 lists revision 03-b as closed"), any=["layout", "root", "revision", "fix"])),
  ("c15", {"docs/plan/TODO.md": LATER}, ["02-b", "--render", "next"], dict(exit=0, out=LATER_AFTER)),
+ # prose a legacy close left: warned on a paragraph at a time, outside fences, and carried over
+ ("c16", {"docs/plan/TODO.md": PROSE}, ["02-b"], dict(exit=0, rep=rep(result="proposed", layout="legacy", root="docs/plan/TODO.md",
+     revision="docs/plan/02-b/_TODO.md", change="convert", warnings=legacy_prose(8)))),
+ ("c17", crlf({"docs/plan/TODO.md": PROSE}), ["02-b"], dict(exit=0, rep=rep(result="proposed", change="convert",
+     warnings=legacy_prose(8)), any=["layout", "root", "revision"])),
  # a revisions index
  ("r01", IX, ["08-new"], dict(exit=0, rep=rep(result="proposed", layout="revisions", root="docs/plan/TODO.md",
      revision="docs/plan/08-new/_TODO.md", previous="docs/plan/07-rev-2/_TODO.md", change="append", open="07-rev-2",

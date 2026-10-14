@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -288,7 +288,7 @@
+     # user can reword free text.
+     out="$(awk '
+       function flush() { if (cmd && verb) print cmd; cmd = verb = 0 }
+-      { sub(/\r$/, ""); low = tolower(" " $0) }
++      { sub(/\r$/, ""); low = " " $0 }
+       /^[ \t]*```/ { flush(); fence = !fence; next }
+       fence { next }
+       /^[ \t]*$/ { flush(); next }

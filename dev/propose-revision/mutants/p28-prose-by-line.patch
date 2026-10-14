@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -291,7 +291,7 @@
+       { sub(/\r$/, ""); low = tolower(" " $0) }
+       /^[ \t]*```/ { flush(); fence = !fence; next }
+       fence { next }
+-      /^[ \t]*$/ { flush(); next }
++      { flush() }
+       !cmd && index($0, "/close-revision") { cmd = NR }
+       low ~ /[^a-z](extract|move)/ { verb = 1 }
+       END { flush() }
