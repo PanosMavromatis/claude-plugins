@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -227,7 +227,7 @@
+     n++; tb += $1
+     if ($4 == "whole") {
+       nw++; wb += $1
+-      if (th < t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
++      if (th <= t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
+     }
+     if ($5 != "") { if (!($5 in bn)) { o[++nb] = $5; bl[$5] = $6 } bn[$5]++; bb[$5] += $1 }
+   }

@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -179,7 +179,7 @@
+   # reports sizes, and locate-plan.sh and check-plan-index.sh report the header.
+   sp="$R_PROB"; sf="$R_FIX"; sv="$VIOL"
+   if ! check_layout "$p" ""; then
+-    R_PROB="$sp"; R_FIX="$sf"; VIOL="$sv"; LAYOUT_V=single-file
++    LAYOUT_V=single-file
+     warn "$p has a **Layout** header that is not valid there, so it was measured as one file; check-plan-index.sh says why"
+   fi
+   add whole "$b" "$LAYOUT_V" "$p"

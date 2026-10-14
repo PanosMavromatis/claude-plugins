@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -225,7 +225,7 @@
+     t = int($1 * 3 / 7)
+     print "F\t" $7 " — " $1 " bytes, " $2 " words, " $3 " lines, ≈" t " tokens, " $4
+     n++; tb += $1
+-    if ($4 == "whole") {
++    if ($4 != "") {
+       nw++; wb += $1
+       if (th < t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
+     }

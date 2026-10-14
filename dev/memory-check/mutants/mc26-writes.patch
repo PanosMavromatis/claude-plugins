@@ -1,0 +1,10 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -114,6 +114,7 @@
+   die "git rev-parse --show-toplevel failed with status $st" "$st"
+ fi
+ cd "$ROOT" || die "cannot enter the repository root $ROOT"
++touch .memory-check-ran
+ 
+ scan_dirs
+ master_files ""

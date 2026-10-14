@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -135,7 +135,7 @@
+     violation "$DIR/ does not exist" "pass the label of a revision whose directory is under $PD/, open or closed"
+     fail ""
+   fi
+-  R_REV="$LABEL"
++  R_REV="$LABEL"; WITH_ROOT=1
+ elif [ "$MLAYOUT" = none ]; then
+   R_RESULT=none
+   R_MSG="There is no root plan, $ROOT_PLAN, so no revision is open; pass a label to measure one."

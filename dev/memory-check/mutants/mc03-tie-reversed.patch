@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -212,7 +212,7 @@
+ done
+ unset IFS
+ if [ -n "$ROWS" ]; then
+-  ROWS="$(printf '%s\n' "$ROWS" | sort -t "$TAB" -k1,1nr -k7,7)" || die "sort failed"
++  ROWS="$(printf '%s\n' "$ROWS" | sort -t "$TAB" -k1,1nr -k7,7r)" || die "sort failed"
+ fi
+ 
+ # Largest first; branches by their bytes, then name. Records: F a file, B a branch, T the

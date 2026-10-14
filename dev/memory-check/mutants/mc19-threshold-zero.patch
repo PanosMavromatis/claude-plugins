@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -78,7 +78,7 @@
+   ''|*[!0-9]*) usage "the threshold must be a whole number of tokens, got '$THRESHOLD'" ;;
+ esac
+ THRESHOLD=$((10#$THRESHOLD))   # base 10: a leading zero must not read as octal
+-[ "$THRESHOLD" -ge 1 ] || usage "the threshold must be at least 1 token"
++[ "$THRESHOLD" -ge 0 ] || usage "the threshold must be at least 1 token"
+ ROOT_PLAN="$PD/$MODEL"
+ 
+ # --- the report -----------------------------------------------------------------
