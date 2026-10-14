@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -85,7 +85,7 @@
+     if not guide_path.exists():
+         sys.exit(0)
+ 
+-    rel_path = f"{component}/{PROTECTED}" if component else PROTECTED
++    rel_path = PROTECTED
+     rel_guide = guide_path.relative_to(project_root).as_posix()
+     print(
+         f"Blocked: {rel_path} is generated from {rel_guide} and must not be edited directly.\n"

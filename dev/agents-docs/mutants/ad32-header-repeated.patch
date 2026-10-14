@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -81,7 +81,7 @@
+   committed="${ROOT}/${rel}"
+ 
+   if [ ! -f "$committed" ]; then
+-    if [ "$problems" -eq 0 ]; then
++    if true; then
+       echo "Agent docs are out of sync with docs/agents/ sources." >&2
+       echo >&2
+     fi

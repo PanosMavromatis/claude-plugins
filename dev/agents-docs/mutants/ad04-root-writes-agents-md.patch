@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -60,7 +60,7 @@
+   rel="${src#"$SRC_DIR"/}"                    # codex-review/AGENTS.md, or <path>/codex-review/AGENTS.md
+   comp="${rel%"$GUIDE"}"; comp="${comp%/}"    # empty for the root, else <path>
+   if [ -z "$comp" ]; then
+-    dst="${DST_DIR}/AGENTS.override.md"
++    dst="${DST_DIR}/AGENTS.md"
+   else
+     dst="${DST_DIR}/${comp}/AGENTS.override.md"
+   fi

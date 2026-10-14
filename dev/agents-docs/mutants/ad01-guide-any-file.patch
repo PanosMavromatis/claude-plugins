@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -38,7 +38,7 @@
+   exit 1
+ fi
+ 
+-guides="$(find "$SRC_DIR" -type f -path "*/${GUIDE}" | sort)"
++guides="$(find "$SRC_DIR" -type f -path "*/codex-review/*" | sort)"
+ old="$(find "$SRC_DIR" -type f \( -name core.md -o -name codex.md \) | sort)"
+ 
+ if [ -z "$guides" ]; then

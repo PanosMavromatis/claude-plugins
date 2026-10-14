@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -48,7 +48,7 @@
+   p="${ROOT}/${f}"
+   [ -f "$p" ] || continue
+   n="$(awk 'END { print NR }' "$p")"
+-  if [ "$n" -gt "$MAX_LINES" ]; then
++  if [ "$n" -ge "$MAX_LINES" ]; then
+     warn "${f}: ${n} lines, over ${MAX_LINES}; every agent loads it at session start"
+   fi
+   dated="$(awk '/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ { k++; if (k <= 5) s = s (s == "" ? "" : ", ") NR }

@@ -1,0 +1,10 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -65,6 +65,7 @@
+   fi
+ done
+ unset IFS
++[ "$warnings" -eq 0 ] || exit 1
+ 
+ # --- the in-sync check, on the generated pair ---------------------------------------
+ 

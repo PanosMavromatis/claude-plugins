@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -52,7 +52,7 @@
+ fi
+ 
+ IFS="$NL"
+-for f in $old; do
++for f in ; do
+   echo "warning: ${f#"$ROOT"/} is a dispatcher-layout source this build ignores" >&2
+ done
+ 

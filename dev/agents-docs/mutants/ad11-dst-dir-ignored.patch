@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -27,7 +27,7 @@
+ 
+ ROOT="$(git rev-parse --show-toplevel)"
+ SRC_DIR="${ROOT}/docs/agents"
+-DST_DIR="${DST_DIR:-${ROOT}}"
++DST_DIR="${ROOT}"
+ GUIDE="codex-review/AGENTS.md"
+ NL='
+ '

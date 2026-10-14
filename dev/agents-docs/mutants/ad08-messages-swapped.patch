@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -42,7 +42,7 @@
+ old="$(find "$SRC_DIR" -type f \( -name core.md -o -name codex.md \) | sort)"
+ 
+ if [ -z "$guides" ]; then
+-  if [ -n "$old" ]; then
++  if [ -z "$old" ]; then
+     echo "error: docs/agents/ is in the dispatcher layout (core.md, codex.md), which this build no longer reads" >&2
+     echo "Move each codex.md to codex-review/AGENTS.md in the same directory, or run /agents-docs-migrate" >&2
+   else

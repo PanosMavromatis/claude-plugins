@@ -1,0 +1,10 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -91,7 +91,6 @@
+         f"Blocked: {rel_path} is generated from {rel_guide} and must not be edited directly.\n"
+         f"Edit {rel_guide}, then run /agents-docs-build.\n"
+         "/agents-docs-check will flag drift if this file is out of sync.",
+-        file=sys.stderr,
+     )
+     sys.exit(2)
+ 

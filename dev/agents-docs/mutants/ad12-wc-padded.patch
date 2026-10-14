@@ -1,0 +1,9 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -71,5 +71,5 @@
+     echo
+     cat "$src"
+   } > "$dst"
+-  echo "wrote ${dst} ($(wc -l < "$dst" | tr -d ' ') lines)"
++  echo "wrote ${dst} ($(wc -l < "$dst") lines)"
+ done

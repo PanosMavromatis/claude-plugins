@@ -1,0 +1,11 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -48,7 +48,7 @@
+   else
+     echo "error: no ${GUIDE} under ${SRC_DIR}" >&2
+   fi
+-  exit 1
++  exit 0
+ fi
+ 
+ IFS="$NL"
