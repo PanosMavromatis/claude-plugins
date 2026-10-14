@@ -1,6 +1,6 @@
 # fix/command-grants
 
-**Status**: active
+**Status**: merged — PR #27 — 2026-10-14
 **Created**: 2026-10-14
 **Revision**: 08-subagent-refactor-R2
 **Subgoal**: 5. The plan commands' grants match what their sessions do. The branch measures how long an `allowed-tools` grant lasts, revises the plugin's "additive yes, destructive no" convention by the result, and removes or replaces the grants the R1 → R1a handoff lists.
