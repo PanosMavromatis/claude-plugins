@@ -11,4 +11,4 @@
 - [x] 01 — Measure how long an allowed-tools grant lasts
 - [x] 02 — Revise the Scoped allowed-tools convention by the measurement
 - [x] 03 — Remove or replace the grants the handoff lists
-- [ ] 04 — An e2e run of e1, e3 and e4 has no permission denial
+- [~] 04 — An e2e run of e1, e3 and e4 has no permission denial

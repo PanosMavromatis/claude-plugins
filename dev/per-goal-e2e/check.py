@@ -48,20 +48,16 @@ def session(sid):
 def bash(calls): return [c[1].get("command", "") for c in calls if c[0] == "Bash"]
 def edits(calls): return [(c[0], c[1].get("file_path", ""), c[1]) for c in calls if c[0] in ("Edit", "Write", "MultiEdit")]
 
-def common(sid, gates=()):
-    """Every session: it ran, it ran the copy, nothing was denied but a documented gate (a
-    command matching one of `gates`, reported, not failed); Grep, Glob and shell searches
-    are reported, since a session may lack Grep and Glob. No session reads or searches the
-    plugin copy's directory from the shell, and one that commits `Read`s `smart-commit.md`
-    first, as the five pointers to it say."""
+def common(sid):
+    """Every session: it ran, it ran the copy, and nothing was denied. Grep, Glob and shell
+    searches are reported, since a session may lack Grep and Glob. No session reads or
+    searches the plugin copy's directory from the shell, and one that commits `Read`s
+    `smart-commit.md` first, as the five pointers to it say."""
     calls, res = session(sid)
     if res is None: check(f"{sid}: session ran", False, f"no result in {OUT}/{sid}.jsonl"); return []
     check(f"{sid}: session ended without error", not res.get("is_error"), str(res.get("result", ""))[:200])
     den = res.get("permission_denials") or []
-    gated = [d for d in den if any(re.match(g, (d.get("tool_input") or {}).get("command", "")) for g in gates)]
-    den = [d for d in den if d not in gated]
-    for d in gated: print(f"      {sid}: a documented gate held: {(d.get('tool_input') or {}).get('command', '')[:120]}")
-    check(f"{sid}: no permission denials" + (" beyond its documented gates" if gates else ""), not den,
+    check(f"{sid}: no permission denials", not den,
           "; ".join(f"{d.get('tool_name')} {json.dumps(d.get('tool_input'))[:120]}" for d in den))
     cmds = bash(calls)
     plug = [c for c in cmds if "/scripts/" in c and ".sh" in c]
@@ -240,9 +236,7 @@ def merged(scen, repo, branch, idx, master, item, after):
     any mcp__ call fails the session, since one could reach a real repository."""
     sid = f"{scen}-merge"; rm = repo + "m"
     print(f"\n== {sid}: /smart-merge on the branch {scen} left, fake gh, no MCP  ({E}/{rm})")
-    # /smart-merge leaves the rm of the gh fallback's body file to the harness prompt, and a
-    # session cannot be granted it (measured, run r4: denied despite --allowedTools).
-    calls = common(sid, gates=(r"^rm /tmp/pr-body-[^/ ]+\.md$",))
+    calls = common(sid)
     if calls:
         cmds = bash(calls)
         alone(sid, cmds)

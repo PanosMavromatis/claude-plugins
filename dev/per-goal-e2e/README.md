@@ -73,8 +73,8 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
     `check.py` fails a session that lists any MCP server at init or calls one.
   - Two operations `/smart-merge` deliberately leaves to the harness prompt, `git rm` and
     `gh pr merge`, are allowed for these sessions only, so "no permission denials" still
-    means something. The third, the `rm` of the body file, is denied even when allowed
-    (run `r4`), so `check.py` reports that one denial as the gate it is.
+    means something. The `gh` fallback writes its PR body to `/tmp`, since a headless
+    session has no scratchpad, and `--add-dir /tmp` lets it; it never deletes the file.
 
   `check.py` checks that every command ran alone, that steps 2 and 7 ran their scripts,
   that no MCP server was loaded or called, that the index is stamped

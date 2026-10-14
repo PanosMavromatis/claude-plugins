@@ -70,8 +70,9 @@ for s in "${SESSIONS[@]}"; do
         : > "$OUT/$id.gh"
         # --strict-mcp-config should load no server at all, which check.py measures; the
         # GitHub server's tools are denied as well, so a server that loads anyway is inert.
+        # A headless session has no scratchpad, so the gh fallback's body file goes to /tmp.
         extra=(--strict-mcp-config --disallowedTools mcp__plugin_github_github --add-dir /tmp
-               --allowedTools "Bash(git rm:*)" "Bash(gh pr merge:*)" "Bash(rm /tmp/pr-body-:*)") ;;
+               --allowedTools "Bash(git rm:*)" "Bash(gh pr merge:*)") ;;
     c2) # /close-revision leaves git mv off its allowed-tools, so each move asks: the
         # documented second gate on a printed move, opened here for this session only.
         extra=(--allowedTools "Bash(git mv:*)") ;;
