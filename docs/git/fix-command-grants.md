@@ -26,3 +26,4 @@ R2 subgoal 5. The plan commands' `allowed-tools` grant tools their sessions neve
 ## Notes
 
 - 2026-10-14, goal 01: a command's `allowed-tools` grant lasts one turn, clearing with the user's next message, measured with `dev/grant-lifetime/` headless (run2) and interactively; so a write made after the user replies to a CONFIRM FIRST step runs under the user's own settings, not the command's grant. Recorded in the plugin's `CLAUDE.md` beside the convention, with the `:*` trap
+- 2026-10-14, goal 02: the convention now scopes a grant to what a command does before it waits for the user: additive grants stay for one-turn runs, destructive verbs stay off since they prompt in any turn, a write confirmed in a later turn is gated by the CONFIRM FIRST prose and the user's own settings, and a grant the command never runs is removed. No command was rewritten; confirming through `AskUserQuestion`, which would keep the grant, was weighed and left aside
