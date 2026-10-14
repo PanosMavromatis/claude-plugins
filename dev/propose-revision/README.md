@@ -13,7 +13,9 @@ The suite tests every layout the root plan can be in:
   listed under any marker, or whose directory exists, is refused;
 - **legacy, with a revision still open**: refused, naming the open section;
 - **legacy, with nothing open**: converted, byte for byte, including a CRLF plan, a missing
-  `**Status**:` line, an existing `**Layout**:` line, and a missing `## Closed revisions`.
+  `**Status**:` line, an existing `**Layout**:` line, and a missing `## Closed revisions`;
+  prose saying `/close-revision` extracts or moves a revision is carried over and warned
+  on, a paragraph at a time and outside fences (`c16`, `c17`).
 
 Labels are compared **whole**: `07-rev-2` does not refuse `07-rev`. The cases `l01`–`l12`
 are the removed `dev/open-revision/`'s `o01`–`o11` and `o15`, ported (its `o12`–`o14` became `n01` and
@@ -26,8 +28,8 @@ The script uses the library, so run this suite after a change to either.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite                 # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/propose-revision/suite.py              # 72 cases, twice under each Bash found (~30 s)
-python3 -I dev/propose-revision/suite.py --mutants    # 36 mutants, every one must be caught (~7 min)
+python3 -I dev/propose-revision/suite.py              # 74 cases, twice under each Bash found (~30 s)
+python3 -I dev/propose-revision/suite.py --mutants    # 43 mutants, every one must be caught (~8 min)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy, with the library beside it.

@@ -8,7 +8,8 @@ plan's goal 5.
 
 The suite tests both kinds of close:
 
-- **a stamp, under a revisions index**: the two edits, every refusal (a label not listed, or
+- **a stamp, under a revisions index**: the two edits, the index line closing as a legacy
+  pointer reads, the note kept, or none (`s14`), every refusal (a label not listed, or
   not `[~]`; a `**Status**:` missing or not `open`; an open item at any indent), and the
   warning for a branch plan inside the revision still stamped `active`;
 - **a cut, under a legacy root plan**: the section, the pointer, and the moves that file the
@@ -18,7 +19,7 @@ The suite tests both kinds of close:
   runs each move as printed. The archive drops the section's trailing blank lines and keeps
   those inside it (`x21`), since tool output drops them and a copy would never match;
 - **`--check`**: a correct close verifies, and a changed word, an archive keeping the trailing
-  blank line (`k10`), a skipped move, an uncut root plan, or an extra edit does not; a check run after the commit is an error;
+  blank line (`k10`), the stamp's old index line (`k11`), a skipped move, an uncut root plan, or an extra edit does not; a check run after the commit is an error;
 - **large inputs** (`b01`–`b05`): a root plan, a branch plan, a revision's `_TODO.md` and a
   directory listing, each well past the pipe buffer, read by a close and by its `--check`,
   so that no reader that wants one match stops before the end of its input. One that does
@@ -34,8 +35,8 @@ The script uses `scripts/lib/plan-rules.sh`, so run this suite after a change to
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite              # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/close-revision/suite.py             # 65 cases, twice under each Bash found (~60 s)
-python3 -I dev/close-revision/suite.py --mutants   # 47 mutants, every one must be caught (~15 min)
+python3 -I dev/close-revision/suite.py             # 67 cases, twice under each Bash found (~60 s)
+python3 -I dev/close-revision/suite.py --mutants   # 50 mutants, every one must be caught (~15 min)
 ```
 
 `-v` prints each output. `--script PATH` tests another copy, with the library beside it.

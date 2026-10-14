@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -257,7 +257,7 @@
+   fi
+   # The index line closes as a legacy close's pointer reads: the note kept, then where the
+   # revision is.
+-  IDX_DONE="- [x]${IDX_LINE:5} $DASH closed. See \`$REV\`."
++  IDX_DONE="- [x]${IDX_LINE:5}"
+   R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: $IDX_DONE"
+   R_CHANGE=stamp
+ }

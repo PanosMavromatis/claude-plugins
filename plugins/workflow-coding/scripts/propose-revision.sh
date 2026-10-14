@@ -282,6 +282,23 @@ case "$MLAYOUT" in
     fi
     if [ "$VIOL" -gt 0 ]; then fail ""; fi
     previous "$prev"
+    # Prose a legacy close left, carried over verbatim, may say /close-revision extracts or
+    # moves a revision, which under an index it never does: it stamps. Read a paragraph at a
+    # time, since a sentence may wrap between the command and its verb, and warn: only the
+    # user can reword free text.
+    out="$(awk '
+      function flush() { if (cmd && verb) print cmd; cmd = verb = 0 }
+      { sub(/\r$/, ""); low = tolower(" " $0) }
+      /^[ \t]*```/ { flush(); fence = !fence; next }
+      fence { next }
+      /^[ \t]*$/ { flush(); next }
+      !cmd && index($0, "/close-revision") { cmd = NR }
+      low ~ /[^a-z](extract|move)/ { verb = 1 }
+      END { flush() }
+    ' "$ROOT_PLAN")" || die "awk failed reading the prose of $ROOT_PLAN"
+    for n in $out; do
+      warn "$ROOT_PLAN:$n describes the legacy close, which extracts or moves a revision; under a revisions index /close-revision only stamps, so reword it once converted"
+    done
     R_CHANGE=convert ;;
 esac
 R_RESULT=proposed

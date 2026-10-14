@@ -1,11 +1,11 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -249,7 +249,7 @@
-     refuse "revision $LABEL still has $n unfinished item(s):$v" \
-       "finish each, descope it ([-]), or move it to another revision; whether the revision is finished is your call"
+@@ -257,7 +257,7 @@
    fi
--  R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: - [x]${IDX_LINE:5}"
-+  R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: ${IDX_LINE}"
+   # The index line closes as a legacy close's pointer reads: the note kept, then where the
+   # revision is.
+-  IDX_DONE="- [x]${IDX_LINE:5} $DASH closed. See \`$REV\`."
++  IDX_DONE="${IDX_LINE} $DASH closed. See \`$REV\`."
+   R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: $IDX_DONE"
    R_CHANGE=stamp
  }
- 

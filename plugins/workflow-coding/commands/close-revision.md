@@ -11,7 +11,8 @@ Close a revision the user says is finished. How depends on the root plan's layou
 - **A revisions index** — the revision's master plan, `docs/plan/<label>/_TODO.md` (or
   `_DO.md`), already is the archive, and its branch plans already sit inside it. Closing
   is a stamp: `**Status**: open` becomes `**Status**: closed — <date>`, and the index
-  line's `[~]` becomes `[x]`.
+  line closes as a legacy close's pointer reads, its note kept:
+  ``- [x] <label> — <note> — closed. See `docs/plan/<label>/_TODO.md`.``
 - **A legacy root plan** — the revision's `## Subgoals — revision <label>` section is cut,
   verbatim, into `docs/plan/<label>/_TODO.md`, a pointer takes its place under
   `## Closed revisions`, and the revision's merged branch plans, still flat under

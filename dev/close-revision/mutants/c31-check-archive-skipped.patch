@@ -1,7 +1,7 @@
 --- a/close-revision.sh
 +++ b/close-revision.sh
-@@ -434,7 +434,7 @@
-         || violation "$ROOT_PLAN does not read as stamped: line $IDX_N should be \`- [x]${IDX_LINE:5}\`, and nothing else should change" \
+@@ -443,7 +443,7 @@
+         || violation "$ROOT_PLAN does not read as stamped: line $IDX_N should be \`$IDX_DONE\`, and nothing else should change" \
               "edit line $IDX_N to that, and undo any other change" ;;
      extract)
 -      render_archive | same "$REV" \

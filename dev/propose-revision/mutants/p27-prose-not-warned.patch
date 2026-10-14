@@ -1,0 +1,11 @@
+--- a/propose-revision.sh
++++ b/propose-revision.sh
+@@ -297,7 +297,7 @@
+       END { flush() }
+     ' "$ROOT_PLAN")" || die "awk failed reading the prose of $ROOT_PLAN"
+     for n in $out; do
+-      warn "$ROOT_PLAN:$n describes the legacy close, which extracts or moves a revision; under a revisions index /close-revision only stamps, so reword it once converted"
++      : "$ROOT_PLAN:$n describes the legacy close, which extracts or moves a revision; under a revisions index /close-revision only stamps, so reword it once converted"
+     done
+     R_CHANGE=convert ;;
+ esac
