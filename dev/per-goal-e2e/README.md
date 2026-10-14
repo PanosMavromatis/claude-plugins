@@ -152,3 +152,11 @@ fixed after the run:
 
 `check.py` now also fails a shell read or search of the spec, and a reply check that does
 not follow its reply's successful `Write`; regraded, `r13` fails 11.
+
+Run `r14`, 2026-10-14, m1, m2 and m3 after the fixes (`cbc836e`): every check passed, $2.44,
+no permission denials. Each first reply's tags were quoted phrases, and resolved (3 of 3,
+4 of 4, 3 of 3); no session searched the spec, each reading one window of it through
+`Read`; each reply file was named by its repository and checked only after its `Write`
+succeeded. The drafts, read by hand, are faithful to the spec. m1 and m3 each settled one
+decision the spec leaves open, that the script runs from no hook or CI, as the review's
+answer to the drafter's question about it, not as the drafter's guess.
