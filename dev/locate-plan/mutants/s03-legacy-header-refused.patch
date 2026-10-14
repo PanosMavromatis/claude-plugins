@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -163,7 +163,7 @@
+   if [ -z "$out" ]; then return 0; fi
+   n="${out%%"$TAB"*}"; v="${out#*"$TAB"}"
+   case "$v" in
+-    legacy|single-file) return 0 ;;
++    single-file) return 0 ;;
+     revisions) if [ "$f" = "$ROOT_PLAN" ]; then LAYOUT_V=revisions; return 0; fi ;;
+     per-goal)  if [ "$f" != "$ROOT_PLAN" ]; then LAYOUT_V=per-goal; return 0; fi ;;
+   esac

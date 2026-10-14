@@ -17,7 +17,7 @@
 #   D6 a goal number is on several lines    D7 a goal file has no **Goal**: line
 #   D8 a goal is [x] but its file still has open items
 #
-# A legacy (one-file) plan has nothing to drift, so for one the script only reports its
+# A single-file plan has nothing to drift, so for one the script only reports its
 # open items, at every indent, each with the `## ` heading it sits under: the completion
 # check /step and /hitl-step run before reporting a plan or section done, in either layout.
 #
@@ -25,7 +25,7 @@
 # fix: line, the reads locate-plan.sh's E10 makes. Deterministic, Bash 3.2.
 #
 # Usage: check-plan-index.sh <TODO.md|DO.md> [--] <index>
-#        <index> is the plan file (a per-goal plan's index, or a legacy plan), or its
+#        <index> is the plan file (a per-goal plan's index, or a single-file plan), or its
 #        directory, relative to the repository root: the `plan:` locate-plan.sh reports.
 # Exit:  0 = clean. 1 = drift, or the plan could not be checked (result: error).
 #        2 = usage error, no report. 3 = a tool failed; message on stderr, no report.
@@ -125,7 +125,7 @@ if [ "$LAYOUT_V" = revisions ]; then
     "check the open revision's plan instead, the plan: locate-plan.sh reports"
   fail ""
 fi
-if [ "$LAYOUT_V" = legacy ]; then
+if [ "$LAYOUT_V" = single-file ]; then
   # One file holds every goal, so nothing can drift: report the open items, each with the
   # `## ` heading it sits under, which is what a section's completion check needs.
   out="$(awk "$OPEN_AWK" "$IDX")" || die "awk failed reading the items of $IDX"

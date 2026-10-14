@@ -1,0 +1,11 @@
+--- a/lib/plan-rules.sh
++++ b/lib/plan-rules.sh
+@@ -154,7 +154,7 @@
+ # and returns 1.
+ check_layout() {  # check_layout <file> <rung>; called as a condition, so check everything here
+   local f="$1" out n v
+-  LAYOUT_V=single-file
++  LAYOUT_V=legacy
+   need_file "$f" "$2"
+   out="$(awk '
+     /^[ \t]*```/ { fence = !fence; next }
