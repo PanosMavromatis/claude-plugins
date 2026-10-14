@@ -160,3 +160,11 @@ no permission denials. Each first reply's tags were quoted phrases, and resolved
 succeeded. The drafts, read by hand, are faithful to the spec. m1 and m3 each settled one
 decision the spec leaves open, that the script runs from no hook or CI, as the review's
 answer to the drafter's question about it, not as the drafter's guess.
+
+Run `r15`, 2026-10-14, e1, e3 and e4 after `fix-command-grants` trimmed the commands'
+`allowed-tools` and dropped `/smart-merge`'s `rm` of its body file (`fe63a1f`): every check
+passed, $5.36, and no session had a permission denial, with none excused now. Each merge
+session `Read` its body file, found none, wrote it to
+`/tmp/pr-body-<repository>-<flattened-branch>.md`, passed it to `gh pr create`, and ran no
+`rm`. No session used `Grep` or `Glob`; the three shell searches, in two step sessions, each
+`grep`ped a notes file the session had just written.
