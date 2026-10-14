@@ -24,3 +24,5 @@ R2 subgoal 6. Commands read a branch plan's index and goal files whole, and noth
 - Subgoal 14, the 0.11.0 release, runs `/memory-check` on R2's own revision
 
 ## Notes
+
+- 2026-10-14, goal 01: `scripts/memory-check.sh` classes plan files by how the commands read them, not as §4.8 lists them: `/hitl-step` and `/smart-merge` read a branch plan's index whole, so it is measured against the threshold like the goal files, while `_TODO.md` and the root plan are only reported. Each `branches:` line names its plan's layout. On R2 the largest file read whole is ≈1112 tokens; R1's `feat-plan-locator`, single-file, is ≈16588
