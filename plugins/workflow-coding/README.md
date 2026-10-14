@@ -5,8 +5,8 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
 ## What's in here
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
-- **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to `CLAUDE.md`, `AGENTS.md`, and `AGENTS.override.md` (root and per-component) once the `docs/agents/` sources exist, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
-- **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (regenerates the `AGENTS.*` artifacts from `docs/agents/` sources) and `check-agents-md.sh` (verifies they're in sync). One, `export-session.py`, writes `/session-export-full`'s export, never inside the repository. The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
+- **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to a generated `AGENTS.override.md` (root and per-component) once its `codex-review/AGENTS.md` guide under `docs/agents/` exists, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
+- **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (builds each `AGENTS.override.md` from the Codex reviewer's guide) and `check-agents-md.sh` (verifies they're in sync, and lints the hand-authored `AGENTS.md` files). One, `export-session.py`, writes `/session-export-full`'s export, never inside the repository. The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
   - `locate-plan.sh` resolves a plan and finds its next item, for `/step`, `/hitl-step` and `/smart-merge`, and checks a revision `/master-plan` has just written. It reports a `problem:` and a `fix:` rather than guessing when a plan convention is broken;
   - `check-plan-index.sh` reports where a per-goal plan's index and goal files disagree, and a one-file plan's open items;
   - `propose-branch-plan.sh` places `/new-branch`'s plan; `propose-merge-record.sh` finds what `/smart-merge` stamps and closes;
@@ -207,17 +207,19 @@ The doc commands assume a specific layout in the consuming project:
 - `docs/agents/core.md` — tool-agnostic project context (shared with Codex, Cursor, etc.).
 - `docs/agents/claude.md` — Claude-Code-specific context.
 - `docs/agents/codex.md` — Codex-specific review priorities and gotchas.
-- `AGENTS.md` and `AGENTS.override.md` — generated artifacts built from the `docs/agents/` sources.
+- `AGENTS.override.md` — the one generated file, built by `/agents-docs-build` from the Codex reviewer's guide, `docs/agents/codex-review/AGENTS.md`. `AGENTS.md` is hand-authored, never generated.
 
-In a monorepo, the same pattern repeats per component (`<path>/CLAUDE.md` backed by `docs/agents/<path>/{core,claude,codex}.md`). The directory tree under `docs/agents/` is the source of truth for which components exist.
+In a monorepo, the same pattern repeats per component (`<path>/CLAUDE.md` backed by `docs/agents/<path>/{core,claude,codex}.md`, and `<path>/AGENTS.override.md` built from `docs/agents/<path>/codex-review/AGENTS.md`). The directory tree under `docs/agents/` is the source of truth for which components exist.
+
+The build reads only the `codex-review/` guides, so it refuses the dispatcher layout above, naming the move, and `/agents-docs-init` and `/agents-docs-codex-init` still write that layout until `/agents-docs-migrate` replaces them.
 
 | Command                  | Role |
 |--------------------------|------|
 | `/agents-docs-init`      | One-time migration: splits an existing `CLAUDE.md` into `docs/agents/{core,claude}.md` and replaces `CLAUDE.md` with the dispatcher. Handles root and every component (any nesting depth). |
 | `/agents-docs-codex-init`| Generates `docs/agents/[<path>/]codex.md` sidecars that configure Codex as a cross-provider reviewer. One per target. |
 | `/agents-docs-update`    | Standalone or invoked by `/smart-commit`. Reviews the staged diff, edits the relevant `docs/agents/*.md` sources to match, runs `/agents-docs-build` if `core.md` or `codex.md` changed, and stages everything. Idempotent. |
-| `/agents-docs-build`     | Regenerates `AGENTS.md` and `AGENTS.override.md` (root and per-component) from the `docs/agents/` sources. Deterministic. |
-| `/agents-docs-check`     | Verifies the committed `AGENTS.*` files match what `/agents-docs-build` would emit. Useful in pre-commit hooks or CI. |
+| `/agents-docs-build`     | Builds `AGENTS.override.md` (root and per-component) from each `codex-review/AGENTS.md` guide under `docs/agents/`. Deterministic. Refuses the dispatcher layout, naming the move. |
+| `/agents-docs-check`     | Verifies each committed `AGENTS.override.md` matches what `/agents-docs-build` would write, and warns, without failing, on an `AGENTS.md` over 200 lines or with a dated line. Useful in pre-commit hooks or CI. |
 
 Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agents-docs-update` → docs stay in sync without you thinking about it.
 
@@ -242,7 +244,7 @@ A revision's master plan is `_TODO.md` (or `_DO.md`), not `TODO.md`, and the und
 
 - **Confirm before writes.** Every command treats git writes (commit, push, branch deletion) and file deletions as confirmation-required. Read-only diagnostics (`git status`, `git log`, `git diff`) run freely.
 - **Hard stops on counters.** `/step N` and `/hitl-step N` stop after `N` iterations even if work remains. They won't ask "continue?".
-- **Never edit generated files directly.** The bundled `protect-agent-docs.py` hook blocks `Write`/`Edit`/`MultiEdit` against `CLAUDE.md`, `AGENTS.md`, and `AGENTS.override.md` once `docs/agents/` sources exist. Edit the sources and let `/agents-docs-build` regenerate.
+- **Never edit generated files directly.** The bundled `protect-agent-docs.py` hook blocks `Write`/`Edit`/`MultiEdit` against a generated `AGENTS.override.md` once its `codex-review/AGENTS.md` guide exists. Edit the guide and let `/agents-docs-build` regenerate. `AGENTS.md` and `CLAUDE.md` are hand-authored, and the hook leaves them alone.
 - **GitHub work prefers MCP, falls back to `gh` — out loud.** `/smart-merge` uses the GitHub MCP server when one is available and `gh` otherwise. The fallback triggers on **404 or 403**: a fine-grained PAT that doesn't cover a repository returns 404, not 403, because GitHub masks private-repo existence — so a rule keyed only on 403 would never fire in the case it exists for. Every fallback is announced with the repository and operation named, which turns a recurring fallback into a legible signal that the PAT's scope wants widening. A silent fallback would make a narrowly-scoped token pointless.
 - **The two merge paths clean up differently.** `gh pr merge --delete-branch` removes the branch locally and remotely in one call; the MCP `merge_pull_request` has no such parameter and removes neither. `/smart-merge` closes that gap explicitly — remote branch first, then sync `main`, then the local branch, in that order, because `git branch -d` evaluates against `HEAD` and would refuse on every merge if it ran before the sync.
 - **Every plan lives on `main`.** A revision's **master plan** (`docs/plan/<label>/_TODO.md`, or the legacy root plan itself) defines subgoals; each spawns a branch. A **branch plan** covers one branch's work, in a directory named for the branch with `/` flattened to `-`. That name is its identity, not its path: `/new-branch` places it, but every command finds it by searching for that name anywhere beneath `docs/plan/`, so plans can be regrouped into milestone or component directories with `git mv` and nothing needs updating. `/step` and `/hitl-step` resolve in priority order — explicit path, then the current branch's plan, then the master plan, then glob-and-ask, then a legacy root-level file — so neither normal working position ever prompts. Branch plans are **not** deleted at merge: they accumulate on `main` as the durable record of how each subgoal was executed, navigable by directory and filtered out of the disambiguation prompt by their `**Status**: merged` stamp.

@@ -1,6 +1,11 @@
 # 05 — The two commands and the docs describe the pair
 
-**Goal**: [ ]
+**Goal**: [x]
+> **Done:** `/agents-docs-build` and `/agents-docs-check` describe only the `AGENTS.override.md` pair and the two lints, and the plugin's README and `CLAUDE.md` describe the build, the check and the hook as goals 01–03 left them; the dispatcher layout's commands stay for subgoals 8 and 9.
+> **Q:** Should goal 05 rewrite `commands/agents-docs-build.md` and `agents-docs-check.md`, `description:` included and `allowed-tools` unchanged, to describe only the pair and the two lints; change only the README's and `CLAUDE.md`'s passages on the build, the check and the hook, adding one sentence to each agent-docs section that the dispatcher layout `/agents-docs-init` still writes is the one the build now refuses, until subgoal 9's `/agents-docs-migrate`; and leave the dispatcher, `/agents-docs-init`, `/agents-docs-codex-init` and `/agents-docs-update` to subgoals 8, 9 and 14 (A), or rewrite both agent-docs sections to the §4.3 layout now (B)?
+> **A:** A.
 
-- [ ] `commands/agents-docs-build.md` and `agents-docs-check.md` describe only the pair and the two lints, and `dev/command-phrasing` passes
-- [ ] The plugin README and `CLAUDE.md` no longer say the build generates `AGENTS.md`, or that the hook protects `AGENTS.md` and `CLAUDE.md`
+- [x] `commands/agents-docs-build.md` and `agents-docs-check.md` describe only the pair and the two lints, and `dev/command-phrasing` passes
+  > **Note:** The build's command names the guide-to-override mapping, the header, the warning on old sources and the dispatcher-layout refusal; the check's, the in-sync test, the two lints, an exit status that means only the sync, and a third outcome, the build's `error:` relayed. `allowed-tools` is unchanged in both. `check.py` reports 0 failing; neither grants `git`, so both are listed as skipped.
+- [x] The plugin README and `CLAUDE.md` no longer say the build generates `AGENTS.md`, or that the hook protects `AGENTS.md` and `CLAUDE.md`
+  > **Note:** Changed: README lines 8, 9, 210, 212, 221–222 and 247, and `CLAUDE.md` lines 128–129, 131, 133, 135 and 139; a `grep` of both for `AGENTS.md` and the hook finds no old claim. Each agent-docs section gained a sentence that the dispatcher layout `/agents-docs-init` still writes is the one the build refuses. The old claims remain in `commands/agents-docs-update.md` (lines 31, 68), which subgoal 8 rewrites, and in `agents-docs-init.md` and `agents-docs-codex-init.md`, which subgoal 9 removes.

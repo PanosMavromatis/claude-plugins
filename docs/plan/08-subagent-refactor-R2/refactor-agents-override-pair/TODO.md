@@ -12,4 +12,4 @@
 - [x] 02 — check-agents-md.sh keeps its in-sync check and gains two lints
 - [x] 03 — protect-agent-docs.py protects AGENTS.override.md only
 - [x] 04 — A suite under dev/agents-docs checks the build, the check and the hook
-- [ ] 05 — The two commands and the docs describe the pair
+- [x] 05 — The two commands and the docs describe the pair
