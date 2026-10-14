@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -113,7 +113,7 @@
+@@ -117,7 +117,7 @@
  
  scan_dirs
  master_files ""

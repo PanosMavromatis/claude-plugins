@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -208,7 +208,7 @@
+@@ -212,7 +212,7 @@
  done
  unset IFS
  if [ -n "$ROWS" ]; then

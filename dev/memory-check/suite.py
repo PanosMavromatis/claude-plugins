@@ -53,7 +53,7 @@ def index(*lines): return ("# Plan\n\n**Layout**: revisions\n\n## Revisions\n\n"
 # The fixture repositories: files under each, relative to its root.
 R = "docs/plan/07-rev"
 FILES = {
-  # A revisions root: 07-rev open, 05-old closed. 01-alpha is 1001 tokens, for the threshold's
+  # A revisions root: 07-rev open, 05-old closed. 01-alpha is 1716 tokens, for the threshold's
   # boundary; chore-bad and 02-beta are the same size, for the order of a tie; fix-one is over
   # the default threshold; the spec, TODO/README.md and the stray DO.md are not plan files.
   REV: {"docs/plan/TODO.md": index("- [x] 05-old — the old one — closed. See `docs/plan/05-old/_TODO.md`.",
@@ -114,15 +114,15 @@ TWO_B = [ln("docs/plan/04-b/_TODO.md"), bp("docs/plan/04-b/feat-q/TODO.md", "sin
 DO_OPEN = [ln("docs/plan/DO.md"), ln("docs/plan/01-r/_DO.md"), bp("docs/plan/01-r/feat-x/DO.md", "per-goal"),
            gp("docs/plan/01-r/feat-x/DO/01-a.md")]
 
-def M(entries, revision, where, root="docs/plan/TODO.md", layout="revisions", th=4000, extra=()):
+def M(entries, revision, where, root="docs/plan/TODO.md", layout="revisions", th=2000, extra=()):
     return dict(exit=0, result="measured", root=root, layout=layout, revision=revision, threshold=f"≈{th} tokens",
                 measure=(entries, where, th, list(extra)))
 
 # id, fixture, arguments (or a special run), expectations
 C = [
  ("m01", REV, ["TODO.md"], M(REV_OPEN, "07-rev", "revision 07-rev", extra=[BAD])),
- ("m02", REV, ["TODO.md", "--threshold", "1000"], M(REV_OPEN, "07-rev", "revision 07-rev", th=1000, extra=[BAD])),
- ("m03", REV, ["TODO.md", "--threshold", "1001"], M(REV_OPEN, "07-rev", "revision 07-rev", th=1001, extra=[BAD])),
+ ("m02", REV, ["TODO.md", "--threshold", "1715"], M(REV_OPEN, "07-rev", "revision 07-rev", th=1715, extra=[BAD])),
+ ("m03", REV, ["TODO.md", "--threshold", "1716"], M(REV_OPEN, "07-rev", "revision 07-rev", th=1716, extra=[BAD])),
  ("m04", REV, ["TODO.md", "--threshold", "100000"], M(REV_OPEN, "07-rev", "revision 07-rev", th=100000, extra=[BAD])),
  ("m05", REV, ["TODO.md", "--threshold", "0400"], M(REV_OPEN, "07-rev", "revision 07-rev", th=400, extra=[BAD])),
  ("m06", REV, ["TODO.md", "--", "05-old"], M(REV_OLD, "05-old", "revision 05-old")),
@@ -209,16 +209,17 @@ def expected(repo, entries, where, th, extra):
         d = open(f"{repo}/{p}", "rb").read()
         rows.append((len(d), len(d.split()), d.count(b"\n") + (0 if not d or d.endswith(b"\n") else 1), acc, br, lay, p))
     rows.sort(key=lambda r: (-r[0], r[6]))
-    files = [f"{p} — {b} bytes, {w} words, {l} lines, ≈{b // 4} tokens, {acc}" for b, w, l, acc, _, _, p in rows]
-    over = [f"{p}: ≈{b // 4} tokens, over the threshold of ≈{th}" for b, _, _, acc, _, _, p in rows if acc == "whole" and b // 4 > th]
+    tok = lambda b: b * 3 // 7   # the calibrated ratio, as the script's header records it
+    files = [f"{p} — {b} bytes, {w} words, {l} lines, ≈{tok(b)} tokens, {acc}" for b, w, l, acc, _, _, p in rows]
+    over = [f"{p}: ≈{tok(b)} tokens, over the threshold of ≈{th}" for b, _, _, acc, _, _, p in rows if acc == "whole" and tok(b) > th]
     bs = {}
     for b, _, _, _, d, lay, _ in rows:
         if d: x = bs.setdefault(d, [lay, 0, 0]); x[1] += 1; x[2] += b
-    branches = [f"{d.rsplit('/', 1)[-1]} — {lay}, {n} file{s(n)}, {B} bytes, ≈{B // 4} tokens"
+    branches = [f"{d.rsplit('/', 1)[-1]} — {lay}, {n} file{s(n)}, {B} bytes, ≈{tok(B)} tokens"
                 for d, (lay, n, B) in sorted(bs.items(), key=lambda kv: (-kv[1][2], kv[0]))]
     n = len(rows); tb = sum(r[0] for r in rows); wh = [r for r in rows if r[3] == "whole"]; wb = sum(r[0] for r in wh)
-    total = f"{n} file{s(n)}, {tb} bytes, ≈{tb // 4} tokens; read whole: {len(wh)} file{s(len(wh))}, ≈{wb // 4} tokens"
-    msg = f"Measured {n} plan file{s(n)} in {where}; ≈ tokens are bytes / 4, approximate."
+    total = f"{n} file{s(n)}, {tb} bytes, ≈{tok(tb)} tokens; read whole: {len(wh)} file{s(len(wh))}, ≈{tok(wb)} tokens"
+    msg = f"Measured {n} plan file{s(n)} in {where}; ≈ tokens are bytes × 3 / 7, calibrated on claude-opus-5-5 as Read returns a file."
     if over: msg += f" {len(over)} read whole {'is' if len(over) == 1 else 'are'} over the threshold; see warnings."
     return files, branches, total, extra + over, msg
 

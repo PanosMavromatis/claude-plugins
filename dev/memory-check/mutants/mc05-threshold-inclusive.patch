@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -223,7 +223,7 @@
+@@ -227,7 +227,7 @@
      n++; tb += $1
      if ($4 == "whole") {
        nw++; wb += $1

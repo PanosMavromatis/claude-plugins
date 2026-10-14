@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -202,7 +202,7 @@
+@@ -206,7 +206,7 @@
    acc="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; b="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
    lay="${rest%%"$TAB"*}"; p="${rest#*"$TAB"}"
    by="$(wc -c < "$p")" || die "wc failed reading $p"

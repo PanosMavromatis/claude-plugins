@@ -27,7 +27,7 @@ on GNU it would survive.
   of root plan, since the script reads the root before anything else. All are rebuilt on
   every run.
   - `rev`: a revisions root, with `07-rev` open and `05-old` closed. Its files are built to
-    exact sizes. `01-alpha.md` is 1001 tokens, for the threshold's boundary; `chore-bad`
+    exact sizes. `01-alpha.md` is 1716 tokens, for the threshold's boundary; `chore-bad`
     and `02-beta.md` tie at 300 bytes, for the order of a tie; `fix-one` is over the
     default threshold. A spec, a `TODO/README.md` and a stray `DO.md` are there to be
     ignored, and `chore-bad`'s `**Layout**: revisions` to be measured as one file.
@@ -61,3 +61,32 @@ on GNU it would survive.
   Re-anchor it, or drop it if its rule has gone. A mutant must be caught by the rule it
   breaks, not by a crash it causes on the way: check the `FAIL` line each one prints.
   `mc26-writes` is caught only by the untouched-fixture check, which is what it is for.
+
+## Calibration: the token ratio and the threshold
+
+`memory-check.sh` estimates tokens as bytes × 3 / 7, and its threshold defaults to 2000 of
+them. Both were set by measurement, in goal 03 of the `feat-memory-check` branch plan.
+
+```bash
+RUN=c2 python3 -I dev/memory-check/calibrate.py run      # 20 headless sessions on claude-opus-5-5, ~$1: run it yourself
+RUN=c2 python3 -I dev/memory-check/calibrate.py report   # free
+```
+
+`calibrate.py` sends each of nine plan files in a one-turn session, raw and as `Read`
+returns it, each line numbered in `cat -n` form, and subtracts the input tokens of a
+baseline turn, run first and last, which must agree. Run it again after a Claude release
+that changes the tokenizer, and change the ratio in the script, the suite's oracle and
+`mc01-bytes-by-4` together.
+
+- **Run `c1`, 2026-10-14.** The baseline was 29,803 tokens both times. Over the nine
+  files, a token is 2.52 bytes raw and 2.34 as `Read` returns the file, from 2.06 for an
+  index, whose short lines carry the most line numbers, to 2.74. bytes / 4, the rule
+  `dev/measure-context.sh` uses and this script began with, was 42% low against the tokens
+  as read; 3 / 7 is 2.33 bytes a token.
+- **The default threshold** is about twice the median of R2's first goal files. In
+  calibrated tokens its 17 merged goal files run from ≈219 to ≈1,906, median ≈963: 2000
+  is above every one of them, and below all eight of R1's single-file plans.
+- **The first baseline**, `-- 06-subagent-refactor-R1`: eight single-file plans, from
+  ≈3,579 to ≈28,437 tokens (`feat-plan-locator`, the ≈16.6k of §4.8 in bytes / 4), ≈76k
+  read whole in all. A `/hitl-step` on R2 reads an index and one goal file, ≈2.2k at most,
+  where one on `feat-plan-locator` read ≈28.4k.

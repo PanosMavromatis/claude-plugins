@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -175,7 +175,7 @@
+@@ -179,7 +179,7 @@
    # reports sizes, and locate-plan.sh and check-plan-index.sh report the header.
    sp="$R_PROB"; sf="$R_FIX"; sv="$VIOL"
    if ! check_layout "$p" ""; then

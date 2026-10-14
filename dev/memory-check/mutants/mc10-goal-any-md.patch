@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -183,7 +183,7 @@
+@@ -187,7 +187,7 @@
      g="$(goal_dir "$p")"
      goal_dir_ok "$g" ""
      if [ -d "$g" ]; then

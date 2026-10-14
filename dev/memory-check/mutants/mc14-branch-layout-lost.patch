@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -225,7 +225,7 @@
+@@ -229,7 +229,7 @@
        nw++; wb += $1
        if (th < t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
      }

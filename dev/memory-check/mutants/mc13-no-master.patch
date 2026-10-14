@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -162,7 +162,7 @@
+@@ -166,7 +166,7 @@
  add() { RECS="${RECS:+$RECS$NL}$1$TAB$2$TAB$3$TAB$4"; }
  
  if [ "$WITH_ROOT" -eq 1 ]; then need_file "$ROOT_PLAN" ""; add "by line" "" "" "$ROOT_PLAN"; fi

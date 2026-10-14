@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -143,7 +143,7 @@
+@@ -147,7 +147,7 @@
      R_MSG="No revision is open in $ROOT_PLAN; pass a label to measure a closed one."
      finish
    fi
@@ -9,7 +9,7 @@
      IFS="$NL"
      for m in $MASTERS; do R_CAND="${R_CAND:+$R_CAND$NL}$(basename "$(dirname "$m")")"; done
      unset IFS
-@@ -151,7 +151,7 @@
+@@ -155,7 +155,7 @@
      R_MSG="$n revisions are open; pass the one to measure as the label, after --."
      finish
    fi

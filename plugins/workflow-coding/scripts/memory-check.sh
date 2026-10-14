@@ -5,12 +5,16 @@
 # loads only the goal it works on. This measures whether it does. It lists the plan files
 # of the open revision, of a revision named by its label, or, under a legacy root plan, of
 # the whole tree, and reports each one's bytes, words, lines and ≈ tokens, with totals per
-# branch, each naming its plan's layout, and overall. Files are classed by how the commands access them: a branch plan's
-# index, its goal files and a single-file branch plan are read whole, and each one over the
-# threshold gets a warning; a revision's _TODO.md and the root plan are located by line, so
-# their size never reaches a command, and they are only reported. Tokens are bytes / 4,
-# the rule dev/measure-context.sh uses, so they are approximate and labelled ≈; a total's
-# tokens are its own bytes / 4.
+# branch, each naming its plan's layout, and overall. Files are classed by how the commands
+# access them: a branch plan's index, its goal files and a single-file branch plan are read
+# whole, and each one over the threshold gets a warning; a revision's _TODO.md and the root
+# plan are located by line, so their size never reaches a command, and they are only
+# reported.
+#
+# Tokens are bytes × 3 / 7, labelled ≈, and a total's are its own bytes × 3 / 7. The ratio
+# was calibrated on 2026-10-14 against claude-opus-5-5, on nine plan files as Read returns
+# them to a command, line numbers included: 2.34 bytes a token, where bytes / 4, the rule
+# dev/measure-context.sh uses, was 42% low. dev/memory-check/calibrate.py repeats it.
 #
 # The interface was settled in goal 01 of the feat-memory-check branch plan (found by name
 # under docs/plan/, like any plan), with the reasons; the rules it shares with the other
@@ -22,7 +26,8 @@
 # Usage: memory-check.sh <TODO.md|DO.md> [--threshold <tokens>] [--] [<label>]
 #        <label> names docs/plan/<label>/, a revision open or closed. Without one: the open
 #        revision under a revisions index, with the root plan; the whole tree under a
-#        legacy root plan. The threshold is in ≈ tokens, 4000 by default.
+#        legacy root plan. The threshold is in ≈ tokens, 2000 by default: about twice the
+#        median of R2's first goal files, and above every one that shipped.
 # Exit:  0 = a report: measured, ask or none. 1 = the plans could not be measured
 #        (result: error). 2 = usage error, no report. 3 = a tool failed; message on stderr.
 
@@ -46,7 +51,7 @@ usage() {
 
 # --- arguments ----------------------------------------------------------------
 
-MODEL=""; LABEL=""; NPOS=0; THRESHOLD=4000
+MODEL=""; LABEL=""; NPOS=0; THRESHOLD=2000
 pos() {
   NPOS=$((NPOS + 1))
   case $NPOS in
@@ -218,7 +223,7 @@ out="$(printf '%s' "$ROWS" | awk -v th="$THRESHOLD" '
   BEGIN { FS = "\t" }
   function s(k) { return k == 1 ? "" : "s" }
   NF == 7 {
-    t = int($1 / 4)
+    t = int($1 * 3 / 7)
     print "F\t" $7 " — " $1 " bytes, " $2 " words, " $3 " lines, ≈" t " tokens, " $4
     n++; tb += $1
     if ($4 == "whole") {
@@ -233,9 +238,9 @@ out="$(printf '%s' "$ROWS" | awk -v th="$THRESHOLD" '
         if (bb[o[i]] < bb[o[j]] || (bb[o[j]] == bb[o[i]] && o[j] < o[i])) { x = o[i]; o[i] = o[j]; o[j] = x }
     for (i = 1; i <= nb; i++) {
       name = o[i]; sub(/.*\//, "", name)
-      print "B\t" name " — " bl[o[i]] ", " bn[o[i]] " file" s(bn[o[i]]) ", " bb[o[i]] " bytes, ≈" int(bb[o[i]] / 4) " tokens"
+      print "B\t" name " — " bl[o[i]] ", " bn[o[i]] " file" s(bn[o[i]]) ", " bb[o[i]] " bytes, ≈" int(bb[o[i]] * 3 / 7) " tokens"
     }
-    print "T\t" n + 0 " file" s(n) ", " tb + 0 " bytes, ≈" int(tb / 4) " tokens; read whole: " nw + 0 " file" s(nw) ", ≈" int(wb / 4) " tokens"
+    print "T\t" n + 0 " file" s(n) ", " tb + 0 " bytes, ≈" int(tb * 3 / 7) " tokens; read whole: " nw + 0 " file" s(nw) ", ≈" int(wb * 3 / 7) " tokens"
     print "N\t" n + 0 "\t" k + 0
   }')" || die "awk failed totalling the sizes"
 
@@ -256,7 +261,7 @@ unset IFS
 R_RESULT=measured
 where="revision $R_REV"
 if [ -z "$R_REV" ]; then where="$PD/, under a legacy root plan"; fi
-R_MSG="Measured $NF_ plan file$([ "$NF_" -eq 1 ] || echo s) in $where; ≈ tokens are bytes / 4, approximate."
+R_MSG="Measured $NF_ plan file$([ "$NF_" -eq 1 ] || echo s) in $where; ≈ tokens are bytes × 3 / 7, calibrated on claude-opus-5-5 as Read returns a file."
 if [ "$NW_" -gt 0 ]; then
   R_MSG="$R_MSG $NW_ read whole $([ "$NW_" -eq 1 ] && echo is || echo are) over the threshold; see warnings."
 fi

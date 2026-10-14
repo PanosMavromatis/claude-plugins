@@ -1,6 +1,6 @@
 --- a/memory-check.sh
 +++ b/memory-check.sh
-@@ -73,7 +73,7 @@
+@@ -77,7 +77,7 @@
  case "$THRESHOLD" in
    ''|*[!0-9]*) usage "the threshold must be a whole number of tokens, got '$THRESHOLD'" ;;
  esac
