@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -119,7 +119,7 @@
+ # --- the scope: which directory, and whether the root plan is measured ----------
+ 
+ WITH_ROOT=0
+-if [ -n "$LABEL" ]; then
++if [ -n "" ]; then
+   case "$LABEL" in
+     */*|.|..)
+       violation "'$LABEL' is not a label: a label names one directory under $PD/" \

@@ -124,9 +124,10 @@ either layout), the script `/new-branch` places a new plan with,
 `scripts/propose-branch-plan.sh`, the one `/smart-merge` records a merge with,
 `scripts/propose-merge-record.sh`, the one `/master-plan` opens a revision with,
 `scripts/propose-revision.sh`, the one that checks its draft and the plan it writes,
-`scripts/check-draft.sh`, and the one `/close-revision` closes it with,
-`scripts/close-revision.sh`, the same way. All seven share `scripts/lib/plan-rules.sh`,
-so run all seven suites after a change to it:
+`scripts/check-draft.sh`, the one `/close-revision` closes it with,
+`scripts/close-revision.sh`, and the one that measures the plans' sizes,
+`scripts/memory-check.sh`, the same way. All eight share `scripts/lib/plan-rules.sh`,
+so run all eight suites after a change to it:
 
 ```bash
 python3 -I dev/check-plan-index/suite.py                 # 39 cases, no model, ~10 s
@@ -141,6 +142,8 @@ python3 -I dev/check-draft/suite.py                      # 121 cases, no model, 
 python3 -I dev/check-draft/suite.py --mutants            # the suite must catch each mutant, ~2 min
 python3 -I dev/close-revision/suite.py                   # 67 cases, no model, ~60 s
 python3 -I dev/close-revision/suite.py --mutants         # the suite must catch each mutant, ~15 min
+python3 -I dev/memory-check/suite.py                     # 29 cases, no model, ~20 s
+python3 -I dev/memory-check/suite.py --mutants           # the suite must catch each mutant, ~2 min
 ```
 
 Test the session-log renderer, `scripts/export-session.py`, after any change to it:

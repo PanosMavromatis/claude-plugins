@@ -212,7 +212,8 @@ if [ -n "$ROWS" ]; then
 fi
 
 # Largest first; branches by their bytes, then name. Records: F a file, B a branch, T the
-# total, W a warning, N the counts of files and warnings.
+# total, W a warning, N the counts of files and warnings. Comparisons are written with `<`,
+# since the suite's static check reads a `>` before a word as a redirect.
 out="$(printf '%s' "$ROWS" | awk -v th="$THRESHOLD" '
   BEGIN { FS = "\t" }
   function s(k) { return k == 1 ? "" : "s" }
@@ -222,14 +223,14 @@ out="$(printf '%s' "$ROWS" | awk -v th="$THRESHOLD" '
     n++; tb += $1
     if ($4 == "whole") {
       nw++; wb += $1
-      if (t > th) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
+      if (th < t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
     }
     if ($5 != "") { if (!($5 in bn)) { o[++nb] = $5; bl[$5] = $6 } bn[$5]++; bb[$5] += $1 }
   }
   END {
     for (i = 1; i <= nb; i++)
       for (j = i + 1; j <= nb; j++)
-        if (bb[o[j]] > bb[o[i]] || (bb[o[j]] == bb[o[i]] && o[j] < o[i])) { x = o[i]; o[i] = o[j]; o[j] = x }
+        if (bb[o[i]] < bb[o[j]] || (bb[o[j]] == bb[o[i]] && o[j] < o[i])) { x = o[i]; o[i] = o[j]; o[j] = x }
     for (i = 1; i <= nb; i++) {
       name = o[i]; sub(/.*\//, "", name)
       print "B\t" name " — " bl[o[i]] ", " bn[o[i]] " file" s(bn[o[i]]) ", " bb[o[i]] " bytes, ≈" int(bb[o[i]] / 4) " tokens"

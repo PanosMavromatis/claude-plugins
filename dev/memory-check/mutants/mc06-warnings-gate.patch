@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -89,7 +89,7 @@
+   emit branches "$R_BRANCHES";   emit total "$R_TOTAL";         emit candidates "$R_CAND"
+   emit warnings "$R_WARN";       emit problem "$R_PROB";        emit fix "$R_FIX"
+   emit message "$R_MSG"
+-  if [ "$R_RESULT" = error ]; then exit 1; fi
++  if [ "$R_RESULT" = error ] || [ -n "$R_WARN" ]; then exit 1; fi
+   exit 0
+ }
+ 

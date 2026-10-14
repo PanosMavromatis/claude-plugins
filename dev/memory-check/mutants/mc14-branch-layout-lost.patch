@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -225,7 +225,7 @@
+       nw++; wb += $1
+       if (th < t) { print "W\t" $7 ": ≈" t " tokens, over the threshold of ≈" th; k++ }
+     }
+-    if ($5 != "") { if (!($5 in bn)) { o[++nb] = $5; bl[$5] = $6 } bn[$5]++; bb[$5] += $1 }
++    if ($5 != "") { if (!($5 in bn)) { o[++nb] = $5; bl[$5] = "single-file" } bn[$5]++; bb[$5] += $1 }
+   }
+   END {
+     for (i = 1; i <= nb; i++)

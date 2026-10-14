@@ -9,6 +9,6 @@
 ## Goals
 
 - [x] 01 — memory-check.sh reports each plan file's size and the totals
-- [ ] 02 — A suite under dev/memory-check passes
+- [x] 02 — A suite under dev/memory-check passes
 - [ ] 03 — The token ratio and the threshold are calibrated and recorded
 - [ ] 04 — /memory-check runs the script, diagnostic only

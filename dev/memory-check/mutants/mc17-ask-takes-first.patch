@@ -1,0 +1,20 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -143,7 +143,7 @@
+     R_MSG="No revision is open in $ROOT_PLAN; pass a label to measure a closed one."
+     finish
+   fi
+-  if [ "$n" -gt 1 ]; then
++  if [ "$n" -gt 9 ]; then
+     IFS="$NL"
+     for m in $MASTERS; do R_CAND="${R_CAND:+$R_CAND$NL}$(basename "$(dirname "$m")")"; done
+     unset IFS
+@@ -151,7 +151,7 @@
+     R_MSG="$n revisions are open; pass the one to measure as the label, after --."
+     finish
+   fi
+-  DIR="$(dirname "$MASTERS")"; R_REV="$(basename "$DIR")"; WITH_ROOT=1
++  DIR="$(dirname "${MASTERS%%"$NL"*}")"; R_REV="$(basename "$DIR")"; WITH_ROOT=1
+ else
+   DIR="$PD"; WITH_ROOT=1   # legacy: the root plan is the master, and the tree its branches
+ fi

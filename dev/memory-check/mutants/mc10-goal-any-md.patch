@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -183,7 +183,7 @@
+     g="$(goal_dir "$p")"
+     goal_dir_ok "$g" ""
+     if [ -d "$g" ]; then
+-      gf="$(find "$g" -maxdepth 1 -type f -name '[0-9]*-*.md')" || die "find failed listing $g"
++      gf="$(find "$g" -maxdepth 1 -type f -name '*.md')" || die "find failed listing $g"
+       if [ -n "$gf" ]; then gf="$(printf '%s\n' "$gf" | sort)" || die "sort failed"; fi
+       for f in $gf; do need_file "$f" ""; add whole "$b" per-goal "$f"; done
+     fi

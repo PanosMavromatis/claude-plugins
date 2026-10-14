@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -202,7 +202,7 @@
+   acc="${rec%%"$TAB"*}"; rest="${rec#*"$TAB"}"; b="${rest%%"$TAB"*}"; rest="${rest#*"$TAB"}"
+   lay="${rest%%"$TAB"*}"; p="${rest#*"$TAB"}"
+   by="$(wc -c < "$p")" || die "wc failed reading $p"
+-  by="${by//[!0-9]/}"
++  by="$by"
+   wl="$(awk '{ w += NF } END { print w + 0 "\t" NR }' "$p")" || die "awk failed reading $p"
+   ROWS="${ROWS:+$ROWS$NL}$by$TAB$wl$TAB$acc$TAB$b$TAB$lay$TAB$p"
+ done

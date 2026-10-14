@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -230,7 +230,7 @@
+   END {
+     for (i = 1; i <= nb; i++)
+       for (j = i + 1; j <= nb; j++)
+-        if (bb[o[i]] < bb[o[j]] || (bb[o[j]] == bb[o[i]] && o[j] < o[i])) { x = o[i]; o[i] = o[j]; o[j] = x }
++        if (bb[o[j]] < bb[o[i]] || (bb[o[j]] == bb[o[i]] && o[j] < o[i])) { x = o[i]; o[i] = o[j]; o[j] = x }
+     for (i = 1; i <= nb; i++) {
+       name = o[i]; sub(/.*\//, "", name)
+       print "B\t" name " — " bl[o[i]] ", " bn[o[i]] " file" s(bn[o[i]]) ", " bb[o[i]] " bytes, ≈" int(bb[o[i]] / 4) " tokens"

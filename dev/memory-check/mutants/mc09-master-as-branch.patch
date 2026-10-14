@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -164,7 +164,7 @@
+ if [ "$WITH_ROOT" -eq 1 ]; then need_file "$ROOT_PLAN" ""; add "by line" "" "" "$ROOT_PLAN"; fi
+ if [ "$DIR" != "$PD" ] && [ -f "$DIR/_$MODEL" ]; then need_file "$DIR/_$MODEL" ""; add "by line" "" "" "$DIR/_$MODEL"; fi
+ 
+-plans="$(find "$DIR" -type f -name "$MODEL")" || die "find failed listing $MODEL under $DIR"
++plans="$(find "$DIR" -type f -name "*$MODEL")" || die "find failed listing $MODEL under $DIR"
+ if [ -n "$plans" ]; then plans="$(printf '%s\n' "$plans" | sort)" || die "sort failed"; fi
+ IFS="$NL"
+ for p in $plans; do

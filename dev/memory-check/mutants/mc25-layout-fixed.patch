@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -113,7 +113,7 @@
+ 
+ scan_dirs
+ master_files ""
+-R_LAYOUT="$MLAYOUT"
++R_LAYOUT=revisions
+ if [ -f "$ROOT_PLAN" ]; then R_ROOT="$ROOT_PLAN"; fi
+ 
+ # --- the scope: which directory, and whether the root plan is measured ----------

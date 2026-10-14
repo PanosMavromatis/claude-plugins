@@ -1,0 +1,11 @@
+--- a/memory-check.sh
++++ b/memory-check.sh
+@@ -203,7 +203,7 @@
+   lay="${rest%%"$TAB"*}"; p="${rest#*"$TAB"}"
+   by="$(wc -c < "$p")" || die "wc failed reading $p"
+   by="${by//[!0-9]/}"
+-  wl="$(awk '{ w += NF } END { print w + 0 "\t" NR }' "$p")" || die "awk failed reading $p"
++  wl="$(awk '{ w += NF } END { print w + 0 "\t" NR - 1 }' "$p")" || die "awk failed reading $p"
+   ROWS="${ROWS:+$ROWS$NL}$by$TAB$wl$TAB$acc$TAB$b$TAB$lay$TAB$p"
+ done
+ unset IFS
