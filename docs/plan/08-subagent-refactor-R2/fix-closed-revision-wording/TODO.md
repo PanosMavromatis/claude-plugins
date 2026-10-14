@@ -10,4 +10,4 @@
 
 - [x] 01 — The stamp writes the closed form, keeping the note
 - [x] 02 — Convert warns on the legacy close prose
-- [ ] 03 — Rewrite this repository's closed and stale lines
+- [x] 03 — Rewrite this repository's closed and stale lines
