@@ -1,0 +1,10 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -109,6 +109,6 @@
+ 
+ case "$warnings" in
+   0) echo "Agent docs are in sync with docs/agents/" ;;
+-  1) echo "Agent docs are in sync with docs/agents/ (1 warning)" ;;
++  1) echo "Agent docs are in sync with docs/agents/" ;;
+   *) echo "Agent docs are in sync with docs/agents/ (${warnings} warnings)" ;;
+ esac

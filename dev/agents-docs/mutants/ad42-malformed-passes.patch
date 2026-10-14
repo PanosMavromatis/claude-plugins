@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -53,7 +53,7 @@
+         payload = json.load(sys.stdin)
+     except json.JSONDecodeError as e:
+         print(f"protect-agent-docs: malformed hook input: {e}", file=sys.stderr)
+-        sys.exit(1)
++        sys.exit(0)
+ 
+     tool_name = payload.get("tool_name", "")
+     if tool_name not in ("Write", "Edit", "MultiEdit"):

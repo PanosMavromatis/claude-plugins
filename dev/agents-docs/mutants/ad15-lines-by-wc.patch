@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -47,7 +47,7 @@
+   case "$f" in docs/agents/*) continue ;; esac
+   p="${ROOT}/${f}"
+   [ -f "$p" ] || continue
+-  n="$(awk 'END { print NR }' "$p")"
++  n="$(wc -l < "$p" | tr -d ' ')"
+   if [ "$n" -gt "$MAX_LINES" ]; then
+     warn "${f}: ${n} lines, over ${MAX_LINES}; every agent loads it at session start"
+   fi

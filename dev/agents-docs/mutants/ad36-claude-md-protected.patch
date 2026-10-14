@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -71,7 +71,7 @@
+     except (OSError, RuntimeError):
+         sys.exit(0)
+ 
+-    if target.name != PROTECTED:
++    if target.name not in (PROTECTED, "CLAUDE.md"):
+         sys.exit(0)
+ 
+     component = _component_path(target, project_root)

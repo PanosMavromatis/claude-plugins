@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -80,7 +80,7 @@
+         sys.exit(0)
+ 
+     docs_agents_root = project_root / "docs" / "agents"
+-    component_docs_dir = docs_agents_root / component if component else docs_agents_root
++    component_docs_dir = docs_agents_root
+     guide_path = component_docs_dir / GUIDE
+     if not guide_path.exists():
+         sys.exit(0)

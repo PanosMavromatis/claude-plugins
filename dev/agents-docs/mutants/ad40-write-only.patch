@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -56,7 +56,7 @@
+         sys.exit(1)
+ 
+     tool_name = payload.get("tool_name", "")
+-    if tool_name not in ("Write", "Edit", "MultiEdit"):
++    if tool_name not in ("Write",):
+         sys.exit(0)
+ 
+     file_path = payload.get("tool_input", {}).get("file_path")

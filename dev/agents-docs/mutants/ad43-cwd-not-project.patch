@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -63,7 +63,7 @@
+     if not file_path:
+         sys.exit(0)
+ 
+-    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
++    project_dir = os.getcwd()
+ 
+     try:
+         target = Path(file_path).resolve()

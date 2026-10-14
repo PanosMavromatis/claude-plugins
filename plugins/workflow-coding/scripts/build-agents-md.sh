@@ -1,100 +1,75 @@
 #!/usr/bin/env bash
-# Generate AGENTS.md and AGENTS.override.md from docs/agents/ sources.
-# Walks docs/agents/ recursively: for the root and every subdirectory that
-# contains a core.md or codex.md, emits the corresponding AGENTS.md and/or
-# AGENTS.override.md at the matching path in the destination tree.
-# Deterministic: same inputs produce byte-identical output.
+# Generate AGENTS.override.md from the Codex reviewer's guide, at the root and in every
+# component.
 #
-# CLAUDE.md is intentionally NOT generated — it is hand-authored as an
-# @import dispatcher that references docs/agents/[<path>/]{core,claude}.md
-# at read time. This preserves live-reload for Claude Code while still
-# drawing from the same shared source files.
+# A project's AGENTS.md is hand-authored: the one file every agent loads, never generated.
+# The one generated file is AGENTS.override.md, which Codex CLI honours, built from the
+# Codex reviewer's guide:
+#   docs/agents/codex-review/AGENTS.md          ->  AGENTS.override.md
+#   docs/agents/<path>/codex-review/AGENTS.md   ->  <path>/AGENTS.override.md
+# Only a codex-review/ guide makes a component: the other guide directories under
+# docs/agents/ (plan/, kernel/, docs-sync/ and the rest) produce nothing. Deterministic:
+# the same guides give byte-identical output.
+#
+# A repository still in the dispatcher layout (docs/agents/[<path>/]core.md and codex.md)
+# has no codex-review/ guide: the build fails and says how to move it, rather than leave a
+# stale AGENTS.override.md behind. An old core.md or codex.md left beside the guides is
+# ignored, with a warning.
 #
 # Usage:
 #   /agents-docs-build                                       # via the workflow-coding plugin
 #   bash scripts/build-agents-md.sh                          # direct
 #   DST_DIR=/tmp/out bash scripts/build-agents-md.sh         # used by check-agents-md.sh
-#
-# Consumers normally invoke /agents-docs-build rather than this script.
+# Exit: 0 = built. 1 = no guide to build from, or the dispatcher layout; message on stderr.
 
 set -euo pipefail
+set -f
 
 ROOT="$(git rev-parse --show-toplevel)"
 SRC_DIR="${ROOT}/docs/agents"
 DST_DIR="${DST_DIR:-${ROOT}}"
+GUIDE="codex-review/AGENTS.md"
+NL='
+'
 
 if [ ! -d "$SRC_DIR" ]; then
   echo "error: ${SRC_DIR} not found" >&2
-  echo "Expected layout: docs/agents/{core.md,codex.md,claude.md} at the repo root" >&2
+  echo "Expected layout: docs/agents/${GUIDE}, and docs/agents/<path>/${GUIDE} for a component" >&2
   exit 1
 fi
 
-# Source -> destination basename pairs. Applied at the root and at every
-# component subdirectory under docs/agents/.
-PAIRS=(
-  "core.md|AGENTS.md"
-  "codex.md|AGENTS.override.md"
-)
+guides="$(find "$SRC_DIR" -type f -path "*/${GUIDE}" | sort)"
+old="$(find "$SRC_DIR" -type f \( -name core.md -o -name codex.md \) | sort)"
 
-# Plan all (src_path, dest_path, rel) triples before writing anything.
-declare -a PLAN_SRC=() PLAN_DST=() PLAN_REL=()
-
-while IFS= read -r dir; do
-  rel="${dir#"$SRC_DIR"}"
-  rel="${rel#/}"  # "" for the root, "<comp>" or "<comp>/<sub>" otherwise
-
-  for pair in "${PAIRS[@]}"; do
-    src_basename="${pair%|*}"
-    dst_basename="${pair#*|}"
-
-    src_path="${dir}/${src_basename}"
-    [ -f "$src_path" ] || continue
-
-    if [ -z "$rel" ]; then
-      dst_path="${DST_DIR}/${dst_basename}"
-    else
-      dst_path="${DST_DIR}/${rel}/${dst_basename}"
-    fi
-
-    PLAN_SRC+=("$src_path")
-    PLAN_DST+=("$dst_path")
-    PLAN_REL+=("$rel")
-  done
-done < <(find "$SRC_DIR" -type d | sort)
-
-if [ "${#PLAN_SRC[@]}" -eq 0 ]; then
-  echo "error: no core.md or codex.md found anywhere under ${SRC_DIR}" >&2
-  exit 1
-fi
-
-# Pre-flight: confirm every planned source still exists.
-for i in "${!PLAN_SRC[@]}"; do
-  if [ ! -f "${PLAN_SRC[$i]}" ]; then
-    echo "error: ${PLAN_SRC[$i]} disappeared before write" >&2
-    exit 1
+if [ -z "$guides" ]; then
+  if [ -n "$old" ]; then
+    echo "error: docs/agents/ is in the dispatcher layout (core.md, codex.md), which this build no longer reads" >&2
+    echo "Move each codex.md to codex-review/AGENTS.md in the same directory, or run /agents-docs-migrate" >&2
+  else
+    echo "error: no ${GUIDE} under ${SRC_DIR}" >&2
   fi
+  exit 1
+fi
+
+IFS="$NL"
+for f in $old; do
+  echo "warning: ${f#"$ROOT"/} is a dispatcher-layout source this build ignores" >&2
 done
 
-# Build each target.
-for i in "${!PLAN_SRC[@]}"; do
-  src_path="${PLAN_SRC[$i]}"
-  dst_path="${PLAN_DST[$i]}"
-  rel="${PLAN_REL[$i]}"
-
-  if [ -z "$rel" ]; then
-    header_source="docs/agents/$(basename "$src_path")"
+for src in $guides; do
+  rel="${src#"$SRC_DIR"/}"                    # codex-review/AGENTS.md, or <path>/codex-review/AGENTS.md
+  comp="${rel%"$GUIDE"}"; comp="${comp%/}"    # empty for the root, else <path>
+  if [ -z "$comp" ]; then
+    dst="${DST_DIR}/AGENTS.override.md"
   else
-    header_source="docs/agents/${rel}/$(basename "$src_path")"
+    dst="${DST_DIR}/${comp}/AGENTS.override.md"
   fi
-
-  mkdir -p "$(dirname "$dst_path")"
-
+  mkdir -p "$(dirname "$dst")"
   {
-    echo "<!-- Generated from ${header_source}."
+    echo "<!-- Generated from docs/agents/${rel}."
     echo "     Regenerate with /agents-docs-build. Do not edit this file directly. -->"
     echo
-    cat "$src_path"
-  } > "$dst_path"
-
-  echo "wrote ${dst_path} ($(wc -l < "$dst_path" | tr -d ' ') lines)"
+    cat "$src"
+  } > "$dst"
+  echo "wrote ${dst} ($(wc -l < "$dst" | tr -d ' ') lines)"
 done

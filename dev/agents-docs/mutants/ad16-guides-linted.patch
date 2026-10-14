@@ -1,0 +1,10 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -44,7 +44,6 @@
+ 
+ IFS="$NL"
+ for f in $files; do
+-  case "$f" in docs/agents/*) continue ;; esac
+   p="${ROOT}/${f}"
+   [ -f "$p" ] || continue
+   n="$(awk 'END { print NR }' "$p")"

@@ -1,0 +1,15 @@
+--- a/scripts/build-agents-md.sh
++++ b/scripts/build-agents-md.sh
+@@ -31,12 +31,6 @@
+ GUIDE="codex-review/AGENTS.md"
+ NL='
+ '
+-
+-if [ ! -d "$SRC_DIR" ]; then
+-  echo "error: ${SRC_DIR} not found" >&2
+-  echo "Expected layout: docs/agents/${GUIDE}, and docs/agents/<path>/${GUIDE} for a component" >&2
+-  exit 1
+-fi
+ 
+ guides="$(find "$SRC_DIR" -type f -path "*/${GUIDE}" | sort)"
+ old="$(find "$SRC_DIR" -type f \( -name core.md -o -name codex.md \) | sort)"

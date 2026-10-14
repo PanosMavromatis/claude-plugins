@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -60,7 +60,7 @@
+     elif [ "$k" -le 5 ]; then
+       warn "${f}: lines ${at} are dated; dated prose belongs in docs/agents/_history/"
+     else
+-      warn "${f}: lines ${at} and $((k - 5)) more are dated; dated prose belongs in docs/agents/_history/"
++      warn "${f}: lines ${at} and $((k - 4)) more are dated; dated prose belongs in docs/agents/_history/"
+     fi
+   fi
+ done

@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -39,7 +39,7 @@
+ warnings=0
+ warn() { echo "warning: $1" >&2; warnings=$((warnings + 1)); }
+ 
+-files="$(cd "$ROOT" && git ls-files --cached --others --exclude-standard -- 'AGENTS.md' '*/AGENTS.md')"
++files="$(cd "$ROOT" && git ls-files --cached -- 'AGENTS.md' '*/AGENTS.md')"
+ if [ -n "$files" ]; then files="$(printf '%s\n' "$files" | sort -u)"; fi
+ 
+ IFS="$NL"

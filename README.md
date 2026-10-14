@@ -153,6 +153,16 @@ python3 -I dev/export-session/suite.py                   # 25 cases, no model, ~
 python3 -I dev/export-session/suite.py --mutants         # the suite must catch each mutant, ~9 s
 ```
 
+Test the agent-docs pair, the build `/agents-docs-build` runs, `scripts/build-agents-md.sh`,
+the check `/agents-docs-check` runs, `scripts/check-agents-md.sh`, and the hook that guards
+the generated `AGENTS.override.md`, `hooks/protect-agent-docs.py`, after a change to any of
+them. The check runs the build beside it, so one suite tests all three:
+
+```bash
+python3 -I dev/agents-docs/suite.py                      # 43 cases, no model, ~20 s
+python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch each mutant, ~3 min
+```
+
 Check the commands' phrasing after a change to a command's `allowed-tools` or to the text
 that states the rule: every command granting `git` must say to run it as
 `git <subcommand>`, never `git -C <path>`, and to run every command alone, since

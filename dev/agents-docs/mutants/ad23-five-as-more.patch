@@ -1,0 +1,11 @@
+--- a/scripts/check-agents-md.sh
++++ b/scripts/check-agents-md.sh
+@@ -57,7 +57,7 @@
+     k="${dated%%"$TAB"*}"; at="${dated#*"$TAB"}"
+     if [ "$k" -eq 1 ]; then
+       warn "${f}: line ${at} is dated; dated prose belongs in docs/agents/_history/"
+-    elif [ "$k" -le 5 ]; then
++    elif [ "$k" -lt 5 ]; then
+       warn "${f}: lines ${at} are dated; dated prose belongs in docs/agents/_history/"
+     else
+       warn "${f}: lines ${at} and $((k - 5)) more are dated; dated prose belongs in docs/agents/_history/"

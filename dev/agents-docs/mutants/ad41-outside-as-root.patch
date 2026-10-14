@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -43,7 +43,7 @@
+     try:
+         rel_parent = target.parent.relative_to(project_root)
+     except ValueError:
+-        return None
++        return ""
+     s = str(rel_parent)
+     return "" if s == "." else s
+ 
