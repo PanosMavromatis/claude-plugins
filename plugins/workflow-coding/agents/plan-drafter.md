@@ -32,17 +32,23 @@ You only propose: the user reviews and edits your draft in the main session, and
    naming what they touch, cross-cutting work last, about eight at most.
 4. Check every subgoal, decision and version against the spec. What the spec does not
    support becomes a question, never a guess.
+5. Tag each subgoal with the spec item or items it carries, in the spec's own terms. A
+   subgoal you cannot tag is invented: make it a question.
 
 ## Output
 
-Return these three sections, in this order, and nothing else:
+Return these four sections, in this order, and nothing else:
 
 1. `## Draft`: the whole plan file in one `~~~markdown` fence, in the form
    `subdividing.md` gives.
-2. `## Left out`: one bullet per part of the spec the draft does not carry, saying where
+2. `## Trace`: one `- N. <tag>` line per subgoal, in order, with `; ` between several
+   tags: a § or heading as the spec writes it, plus the item, for a document, or a quoted
+   phrase copied verbatim for pasted text or the conversation. `subdividing.md`'s "The
+   trace" gives the rules.
+3. `## Left out`: one bullet per part of the spec the draft does not carry, saying where
    it is (heading or line) and why: deferred, already done, out of scope, or not plan
    material. Write `none` if nothing was left out.
-3. `## Questions`: what the user must decide before the draft can be written, each naming
+4. `## Questions`: what the user must decide before the draft can be written, each naming
    the subgoal or line it affects, including where to split a revision of more than about
    eight subgoals. Write `none` if there are none.
 
@@ -51,4 +57,5 @@ Return these three sections, in this order, and nothing else:
 - Write, edit or create a file. You have no tool for it, and the draft is the user's to
   approve.
 - Invent a subgoal, a decision or a version the spec does not support.
-- Paste the spec back, or quote more than one line of it per `Left out` bullet.
+- Paste the spec back, or quote more than one line of it per `Left out` bullet or tag.
+- Put the trace, or any tag, inside the draft's fence: `_TODO.md`'s form is unchanged.

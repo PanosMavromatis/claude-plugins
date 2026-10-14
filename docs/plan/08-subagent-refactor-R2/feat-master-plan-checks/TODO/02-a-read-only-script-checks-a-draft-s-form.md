@@ -4,4 +4,5 @@
 
 - [ ] A read-only script under `scripts/` checks a draft file's form (the header lines, the three sections in order, every subgoal a two-line `- [ ] N.` and `Scope: … Acceptance: …` block, no checkbox among the settled decisions), and reports each violation with its line, in the plan scripts' report style
 - [ ] It reads subgoal blocks with `lib/plan-rules.sh`'s item-block rule, so the check and the parsers cannot disagree
+- [ ] Given the spec's path, it resolves each trace tag, a § or heading the spec contains or a quoted phrase found in it verbatim, and reports each tag it cannot resolve; whether a real section supports the subgoal stays a judgement
 - [ ] Its suite under `dev/` passes, with a case for each rule, a blank line inside a subgoal among them, and `--mutants` catches every mutant

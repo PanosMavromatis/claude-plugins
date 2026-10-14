@@ -11,7 +11,7 @@ R2 subgoal 4. `/master-plan` checks a draft against `subdividing.md`'s form by r
 ## Scope
 
 - `agents/plan-drafter.md` and `references/subdividing.md`: the trace, beside the draft, never in `_TODO.md`
-- a new read-only form-check script under `scripts/`, using `lib/plan-rules.sh`'s item-block rule, with its suite under `dev/`
+- a new read-only form-check script under `scripts/`, using `lib/plan-rules.sh`'s item-block rule, which also resolves each trace tag against the spec, with its suite under `dev/`
 - `commands/master-plan.md` step 3: run the script, judge fidelity from the trace
 - `dev/per-goal-e2e/check.py` for the m scenarios, and an m1–m3 run
 

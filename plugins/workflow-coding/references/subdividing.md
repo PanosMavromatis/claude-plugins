@@ -1,9 +1,10 @@
 # Subdividing a specification into a revision
 
 `/master-plan` gives the `plan-drafter` agent a specification: a design document, pasted
-prose, or notes from a conversation. The agent returns a draft revision master plan, which
-the user reviews and edits before anything is written. This file holds the rules for that
-draft and the reasons for them. The agent body summarises the rules; change them here.
+prose, or notes from a conversation. The agent returns a draft revision master plan, and a
+trace of the spec item each subgoal carries, which the user reviews and edits before
+anything is written. This file holds the rules for that draft and the reasons for them.
+The agent body summarises the rules; change them here.
 
 ## One subgoal is one branch
 
@@ -82,3 +83,20 @@ master plan is `DO.md`. The form is the same for both:
 - The `Scope:` and `Acceptance:` line is indented two spaces, so it continues the item.
 - `## Settled decisions` with no decisions says `none`. It is never left out: its absence
   would read as "nothing is settled" when the spec simply settled nothing.
+
+## The trace
+
+Beside the draft, never in it, the agent returns a trace: for each subgoal, the spec item
+or items it carries, so the review can judge fidelity without re-reading the spec.
+
+- One line per subgoal, in the draft's order: `- N. <tag>`, with `; ` between tags when
+  the subgoal carries several items.
+- A tag names the item in the spec's own terms, so a check can find it in the spec: a §
+  or heading as the spec writes it, plus the item, for a document (`§4.5 item 2`), or a
+  quoted phrase copied verbatim, one line at most, for pasted text or the conversation.
+- Every subgoal has a tag. A subgoal no spec item supports is invented, and is a question
+  instead ("Nothing is invented", above).
+- The trace and the left-out list are counterparts: one says where each subgoal came
+  from, the other what was not carried, so together they account for the spec.
+- It is never written into `_TODO.md`, whose form is the one above: once the revision is
+  open, `**Spec**:` names its source, and the trace has done its work.
