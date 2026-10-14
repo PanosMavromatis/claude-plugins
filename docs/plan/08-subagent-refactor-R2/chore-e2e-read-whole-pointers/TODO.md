@@ -8,6 +8,6 @@
 
 ## Goals
 
-- [~] 01 — Run every scenario that reaches a pointer
+- [x] 01 — Run every scenario that reaches a pointer
 - [ ] 02 — Reword any pointer a session searched around
 - [ ] 03 — Record the run in the e2e README
