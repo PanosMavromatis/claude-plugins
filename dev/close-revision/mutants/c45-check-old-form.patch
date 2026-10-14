@@ -1,0 +1,11 @@
+--- a/close-revision.sh
++++ b/close-revision.sh
+@@ -439,7 +439,7 @@
+       replaced "$REV" "$ST_N" "**Status**: closed $DASH $DATE" | same "$REV" \
+         || violation "$REV does not read as stamped: line $ST_N should be \`**Status**: closed $DASH $DATE\`, and nothing else should change" \
+              "edit line $ST_N to that, and undo any other change"
+-      replaced "$ROOT_PLAN" "$IDX_N" "$IDX_DONE" | same "$ROOT_PLAN" \
++      replaced "$ROOT_PLAN" "$IDX_N" "- [x]${IDX_LINE:5}" | same "$ROOT_PLAN" \
+         || violation "$ROOT_PLAN does not read as stamped: line $IDX_N should be \`$IDX_DONE\`, and nothing else should change" \
+              "edit line $IDX_N to that, and undo any other change" ;;
+     extract)

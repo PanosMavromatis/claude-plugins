@@ -133,7 +133,7 @@ IX = {"docs/plan/TODO.md": INDEX, "docs/plan/05-old/_TODO.md": "# Revision 05-ol
       "docs/plan/07-rev-2/_TODO.md": REV7, "docs/plan/08-new/_TODO.md": REV8,
       "docs/plan/08-new/feat-x/TODO.md": MERGED}
 ST8 = "**Status**: closed — " + DATE
-IDX8 = "- [x] 08-new — the next one"
+IDX8 = "- [x] 08-new — the next one — closed. See `docs/plan/08-new/_TODO.md`."
 EDITS8 = f"docs/plan/08-new/_TODO.md:3: {ST8}\ndocs/plan/TODO.md:10: {IDX8}"
 REV8_AFTER = REV8.replace("**Status**: open", ST8)
 INDEX_AFTER = INDEX.replace("- [~] 08-new — the next one", IDX8)
@@ -163,6 +163,8 @@ def write(rel, text): open(f"{FX}/{rel}", "w", newline="").write(text)
 def gitmv(src, dst): git("mv", src, dst)
 def stamp_ok(): write("docs/plan/08-new/_TODO.md", REV8_AFTER); write("docs/plan/TODO.md", INDEX_AFTER)
 def stamp_extra(): write("docs/plan/08-new/_TODO.md", REV8_AFTER + "extra\n"); write("docs/plan/TODO.md", INDEX_AFTER)
+def stamp_old():  # the stamp before 0.11.0: the marker flipped, the note alone
+    write("docs/plan/08-new/_TODO.md", REV8_AFTER); write("docs/plan/TODO.md", INDEX.replace("- [~] 08-new — the next one", "- [x] 08-new — the next one"))
 def stamp_crlf():  # an Edit of one line in a CRLF file keeps the CRs on the lines it did not touch
     write("docs/plan/08-new/_TODO.md", REV8_AFTER.replace("\n", "\r\n")); write("docs/plan/TODO.md", INDEX_AFTER.replace("\n", "\r\n"))
 def extract_ok():
@@ -238,6 +240,10 @@ C = [
  ("s12", crlf(IX), ["08-new"] + D, dict(exit=0, rep=dict(STAMP, result="proposed", change="stamp", edits=EDITS8))),
  ("s13", {k: v for k, v in IX.items() if k != "docs/plan/08-new/_TODO.md"}, ["08-new"] + D, dict(exit=1, rep=rep(result="error",
      problem="revision 08-new is open at docs/plan/TODO.md:10, but docs/plan/08-new/_TODO.md is missing"), any=["layout", "root", "revision", "fix"])),
+ # an index line with no note closes as `<label> — closed. See …`
+ ("s14", dict(IX, **{"docs/plan/TODO.md": INDEX.replace("- [~] 08-new — the next one", "- [~] 08-new")}), ["08-new"] + D, dict(exit=0,
+     rep=dict(STAMP, result="proposed", change="stamp",
+     edits=f"docs/plan/08-new/_TODO.md:3: {ST8}\ndocs/plan/TODO.md:10: - [x] 08-new — closed. See `docs/plan/08-new/_TODO.md`."))),
  # a legacy root plan: the cut, the pointer and the moves
  ("x01", LG, ["08-c"] + D, dict(exit=0, rep=dict(LEGOUT, result="proposed"))),
  ("x02", LG, ["08-c", "--render", "archive"] + D, dict(exit=0, out=ARCHIVE)),
@@ -308,6 +314,10 @@ C = [
      problem="docs/plan/TODO.md:10 at HEAD marks revision 08-new [x], not [~]", fix=BEFORE))),
  ("k09", LG_DONE, ["08-c", "--check"] + D, dict(exit=1, rep=dict(LEG, result="error",
      problem="docs/plan/TODO.md at HEAD has no section for revision 08-c", fix=BEFORE))),
+ # the stamp's old form, the note alone, no longer verifies
+ ("k11", IX, ["08-new", "--check"] + D, dict(exit=1, rep=dict(STAMP, result="error",
+     problem=f"docs/plan/TODO.md does not read as stamped: line 10 should be `{IDX8}`, and nothing else should change",
+     fix="edit line 10 to that, and undo any other change")), stamp_old),
  # large inputs (BIG): LGB reaches section_line, status_src (feat-one) and the directory search
  # (feat-gone), and with 05-old pointer_line; IXB reaches the stamp's index line and the
  # revision's status, and under --check the **Layout** read

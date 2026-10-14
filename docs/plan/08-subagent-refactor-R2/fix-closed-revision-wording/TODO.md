@@ -8,6 +8,6 @@
 
 ## Goals
 
-- [ ] 01 — The stamp writes the closed form, keeping the note
+- [x] 01 — The stamp writes the closed form, keeping the note
 - [ ] 02 — Convert warns on the legacy close prose
 - [ ] 03 — Rewrite this repository's closed and stale lines

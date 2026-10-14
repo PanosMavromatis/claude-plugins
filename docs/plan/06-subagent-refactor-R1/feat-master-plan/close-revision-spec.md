@@ -51,7 +51,9 @@ violation (E5–E8) is an error with its problem and fix.
    check `/hitl-step` makes before calling a plan complete), each listed with its line.
 
 Then `edits:` names `_<model>`'s `**Status**:` line as `**Status**: closed — <date>`,
-and the index line with its marker as `[x]`, the rest unchanged. A branch plan inside
+and the index line as `- [x] <label>[ — <note>] — closed. See \`<archive>\`.`, with
+`<archive>` the path of `_<model>`: the note kept, then where the revision is, as a
+legacy close's pointer reads. A branch plan inside
 `docs/plan/<label>/` still stamped `active` is a warning, not a refusal, and is not looked
 for under `--check`. Nothing moves:
 `/new-branch` created each plan inside the revision.

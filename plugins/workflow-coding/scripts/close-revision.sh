@@ -2,7 +2,8 @@
 # Propose closing a revision, and check the command's writes before they are committed.
 #
 # Under a revisions index a close is a stamp: the revision's _<model> goes from
-# `**Status**: open` to `**Status**: closed — <date>`, and its index line from [~] to [x].
+# `**Status**: open` to `**Status**: closed — <date>`, and its index line from [~] to [x],
+# its note kept and then "— closed. See <archive>.", as a legacy pointer ends.
 # The directory already is the archive, and /new-branch created every branch plan inside it,
 # so nothing moves. Under a legacy root plan a close is a cut: the revision's
 # `## Subgoals — revision <label>` section moves, verbatim, to docs/plan/<label>/_<model>,
@@ -192,7 +193,7 @@ R_LAYOUT="$MLAYOUT"
 # --- revisions: the stamp -------------------------------------------------------------
 
 NOTOPEN="only an open revision ([~]) is closed; if this one is open, mark it [~] first (your call)"
-IDX_N=""; IDX_LINE=""; ST_N=""
+IDX_N=""; IDX_LINE=""; IDX_DONE=""; ST_N=""
 stamp() {
   local out mk v n rec IFS
   # The label's line under `## Revisions`, matched whole: the first word after the marker.
@@ -255,7 +256,10 @@ stamp() {
     refuse "revision $LABEL still has $n unfinished item(s):$v" \
       "finish each, descope it ([-]), or move it to another revision; whether the revision is finished is your call"
   fi
-  R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: - [x]${IDX_LINE:5}"
+  # The index line closes as a legacy close's pointer reads: the note kept, then where the
+  # revision is.
+  IDX_DONE="- [x]${IDX_LINE:5} $DASH closed. See \`$REV\`."
+  R_EDITS="$REV:$ST_N: **Status**: closed $DASH $DATE$NL$ROOT_PLAN:$IDX_N: $IDX_DONE"
   R_CHANGE=stamp
 }
 
@@ -436,8 +440,8 @@ if [ $CHECK -eq 1 ]; then
       replaced "$REV" "$ST_N" "**Status**: closed $DASH $DATE" | same "$REV" \
         || violation "$REV does not read as stamped: line $ST_N should be \`**Status**: closed $DASH $DATE\`, and nothing else should change" \
              "edit line $ST_N to that, and undo any other change"
-      replaced "$ROOT_PLAN" "$IDX_N" "- [x]${IDX_LINE:5}" | same "$ROOT_PLAN" \
-        || violation "$ROOT_PLAN does not read as stamped: line $IDX_N should be \`- [x]${IDX_LINE:5}\`, and nothing else should change" \
+      replaced "$ROOT_PLAN" "$IDX_N" "$IDX_DONE" | same "$ROOT_PLAN" \
+        || violation "$ROOT_PLAN does not read as stamped: line $IDX_N should be \`$IDX_DONE\`, and nothing else should change" \
              "edit line $IDX_N to that, and undo any other change" ;;
     extract)
       render_archive | same "$REV" \
