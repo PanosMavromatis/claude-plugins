@@ -8,7 +8,7 @@
 
 ## Goals
 
-- [ ] 01 — build-agents-md.sh builds only the AGENTS.override.md pair
+- [x] 01 — build-agents-md.sh builds only the AGENTS.override.md pair
 - [ ] 02 — check-agents-md.sh keeps its in-sync check and gains two lints
 - [ ] 03 — protect-agent-docs.py protects AGENTS.override.md only
 - [ ] 04 — A suite under dev/agents-docs checks the build, the check and the hook

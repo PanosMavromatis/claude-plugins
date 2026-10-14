@@ -23,3 +23,5 @@ R2 subgoal 7. Under §4.3 a consumer's `AGENTS.md` becomes hand-authored, the on
 - This repository has no `docs/agents/`, so the change is tested on fixtures only
 
 ## Notes
+
+- 2026-10-14, goal 01: `build-agents-md.sh` now builds only `AGENTS.override.md`, from every `codex-review/AGENTS.md` under `docs/agents/`: the root's from `docs/agents/codex-review/`, a component's from `docs/agents/<path>/codex-review/`, so the other guide directories produce nothing. In the dispatcher layout it exits 1 naming the move, and it warns on old sources left beside the guides. The commands and the plugin's docs describe the old build until goal 05
