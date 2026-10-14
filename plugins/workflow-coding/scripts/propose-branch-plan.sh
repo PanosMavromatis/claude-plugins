@@ -147,8 +147,8 @@ fi
 master_files ""
 case "$MLAYOUT" in
   revisions) R_LAYOUT=per-goal ;;
-  legacy)    R_LAYOUT=legacy ;;
-  none)      R_LAYOUT=legacy
+  legacy)    R_LAYOUT=single-file ;;
+  none)      R_LAYOUT=single-file
              if [ -f "$PD/$OTHER" ]; then
                warn "there is no $ROOT_PLAN, but $PD/$OTHER exists: the master plan uses the other model, so this plan will not be backlinked to it"
              fi ;;

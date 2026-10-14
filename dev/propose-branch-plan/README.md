@@ -15,7 +15,7 @@ this one places. After a change to the library, run all four suites.
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite              # outside this repository, as dev/locate-plan/ requires
 python3 -I dev/propose-branch-plan/suite.py              # 33 cases, twice under each Bash found (~20 s)
-python3 -I dev/propose-branch-plan/suite.py --mutants    # 23 mutants, every one must be caught (~2 min)
+python3 -I dev/propose-branch-plan/suite.py --mutants    # 25 mutants, every one must be caught (~2 min)
 ```
 
 `-v` prints each report. `--script PATH` tests another copy, which must have

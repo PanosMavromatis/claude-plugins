@@ -22,8 +22,8 @@ it nothing to decode.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite
-python3 -I dev/locate-plan/suite.py              # 85 cases, twice under each Bash found (~30 s)
-python3 -I dev/locate-plan/suite.py --mutants    # 29 mutants: 28 must be caught, n05 is equivalent (~4 min)
+python3 -I dev/locate-plan/suite.py              # 87 cases, twice under each Bash found (~30 s)
+python3 -I dev/locate-plan/suite.py --mutants    # 32 mutants: 31 must be caught, n05 is equivalent (~4 min)
 python3 -I dev/locate-plan/answer-key.py         # each mechanical full fix clears its case
 ```
 
@@ -60,7 +60,7 @@ python3 -I dev/locate-plan/answer-key.py --validation
 - **`mutants/`** holds one unified diff per mutant, applied fresh with fuzz 0 to a copy
   of today's script and its library, `scripts/lib/plan-rules.sh`, the rules it shares
   with the other plan scripts. Each patch names its file relative to `scripts/`
-  (`a/locate-plan.sh` or `a/lib/plan-rules.sh`); 13 of the 27 target the library. If an
+  (`a/locate-plan.sh` or `a/lib/plan-rules.sh`); 16 of the 32 target the library. If an
   edit stops a patch applying, it is reported as `STALE` rather than quietly testing old
   code. Re-anchor it, or drop it if its rule has gone.
 - **`answer-key.py`** holds `KEY`: for every error and fault case, the full fix (scores

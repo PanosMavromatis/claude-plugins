@@ -98,7 +98,7 @@ indented two spaces:
 
 ```
 result:     propose | ask | error
-layout:     per-goal | legacy
+layout:     per-goal | single-file
 revision:   <label> | —
 subgoal:    <master file>:<line> <the line, verbatim> | standalone
 scope:      the rest of the subgoal's block, one line each, without its indent | —
@@ -115,7 +115,8 @@ message:    one sentence for the user
 
 **Rules.**
 - **The layout** comes from `docs/plan/F`, read with the reader's own functions: a
-  revisions index (validated: E5, E6, E7) → per-goal; otherwise legacy.
+  revisions index (validated: E5, E6, E7) → per-goal; otherwise single-file (`legacy`
+  until R2).
 - **The subgoal.**
   - `--subgoal` names the master file's line. It must be an open (`[ ]` or `[~]`)
     indent-0 item, in `_F` of an open revision or in the legacy master plan; otherwise

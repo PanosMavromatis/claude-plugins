@@ -46,7 +46,7 @@ result:     found | ask | none | error
 rung:       1–5 | —
 plan:       the resolved file
 kind:       branch | revision-master | legacy-master | root-file
-layout:     per-goal | legacy
+layout:     per-goal | single-file
 status:     the **Status** value
 lines:      the plan's line count
 next:       path:line <the line, verbatim>
@@ -127,9 +127,11 @@ W5. Otherwise `result: none`, `rung: —`.
 - **`kind:`** by rung: 2 and 4 → `branch`; 3 → `legacy-master` or `revision-master`;
   5 → `root-file`. For rung 1, by path: `docs/plan/F` → `legacy-master`;
   `docs/plan/<dir>/_F` → `revision-master`; `F` at the root → `root-file`; else `branch`.
-- **`layout:`** `per-goal` if the plan has `**Layout**: per-goal`, otherwise `legacy`.
-  `**Layout**: legacy` is accepted explicitly. Any other value, `revisions` on a file other
-  than `docs/plan/F`, or `per-goal` on `docs/plan/F`, is E8.
+- **`layout:`** `per-goal` if the plan has `**Layout**: per-goal`, otherwise `single-file`,
+  for a branch plan, a revision's `_F` and a legacy root plan alike; it was `legacy` until
+  R2, the word the root plan's own layout uses. `**Layout**: single-file` and
+  `**Layout**: legacy` are accepted explicitly. Any other value, `revisions` on a file
+  other than `docs/plan/F`, or `per-goal` on `docs/plan/F`, is E8.
 - **TODO model.** `next:` is the first indent-0 `[~]`, else the first indent-0 `[ ]`.
   `subgoals:` is every indented item line, any marker, after it and before the next indent-0
   item or `## ` heading; all markers, because Step 4's parent rule reads `[x]` and `[-]` too.

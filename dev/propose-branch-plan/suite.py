@@ -77,13 +77,13 @@ LONG = "Rewrite Step 1 of both step commands so they call the new script"
 # id, files on the case's branch, arguments after the script (or a special), expectations
 C = [
  ("p01", {"README.md": "x\n"}, ["TODO.md", "feat/x"],
-  dict(exit=0, result="propose", layout="legacy", revision="—", subgoal="standalone", scope=[], dir="docs/plan/feat-x",
+  dict(exit=0, result="propose", layout="single-file", revision="—", subgoal="standalone", scope=[], dir="docs/plan/feat-x",
        index="docs/plan/feat-x/TODO.md", goals=[], backlink="—", warnings=[])),
  ("p02", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x"],
-  dict(exit=0, result="ask", layout="legacy", scope=[], dir="—", cand=["docs/plan/TODO.md:11 - [ ] Open and free",
+  dict(exit=0, result="ask", layout="single-file", scope=[], dir="—", cand=["docs/plan/TODO.md:11 - [ ] Open and free",
        "docs/plan/TODO.md:15 - [~] In progress and free"], msg="--subgoal <file>:<line>, or pass --standalone")),
  ("p03", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x", "--subgoal", "docs/plan/TODO.md:11", "--", "A", "B"],
-  dict(exit=0, result="propose", layout="legacy", revision="03-lifecycle", subgoal="docs/plan/TODO.md:11 - [ ] Open and free",
+  dict(exit=0, result="propose", layout="single-file", revision="03-lifecycle", subgoal="docs/plan/TODO.md:11 - [ ] Open and free",
        scope=["Scope: a continuation line.", "> **Q:** a question?", "> **A:** an answer."],
        dir="docs/plan/feat-x", goals=[], backlink="docs/plan/TODO.md:14", warnings=[])),
  ("p03b", {"docs/plan/TODO.md": LEGACY}, ["TODO.md", "feat/x", "--subgoal", "docs/plan/TODO.md:15"],

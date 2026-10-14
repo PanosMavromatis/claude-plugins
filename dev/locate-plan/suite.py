@@ -203,7 +203,7 @@ D = [
        subgoals=["docs/plan/d-x02/TODO/02-two.md:9", "docs/plan/d-x02/TODO/02-two.md:10", "docs/plan/d-x02/TODO/02-two.md:11"],
        blocked="docs/plan/d-x02/TODO.md:10", nowarn=True)),
  ("x03", "d/x03", {"docs/plan/d-x03/TODO.md": plan("active", "```", "- [ ] fenced", "**Layout**: per-goal", "```", "- [ ] real")}, ["TODO.md"],
-  dict(exit=0, result="found", layout="legacy", next="docs/plan/d-x03/TODO.md:11 - [ ] real", nowarn=True)),
+  dict(exit=0, result="found", layout="single-file", next="docs/plan/d-x03/TODO.md:11 - [ ] real", nowarn=True)),
  ("x04", "d/x04", {"docs/plan/d-x04/TODO.md": plan("active", "- [~] first", "- [ ] second", "  - [x] s1", "  - [-] s2", "- [ ] third")}, ["TODO.md", "--goal", "8"],
   dict(exit=0, result="found", next="docs/plan/d-x04/TODO.md:8 - [ ] second",
        subgoals=["docs/plan/d-x04/TODO.md:9", "docs/plan/d-x04/TODO.md:10"])),
@@ -211,11 +211,16 @@ D = [
   dict(exit=0, result="found", rung="2", plan="docs/plan/feat-a,b/TODO.md",
        subgoals=["docs/plan/feat-a,b/TODO.md:8", "docs/plan/feat-a,b/TODO.md:9"])),
  ("x06", "plan", {MASTER: LEGACY}, ["TODO.md"],
-  dict(exit=0, result="found", rung="3", plan=MASTER, kind="legacy-master")),  # branch `plan` must not take the root plan at rung 2
+  dict(exit=0, result="found", rung="3", plan=MASTER, kind="legacy-master", layout="single-file")),  # branch `plan` must not take the root plan at rung 2
  ("x07", "d/x07", {"docs/plan/d-x07/TODO.md": plan("active", "- [ ] x")}, ["TODO.md"],
   dict(exit=0, result="found", rung="2", plan="docs/plan/d-x07/TODO.md", cwd_sub="docs/plan")),
  ("x08", "d/x08", {"docs/plan/d-x08/DO.md": plan("active", "- [x] a", "  - [ ] nested", "- [ ] b")}, ["DO.md", "--", "docs/plan/d-x08"],
   dict(exit=0, result="found", rung="1", next="docs/plan/d-x08/DO.md:8   - [ ] nested", subgoals="—")),
+ # a `**Layout**:` header of either single-file spelling is accepted, and reported single-file
+ ("x18", "d/x18", {"docs/plan/d-x18/TODO.md": plan("active", "- [ ] x", extra="**Layout**: legacy\n")}, ["TODO.md"],
+  dict(exit=0, result="found", layout="single-file", nowarn=True)),
+ ("x19", "d/x19", {"docs/plan/d-x19/TODO.md": plan("active", "- [ ] x", extra="**Layout**: single-file\n")}, ["TODO.md"],
+  dict(exit=0, result="found", layout="single-file", nowarn=True)),
  # usage
  ("u01", "d/u", {}, [], dict(raw=True, exit=2)),
  ("u02", "d/u", {}, ["foo.md"], dict(raw=True, exit=2)),
@@ -254,7 +259,7 @@ FXC = [  # id, branch, args, expectations
  ("c04", "case/r2-moved", ["TODO.md"], dict(result="found", rung="2", plan="docs/plan/group/sub/case-r2-moved/TODO.md", next=":9")),
  ("c05", "case/r2-dup", ["TODO.md"], dict(result="ask", cand=["docs/plan/case-r2-dup/TODO.md", "docs/plan/archive/case-r2-dup/TODO.md"])),
  ("c06", "case/r3-legacy", ["TODO.md"], dict(result="found", rung="3", plan=MASTER, kind="legacy-master", lines="2498", next=":2487")),
- ("c07", "case/r3-rev-one", ["TODO.md"], dict(result="found", rung="3", plan="docs/plan/07-alpha/_TODO.md", kind="revision-master", next=":8")),
+ ("c07", "case/r3-rev-one", ["TODO.md"], dict(result="found", rung="3", plan="docs/plan/07-alpha/_TODO.md", kind="revision-master", layout="single-file", next=":8")),
  ("c08", "case/r3-rev-two", ["TODO.md"], dict(result="ask", cand=["07-alpha", "08-beta"])),
  ("c09", "case/r3-rev-none", ["TODO.md"], dict(result="found", rung="4", plan="docs/plan/feat-other/TODO.md", next=":9")),
  ("c10", "case/r4-one", ["TODO.md"], dict(result="found", rung="4", plan="docs/plan/a/TODO.md", next=":9")),

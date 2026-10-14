@@ -148,11 +148,13 @@ SLUG_AWK='
   }
   function num(s) { sub(/^0+/, "", s); return s == "" || s ~ /^[a-z]/ ? "0" s : s }'
 
-# The **Layout** header, outside fenced code blocks. Sets LAYOUT_V; on a value that is
-# unknown, or in the wrong place, records E8 and returns 1.
+# The **Layout** header, outside fenced code blocks. Sets LAYOUT_V, the file's own layout:
+# single-file (no header, or `legacy` or `single-file`), per-goal, or revisions; the root
+# plan's layout is MLAYOUT. On a value that is unknown, or in the wrong place, records E8
+# and returns 1.
 check_layout() {  # check_layout <file> <rung>; called as a condition, so check everything here
   local f="$1" out n v
-  LAYOUT_V=legacy
+  LAYOUT_V=single-file
   need_file "$f" "$2"
   out="$(awk '
     /^[ \t]*```/ { fence = !fence; next }
@@ -161,7 +163,7 @@ check_layout() {  # check_layout <file> <rung>; called as a condition, so check 
   if [ -z "$out" ]; then return 0; fi
   n="${out%%"$TAB"*}"; v="${out#*"$TAB"}"
   case "$v" in
-    legacy) return 0 ;;
+    legacy|single-file) return 0 ;;
     revisions) if [ "$f" = "$ROOT_PLAN" ]; then LAYOUT_V=revisions; return 0; fi ;;
     per-goal)  if [ "$f" != "$ROOT_PLAN" ]; then LAYOUT_V=per-goal; return 0; fi ;;
   esac
@@ -358,7 +360,7 @@ GOALFILE_AWK='
 # Every open item of a one-file plan, at any indent, outside fences, with the `## `
 # heading it sits under: OPEN <line> <heading> <the line>, the heading empty above the
 # first one. GOALS <n> counts its indent-0 items. W6 as above. check-plan-index.sh
-# reports these for a legacy plan, where there is nothing to drift.
+# reports these for a single-file plan, where there is nothing to drift.
 OPEN_AWK='
   /^[ \t]*```/ { fence = !fence; next }
   fence { next }

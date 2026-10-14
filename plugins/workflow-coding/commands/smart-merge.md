@@ -80,7 +80,7 @@ for the PR body's Summary.
    - no `result:` line, or no `message:` line (the report's last key, so it was cut short):
      show the output and stop. Never act on part of a report.
 
-3. Read it. A `layout: legacy` plan is one file: read `plan:` whole. A `layout: per-goal`
+3. Read it. A `layout: single-file` plan is one file: read `plan:` whole. A `layout: per-goal`
    plan is an index: read it, then `ls` its goal directory (`TODO/` or `DO/` beside it) and
    read each goal file, since the `> **Q:** / > **A:**` logs live there. Either is small;
    only a master plan is never read whole.

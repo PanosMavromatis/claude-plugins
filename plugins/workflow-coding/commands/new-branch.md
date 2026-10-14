@@ -147,7 +147,7 @@ Leave out `**Revision**:` when `revision:` is `—`. Each goal file, at its `goa
 
 In the DO model a goal file holds tasks, not subgoals. Draft them when the scope splits the goal into steps; otherwise write the goal file without them, since `/step` then takes the goal itself as its one task.
 
-**`layout: legacy`** — one file, at `index:`, as before. For `DO.md`:
+**`layout: single-file`** — one file, at `index:`, as before. For `DO.md`:
 
 ```markdown
 # <branch-name>

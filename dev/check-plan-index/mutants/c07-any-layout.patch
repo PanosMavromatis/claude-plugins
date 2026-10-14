@@ -4,7 +4,7 @@
      "check the open revision's plan instead, the plan: locate-plan.sh reports"
    fail ""
  fi
--if [ "$LAYOUT_V" = legacy ]; then
+-if [ "$LAYOUT_V" = single-file ]; then
 +if false; then
    # One file holds every goal, so nothing can drift: report the open items, each with the
    # `## ` heading it sits under, which is what a section's completion check needs.
