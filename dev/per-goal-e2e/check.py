@@ -51,7 +51,9 @@ def edits(calls): return [(c[0], c[1].get("file_path", ""), c[1]) for c in calls
 def common(sid, gates=()):
     """Every session: it ran, it ran the copy, nothing was denied but a documented gate (a
     command matching one of `gates`, reported, not failed); Grep, Glob and shell searches
-    are reported, since a session may lack Grep and Glob."""
+    are reported, since a session may lack Grep and Glob. No session reads or searches the
+    plugin copy's directory from the shell, and one that commits `Read`s `smart-commit.md`
+    first, as the five pointers to it say."""
     calls, res = session(sid)
     if res is None: check(f"{sid}: session ran", False, f"no result in {OUT}/{sid}.jsonl"); return []
     check(f"{sid}: session ended without error", not res.get("is_error"), str(res.get("result", ""))[:200])
@@ -70,6 +72,16 @@ def common(sid, gates=()):
     shg = [c for c in cmds if re.match(r"^\s*(grep|rg|find)\b", c)]
     print(f"      {sid}: {len(calls)} tool calls; Grep/Glob {len(g)}; shell grep/rg/find {len(shg)}; turns {res.get('num_turns')}; ${res.get('total_cost_usd') or 0:.2f}")
     for c in shg[:5]: print(f"        shell search: {c[:140]}")
+    # In a real install the plugin is outside the repository, where a shell read prompts;
+    # here a merge session's --add-dir /tmp lets one through unrefused, so only this sees it.
+    roots = (PLUGIN, PLUGIN.removeprefix("/private"), "CLAUDE_PLUGIN_ROOT")
+    peek = [c for c in cmds if any(r in c for r in roots) and not (c.split() or [""])[0].startswith(SCRIPTS)]
+    check(f"{sid}: no shell read or search of the plugin's directory", not peek, "; ".join(c[:140] for c in peek[:3]))
+    first = [i for i, (n, inp) in enumerate(calls) if n == "Bash" and "git commit" in inp.get("command", "")]
+    if first:
+        rd = [i for i, (n, inp) in enumerate(calls) if n == "Read" and inp.get("file_path", "").endswith("/commands/smart-commit.md")]
+        check(f"{sid}: read smart-commit.md before its first commit", bool(rd) and rd[0] < first[0],
+              "no Read of it" if not rd else f"first Read at call {rd[0]}, first commit at call {first[0]}")
     return calls
 
 def master_plan_change(repo, master, branch, item, after):

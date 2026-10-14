@@ -11,7 +11,7 @@ revision sessions in the `feat-master-plan` branch plan, goal 6.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite           # outside this repository, as the suites require
-RUN=r1 dev/per-goal-e2e/run.sh [e1 … c3]         # real sessions, which cost money ($4.18 for e1, e3, e4 in r5; $2.39 for m*, c* in r6)
+RUN=r1 dev/per-goal-e2e/run.sh [e1 … c3]         # real sessions, which cost money ($5.55 for e1, e3, e4 and $2.23 for m1, m2, c1, c2 in r12)
 RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
 ```
 
@@ -48,6 +48,11 @@ RUN=r1 python3 -I dev/per-goal-e2e/check.py [e1 … c3]
     `allowed-tools` matches a command's plain form only, and refuses a whole chain for any
     one part it does not grant. A chain of granted commands is not refused, but it still
     fails this check, since the next chain may hold a part that is.
+  - no session read or searched the plugin copy's directory from the shell, and one that
+    commits `Read` `smart-commit.md` first, as the five pointers to it say: in a real
+    install the plugin sits outside the repository, where a shell read prompts, and here a
+    merge session's `--add-dir /tmp` would let one through unrefused, so only this check
+    sees it.
 
   It reports `Grep`, `Glob` and shell searches for reading. On fixtures no session has
   touched, it passes nothing. In the TODO model it also checks that `/new-branch` wrote
@@ -112,3 +117,10 @@ search of the plugin's directory. The chain check now runs on every session, and
 over a basic regex's `\|`, which it first took for a pipe. Two merge sessions `grep`ped
 `smart-commit.md` at its path before reading it, let through only by `--add-dir /tmp`; the
 commands now say to `Read` it whole.
+
+Run `r12`, 2026-10-13, e1, e3, e4, m1, m2, c1 and c2 on the 0.10.1 command text, after
+`check.py` began failing a shell read or search of the plugin copy: every check passed,
+$7.78. Each of the ten sessions that commit `Read` `smart-commit.md` before its first
+commit, and none of the 13 touched the plugin's directory from the shell, where `r11`'s
+merge sessions had `grep`ped it twice; regraded, `r11` fails the new check on exactly
+those two. The five reworded pointers hold.
