@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -381,7 +381,7 @@
+@@ -389,7 +389,7 @@
        for (j = 1; j <= nh; j++)
          if (index(g, hs[j]) == 1) {
            c = substr(g, length(hs[j]) + 1, 1)

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -281,7 +281,7 @@
+@@ -289,7 +289,7 @@
      r="${r#*"$TAB"}"                                       # the marker: the line says it
      last="${r%%"$TAB"*}"; r="${r#*"$TAB"}"
      r="${r#*"$TAB"}"                                       # branches: F6 reports them

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -139,7 +139,7 @@
+@@ -142,7 +142,7 @@
          print "FO\t" NR "\t" info; next
        }
        if (open && $0 ~ /^~~~[ \t]*$/) { open = 0; done = 1; print "FC\t" NR; next }

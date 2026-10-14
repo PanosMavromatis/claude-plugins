@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -361,7 +361,7 @@
+@@ -369,7 +369,7 @@
      function sect(j,    k, e) {
        e = NR
        for (k = j + 1; k <= nh; k++) if (hv[k] <= hv[j]) { e = hl[k] - 1; break }

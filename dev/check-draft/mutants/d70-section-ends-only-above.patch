@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -360,7 +360,7 @@
+@@ -368,7 +368,7 @@
    out="$(TAGS="$TGS" awk '
      function sect(j,    k, e) {
        e = NR

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -92,7 +92,7 @@
+@@ -94,7 +94,7 @@
  finish() {
    emit result "$R_RESULT";   emit input "$INPUT";       emit file "$RF"
    emit spec "$SPEC";         emit subgoals "$R_SUBS";   emit tags "$R_TAGS"

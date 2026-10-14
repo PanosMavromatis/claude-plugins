@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -334,7 +334,7 @@
+@@ -342,7 +342,7 @@
    for rec in $TNS; do
      ln="${rec%%"$TAB"*}"; n="${rec#*"$TAB"}"
      if [ "$n" -eq "$e" ] && [ "$e" -le "$N" ]; then e=$((e + 1)); continue; fi

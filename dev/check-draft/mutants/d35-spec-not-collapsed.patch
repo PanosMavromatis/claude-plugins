@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -386,7 +386,7 @@
+@@ -394,7 +394,7 @@
        return 0
      }
      {

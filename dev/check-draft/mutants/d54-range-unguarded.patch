@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -271,7 +271,6 @@
+@@ -279,7 +279,6 @@
    fi
  
    items="$(awk -v fo="$FO" -v fc="$FC" '

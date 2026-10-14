@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -359,7 +359,7 @@
+@@ -367,7 +367,7 @@
    # heading's section runs to the next heading at its level or above, or to the end.
    out="$(TAGS="$TGS" awk '
      function sect(j,    k, e) {

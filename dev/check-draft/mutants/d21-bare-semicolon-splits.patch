@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -151,7 +151,7 @@
+@@ -154,7 +154,7 @@
        for (i = 1; i <= m; i++) {
          c = substr(rest, i, 1)
          if (c == "\"") q = !q

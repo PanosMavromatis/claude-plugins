@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -264,7 +264,7 @@
+@@ -272,7 +272,7 @@
      case "$k" in Status) v="$ST" ;; Version) v="$VE" ;; Opened) v="$OP" ;; Spec) v="$SP" ;; esac
      [ -n "$v" ] || violation "$WHAT has no \`**$k**:\` line before its first ## heading" "add it to the header, in the order Status, Version, Opened, Spec"
    done

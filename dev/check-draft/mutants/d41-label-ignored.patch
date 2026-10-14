@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -231,7 +231,7 @@
+@@ -239,7 +239,7 @@
      case "$typ" in
        L1)
          if [ -n "$LABEL" ]; then

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -366,7 +366,7 @@
+@@ -374,7 +374,7 @@
      function ok(g,    p, j, x, k, rest, c) {
        if (substr(g, 1, 1) == "\"") {
          p = substr(g, 2); j = index(p, "\""); if (!j) return 0

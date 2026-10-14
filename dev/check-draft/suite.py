@@ -122,6 +122,18 @@ rcase("s15", reply(trace=["- 0. Form checks", *TRACE]), result="problems", nprob
 rcase("s16", reply(trace=[TRACE[0], TRACE[0], TRACE[1]]), result="problems", nprob=1,
       prob=["{f}:{t2} traces subgoal 1 where subgoal 2 is next"])
 rcase("s17", reply(left=["- [ ] a checkbox outside the draft"]), result="clean", subgoals="2")
+# Claude Code hands a subagent's report back in a frame: a note before it, its agent id and
+# usage after it, and two spaces before every line. A copy kept in its frame is the session's
+# to write again; one with the note and trailer but no indent reads as the reply it holds.
+NOTE = "[Subagent hand-back] The text below is the final report of a subagent this session delegated to. The report follows:"
+TRAILER = ["agentId: a1b2c3 (use SendMessage with to: 'a1b2c3' to continue this agent)",
+           "<usage>subagent_tokens: 14044", "tool_uses: 7", "duration_ms: 46834</usage>"]
+FRAMED = "{f}:{line} has `## Draft` indented: the reply was copied inside the frame Claude Code puts around a subagent's report"
+rcase("s19", [NOTE, *("  " + l for l in reply()), *TRAILER], result="problems", nprob=1, subgoals="—", tags="0, not checked: no spec given",
+      prob=[FRAMED.replace("{line}", "2")], fix=["write the reply again as plan-drafter returned it, without the hand-back note before it"])
+rcase("s19b", ["  " + l for l in reply()], result="problems", nprob=1, subgoals="—", prob=[FRAMED.replace("{line}", "1")])
+rcase("s19c", [NOTE, *reply(), *TRAILER], result="clean", subgoals="2")
+rcase("s19d", reply(left=["  ## Draft"]), result="clean", subgoals="2")
 rcase("s18", reply(), crlf=True, result="clean", subgoals="2", tags="3, not checked: no spec given")
 
 # --- the tags, against the spec -------------------------------------------------------
@@ -297,10 +309,11 @@ def run(args, exp, shell):
         if chmod: os.chmod(chmod, 0o644)
 
 # What the message says to do next, by result and input; a reply's problems in its tags
-# alone are questions for the user.
+# alone are questions for the user, and a reply copied in its frame is the session's to fix.
 NEXT = {("clean", "reply"): "The draft has subdividing.md's form", ("clean", "plan"): "The plan has subdividing.md's form",
         ("problems", "reply"): "ask plan-drafter once for a fresh reply", ("problems", "plan"): "correct the plan file, then check it again",
         ("problems", "tags"): "in tags alone: ask the user, for each tag that names nothing in",
+        ("problems", "framed"): "write the reply file again without the frame around plan-drafter's report",
         ("error", "reply"): "The reply could not be checked", ("error", "plan"): "The plan could not be checked"}
 
 def grade(exp, r):
@@ -335,7 +348,8 @@ def grade(exp, r):
     if res in ("problems", "error") and not allv("problem"): probs.append(f"{res} without a problem")
     if "msg" in exp and exp["msg"].format_map(fm) not in one("message"): probs.append(f"message lacks {exp['msg']!r}: {one('message')!r}")
     tags_alone = res == "problems" and one("input") == "reply" and all("which names nothing in" in p for p in allv("problem"))
-    nxt = NEXT.get((res, "tags" if tags_alone else one("input")))
+    framed = res == "problems" and any("has `## Draft` indented" in p for p in allv("problem"))
+    nxt = NEXT.get((res, "framed" if framed else "tags" if tags_alone else one("input")))
     if nxt is None or nxt not in one("message"): probs.append(f"message lacks {nxt!r} for {res} on a {one('input')}: {one('message')!r}")
     for k in KEYS:
         for v in rep[k]:

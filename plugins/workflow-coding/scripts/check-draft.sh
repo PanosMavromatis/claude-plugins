@@ -15,7 +15,9 @@
 #
 # The rules, each broken one a problem: line with a fix: line. The draft is the fence's
 # text in a reply, and the whole file with --plan, where only F1 to F6 apply:
-#   S1 the reply's ## sections are Draft, Trace, Left out and Questions, in that order
+#   S1 the reply's ## sections are Draft, Trace, Left out and Questions, in that order.
+#      With none at the margin and ## Draft indented, the reply was copied inside the frame
+#      Claude Code puts around a subagent's report, and is the session's to write again.
 #   S2 ## Draft holds one ~~~markdown fence, closed; the draft is what it holds
 #   F1 the draft's first line is `# Revision <label>`, the label --label gives if given
 #   F2 **Status**: open, **Version**:, **Opened**: <a date> and **Spec**: come before the
@@ -114,7 +116,7 @@ else readable "$RF" "the file /master-plan wrote the drafter's reply to"; fi
 if [ -n "$SPEC" ]; then readable "$SPEC" "the spec's path, as the draft's **Spec**: names it"; fi
 
 HEADS=""; FO=""; FC=""; INFO=""; XF=""; UF=0; TNS=""; TGS=""; TBAD=""; NTAG=0; UN=0
-TRACE=0; DRAFT=0
+TRACE=0; DRAFT=0; FR=""; FRAMED=0
 if [ "$PLAN" -eq 1 ]; then
   # The whole file is the draft, as if fenced: line 1 opens it, a line past its last
   # closes it.
@@ -132,6 +134,7 @@ else
       if (s == "") print "TE\t" ln; else print "TG\t" ln "\t" n "\t" s
     }
     { sub(/\r$/, "") }
+    /^[ \t]+## Draft[ \t]*$/ && !fr { fr = NR; print "FR\t" NR }
     /^## / && !open && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
     sec == "## Draft" && /^~~~/ {
       if (!open && !done) {
@@ -168,6 +171,7 @@ else
       FC) FC="$ln" ;;
       XF) XF="${XF:+$XF$NL}$ln" ;;
       UF) UF=1 ;;
+      FR) FR="$ln" ;;
       TN) TNS="${TNS:+$TNS$NL}$ln$TAB$val" ;;
       TG) TGS="${TGS:+$TGS$NL}$ln$TAB$val"; NTAG=$((NTAG + 1)) ;;
       TE|TX) TBAD="${TBAD:+$TBAD$NL}$rec" ;;   # reported with the trace, in reading order
@@ -176,7 +180,11 @@ else
   unset IFS
 
   WANT="## Draft$NL## Trace$NL## Left out$NL## Questions"
-  if [ "$HEADS" != "$WANT" ]; then
+  if [ -z "$HEADS" ] && [ -n "$FR" ]; then
+    FRAMED=1
+    violation "$RF:$FR has \`## Draft\` indented: the reply was copied inside the frame Claude Code puts around a subagent's report" \
+      "write the reply again as plan-drafter returned it, without the hand-back note before it, the agentId and usage lines after it, or the indent on every line"
+  elif [ "$HEADS" != "$WANT" ]; then
     got="$(printf '%s' "$HEADS" | awk 'BEGIN { ORS = "" } { print (NR == 1 ? "" : ", ") $0 }')" || die "awk failed listing the reply's sections"
     violation "the reply's sections are ${got:-none}, not ## Draft, ## Trace, ## Left out and ## Questions in that order" \
       "return the four sections, in that order, and nothing else"
@@ -438,6 +446,7 @@ else
   R_RESULT=problems
   if [ "$VIOL" -eq 1 ]; then many="1 problem"; else many="$VIOL problems"; fi
   if [ "$PLAN" -eq 1 ]; then R_MSG="$many: correct the plan file, then check it again before the commit."
+  elif [ "$FRAMED" -eq 1 ]; then R_MSG="$many: write the reply file again without the frame around plan-drafter's report, then check it again."
   elif [ "$UN" -eq "$VIOL" ]; then R_MSG="$many in tags alone: ask the user, for each tag that names nothing in $SPEC, whether the spec supports its subgoal."
   else R_MSG="$many: ask plan-drafter once for a fresh reply, naming each."; fi
 fi

@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -300,7 +300,7 @@
+@@ -308,7 +308,7 @@
      else
        case "$NL$SAS$NL" in
          *"$NL$((ln + 1))$NL"*) ;;

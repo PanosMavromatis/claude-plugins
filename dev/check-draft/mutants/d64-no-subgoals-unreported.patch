@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -311,7 +311,7 @@
+@@ -319,7 +319,7 @@
    N="$k"
    if [ "$N" -eq 0 ]; then
      case "$NL$DHS$NL" in

@@ -1,0 +1,11 @@
+--- a/check-draft.sh
++++ b/check-draft.sh
+@@ -180,7 +180,7 @@
+   unset IFS
+ 
+   WANT="## Draft$NL## Trace$NL## Left out$NL## Questions"
+-  if [ -z "$HEADS" ] && [ -n "$FR" ]; then
++  if [ -n "$FR" ]; then
+     FRAMED=1
+     violation "$RF:$FR has \`## Draft\` indented: the reply was copied inside the frame Claude Code puts around a subagent's report" \
+       "write the reply again as plan-drafter returned it, without the hand-back note before it, the agentId and usage lines after it, or the indent on every line"

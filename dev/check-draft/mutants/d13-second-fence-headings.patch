@@ -1,9 +1,9 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -132,7 +132,7 @@
-       if (s == "") print "TE\t" ln; else print "TG\t" ln "\t" n "\t" s
+@@ -135,7 +135,7 @@
      }
      { sub(/\r$/, "") }
+     /^[ \t]+## Draft[ \t]*$/ && !fr { fr = NR; print "FR\t" NR }
 -    /^## / && !open && !extra { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
 +    /^## / && !open { h = $0; sub(/[ \t]+$/, "", h); print "H\t" NR "\t" h; sec = h; next }
      sec == "## Draft" && /^~~~/ {

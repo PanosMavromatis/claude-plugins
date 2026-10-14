@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -260,7 +260,7 @@
+@@ -268,7 +268,7 @@
      esac
    done
    unset IFS

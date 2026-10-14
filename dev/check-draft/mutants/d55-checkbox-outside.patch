@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -282,7 +282,7 @@
+@@ -290,7 +290,7 @@
      last="${r%%"$TAB"*}"; r="${r#*"$TAB"}"
      r="${r#*"$TAB"}"                                       # branches: F6 reports them
      hd="${r%%"$TAB"*}"; txt="${r#*"$TAB"}"; txt="${txt%"$CR"}"

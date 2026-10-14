@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -80,7 +80,7 @@
+@@ -82,7 +82,7 @@
    esac
  done
  [ $NPOS -eq 1 ] && [ -n "$RF" ] || usage "give one file: the drafter's reply as written, or with --plan the plan file"

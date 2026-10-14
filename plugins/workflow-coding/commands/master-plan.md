@@ -68,7 +68,10 @@ is `none`); and the previous revision's master plan (`previous:`, unless it is `
 
 It returns `## Draft`, `## Trace`, `## Left out` and `## Questions`. A script checks the
 reply, so do not judge its form yourself. Write the reply to a file exactly as returned:
-a line corrected in the copy hides the drafter's mistake from the check. Use `reply.md`
+a line corrected in the copy hides the drafter's mistake from the check. Claude Code hands
+a subagent's report back in a frame, a hand-back note before it, `agentId:` and `<usage>`
+lines after it and two spaces before every line: write the report alone, without the
+frame or its indent, so that `## Draft` starts its line. Use `reply.md`
 in the scratchpad directory your system prompt names, or
 `/tmp/master-plan-<label>-reply.md` if it names none; outside the repository, the file is
 never committed and needs no cleanup. If the spec is pasted text or the conversation,
@@ -88,6 +91,9 @@ indented two spaces.
 - **`result: clean`.** Go on to step 4.
 - **`result: problems`, in tags alone**, as `message:` says. Go on to step 4, where each
   tag that names nothing in the spec is a question.
+- **`result: problems`, the reply copied in its frame**, as `message:` says. The copy is
+  yours to correct, not the drafter's: write the file again without the frame, and check
+  it again.
 - **`result: problems`, otherwise.** Spawn the drafter once more, with the same prompt
   and each `problem:` line with its `fix:` line. Write its reply to `reply-2.md` beside
   the first, and check it the same way. If it still has problems other than tags, show

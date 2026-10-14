@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -213,7 +213,6 @@
+@@ -221,7 +221,6 @@
      { sub(/\r$/, "") }
      NR == fo + 1 { print "L1\t" NR "\t" $0 }
      /^[ \t]*```/ { fence = !fence; next }

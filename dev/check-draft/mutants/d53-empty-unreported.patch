@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -203,7 +203,7 @@
+@@ -211,7 +211,7 @@
  # lines alone, so a draft is read as /new-branch and /smart-merge will read the file.
  
  N=""

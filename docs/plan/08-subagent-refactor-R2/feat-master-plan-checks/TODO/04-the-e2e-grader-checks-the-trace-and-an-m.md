@@ -1,7 +1,13 @@
 # 04 — The e2e grader checks the trace, and an m1-m3 run is clean
 
-**Goal**: [ ]
+**Goal**: [~]
+> **Q:** Run r12's m1 transcript shows Claude Code framing plan-drafter's reply: a hand-back note before it, `agentId:` and `<usage>` lines after it, and every line indented two spaces. A copy kept "exactly as returned" has no `## ` sections, and the check would send it back to the drafter. Should step 3 say to write the reply without the frame and `check-draft.sh` recognise a framed copy (A), the command alone change (B), or both wait for the run (C)?
+> **A:** A: step 3 says to write the report itself, the note, trailer and indent removed, and `check-draft.sh` reports a copy whose `## Draft` is indented two spaces as the session's to rewrite, not a fresh reply. This reopens goal 03's command and script, with suite cases and mutants.
+> **Q:** The m spec has one heading and three numbered units, so a document tag (`<heading> item N`) resolves to the whole file. How does `check.py` check each tag against the units: run the copy's `check-draft.sh` on the bare reply, then require each subgoal's tags to point at its file's unit, by a quoted phrase's `where:` line or a heading tag's item number (A); the script alone (B); or a text match alone (C)?
+> **A:** A: every subgoal traced and every tag resolving, by the script, then each subgoal's tags pointing at the unit whose file it names.
 
-- [ ] `check.py` checks that every draft's trace tags each subgoal, and checks each tag against the spec's units
-- [ ] `check.py` compares the reply file each m session wrote with plan-drafter's reply in its transcript, and reports each line that differs, so a copy that hides or adds a mistake is caught
+- [x] `check.py` checks that every draft's trace tags each subgoal, and checks each tag against the spec's units
+  > **Note:** `check.py` runs the copy's `check-draft.sh` on each of plan-drafter's bare replies (`tool_use_result.content`) against the fixture's spec, so every subgoal must be traced and every tag resolve, then checks that each subgoal's tags point at the unit its title names: a quoted phrase by its `where:` line, a heading tag by its item number. It also checks the order of the session's checks: the reply before any plan write, `--plan` after the last write, twice before `git add` in a real run. Tested on five synthetic sessions built from r12's m1 reply, each failing exactly its own check; r12 itself regrades with only these new checks failing.
+- [x] `check.py` compares the reply file each m session wrote with plan-drafter's reply in its transcript, and reports each line that differs, so a copy that hides or adds a mistake is caught
+  > **Note:** The bare reply and the session's view differ: Claude Code frames a subagent's report, a hand-back note, an agentId and usage trailer, and every line indented two spaces (r12's m1). `check.py` compares the reply file, as last written, with the bare reply line for line; `/master-plan` step 3 now says to write the report without the frame, and `check-draft.sh` reports a framed copy as the session's to rewrite (121 cases, 82 mutants, all caught).
 - [ ] A run of m1–m3, run by the user, has no permission denial and no shell read outside the repository, and the e2e README logs it

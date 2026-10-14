@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -391,7 +391,6 @@
+@@ -399,7 +399,6 @@
        nb[NR] = last                                        # the last line, to here, not blank
      }
      /^[ \t]*(```|~~~)/ { fence = !fence; next }

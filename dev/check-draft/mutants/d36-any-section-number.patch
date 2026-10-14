@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -375,7 +375,7 @@
+@@ -383,7 +383,7 @@
          rest = substr(g, length("§") + 1)
          if (!match(rest, /^[0-9]+(\.[0-9]+)*/)) return 0
          rest = substr(rest, 1, RLENGTH)

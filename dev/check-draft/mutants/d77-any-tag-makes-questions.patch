@@ -1,9 +1,9 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -438,7 +438,7 @@
-   R_RESULT=problems
+@@ -447,7 +447,7 @@
    if [ "$VIOL" -eq 1 ]; then many="1 problem"; else many="$VIOL problems"; fi
    if [ "$PLAN" -eq 1 ]; then R_MSG="$many: correct the plan file, then check it again before the commit."
+   elif [ "$FRAMED" -eq 1 ]; then R_MSG="$many: write the reply file again without the frame around plan-drafter's report, then check it again."
 -  elif [ "$UN" -eq "$VIOL" ]; then R_MSG="$many in tags alone: ask the user, for each tag that names nothing in $SPEC, whether the spec supports its subgoal."
 +  elif [ "$UN" -gt 0 ]; then R_MSG="$many in tags alone: ask the user, for each tag that names nothing in $SPEC, whether the spec supports its subgoal."
    else R_MSG="$many: ask plan-drafter once for a fresh reply, naming each."; fi

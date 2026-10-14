@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -350,7 +350,7 @@
+@@ -358,7 +358,7 @@
  # --- the tags, against the spec ---------------------------------------------------
  
  if [ "$PLAN" -eq 1 ]; then

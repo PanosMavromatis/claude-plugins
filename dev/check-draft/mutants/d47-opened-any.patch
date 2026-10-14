@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -249,7 +249,7 @@
+@@ -257,7 +257,7 @@
                     [ -n "$v" ] || violation "$RF:$ln has an empty \`**Version**:\`" "state the version each package reaches, or \`—\` if the spec names none" ;;
            Opened)  OP=1
                     case "$v" in

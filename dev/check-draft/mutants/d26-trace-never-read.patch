@@ -1,6 +1,6 @@
 --- a/check-draft.sh
 +++ b/check-draft.sh
-@@ -181,7 +181,7 @@
+@@ -189,7 +189,7 @@
      violation "the reply's sections are ${got:-none}, not ## Draft, ## Trace, ## Left out and ## Questions in that order" \
        "return the four sections, in that order, and nothing else"
    fi
