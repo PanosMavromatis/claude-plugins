@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/locate-plan.sh:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-plan-index.sh:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git add:*), Bash(ls:*), Read, Write, Edit
 description: Execute the next N unchecked items in a docs/plan DO.md (default 1) and log all Q&A under each item.
 argument-hint: "[count] [plan-path]"
 ---

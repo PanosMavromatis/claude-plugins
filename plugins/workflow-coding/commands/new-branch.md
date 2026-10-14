@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-branch-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/propose-branch-plan.sh:*), Bash(git status:*), Bash(git log:*), Bash(git branch --show-current:*), Bash(git rev-parse:*), Bash(git checkout -b:*), Bash(git add:*), Bash(git commit:*), Read, Write, Edit
 argument-hint: "[<type>/<slug>] [purpose]"
 description: Create a new feature branch with documented purpose
 ---

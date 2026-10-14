@@ -1,0 +1,5 @@
+{
+  "name": "grant-probe",
+  "version": "0.0.0",
+  "description": "A one-command fixture: how long a command's allowed-tools grant lasts."
+}

@@ -1,0 +1,11 @@
+# 02 — Revise the Scoped allowed-tools convention by the measurement
+
+**Goal**: [x]
+> **Q:** A command's grant covers only the turn that invokes it, so a write made after the user types a reply to "Proceed?" runs under the user's own settings. Should the convention scope grants to the invoking turn and keep its shape (A); have commands confirm through `AskUserQuestion`, whose answer stays inside the turn, after one more probe case and a rewrite of every CONFIRM FIRST step (B); or drop the grants a command only uses after a confirmation (C)?
+> **A:** A: a grant covers what a command does before it waits for the user, which is all of a headless or pre-approved run. Additive grants stay, since they keep one-turn runs unprompted; destructive verbs stay off, since they prompt in any turn. A write confirmed in a later turn prompts unless the user's settings allow it, and the CONFIRM FIRST prose is its gate. No command is rewritten.
+> **Done:** The convention scopes grants to the invoking turn. Additive grants serve one-turn runs, omitted verbs prompt in any turn, and a write confirmed later is gated by the CONFIRM FIRST prose and the user's settings. An unused grant is removed, the rule goal 03 applies.
+
+- [x] The convention states what a grant covers, by the measurement, and what a command does for a confirmed write that falls outside it
+  > **Note:** "So a grant covers what a command does before it waits for the user" is a new paragraph in the plugin's `CLAUDE.md`, after the measurement. A grant covers all of a one-turn run, and anything a command does before it first asks. A write confirmed in a later turn prompts unless the user's settings allow it, with the CONFIRM FIRST prose as its gate.
+- [x] The convention says which grants a command keeps and which it leaves to the prompt, and why, citing the measurement
+  > **Note:** The same paragraph keeps the additive grants for one-turn runs, leaves destructive verbs off since they prompt in any turn, and removes any grant the command's text never runs. The first paragraph now says the omitted verbs prompt "in whatever turn they run". No command text changed: every other "second gate" statement (`CLAUDE.md:202`, `smart-merge.md`, `clean-gone.md`, `close-revision.md`) is about omitted verbs, which the measurement leaves true.

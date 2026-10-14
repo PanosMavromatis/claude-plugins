@@ -168,6 +168,11 @@ runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are rea
 which cost money, so run them yourself, after a change to the command text;
 `dev/per-goal-e2e/README.md` covers how.
 
+`dev/grant-lifetime/` measures how long a command's `allowed-tools` grant lasts, the fact the
+plugin's "Scoped `allowed-tools`" convention rests on: four headless turns on a one-command
+fixture plugin, and one interactive check by hand. They are real sessions, a few cents, so
+run them yourself; `dev/grant-lifetime/README.md` covers how.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one

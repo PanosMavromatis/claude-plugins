@@ -166,18 +166,21 @@ git push -u origin <branch>
 **MCP path (preferred).** Call `create_pull_request` with `owner`, `repo`, `head` (the branch), `base` (`main`), `title`, and `body`. The body is a plain string parameter, so the approved body goes straight in — no temp file, and no heredoc quoting hazard when the body contains backticks or `$`.
 
 **`gh` fallback.** `gh pr create` reads the body from a file to avoid editor friction. Write
-the approved body to `/tmp/pr-body-<branch>.md` with `Write`, which has no heredoc quoting
-hazard either, then run:
+the approved body with `Write`, which has no heredoc quoting hazard either, to `pr-body.md`
+in the scratchpad directory your system prompt names or, if it names none, to
+`/tmp/pr-body-<repository>-<flattened-branch>.md`: `<repository>` is the name of the
+repository's directory, and `<flattened-branch>` the branch with `/` flattened to `-`. A file
+of that name may be left from an earlier run: `Read` it first, or `Write` refuses to replace
+it. The file is never deleted: outside the repository, it is never committed, and a deletion
+would prompt on every merge. Once the `Write` has succeeded, run:
 
 ```bash
 gh pr create \
   --base main \
   --head <branch> \
   --title "<approved title>" \
-  --body-file /tmp/pr-body-<branch>.md
+  --body-file <the body file>
 ```
-
-Then `rm /tmp/pr-body-<branch>.md`. Like every deletion here, it prompts.
 
 Report the PR number and URL, and note which path created it — the PR number is needed by step 7.
 
@@ -355,8 +358,8 @@ Summarize:
 
 - **Confirm before every write action**: push, file deletion, commit, PR create, merge, branch delete. State what will run, then wait for approval.
 - **Unlisted writes are deliberate gates, not drift.** `git push`, `git rm`,
-  `git branch -d`, `gh pr merge`, `git push origin --delete` and the `gh` fallback's
-  `rm` are absent from `allowed-tools` on purpose, so the harness prompt stands behind
+  `git branch -d`, `gh pr merge` and `git push origin --delete` are absent from
+  `allowed-tools` on purpose, so the harness prompt stands behind
   each step's own CONFIRM FIRST. `git push` cannot be allowed narrowly: any
   `Bash(git push…:*)` prefix that matches the routine pushes also matches
   `git push origin --delete`. Do not "fix" this by adding them; see "Scoped
