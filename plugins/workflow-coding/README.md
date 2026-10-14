@@ -11,7 +11,8 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
   - `check-plan-index.sh` reports where a per-goal plan's index and goal files disagree, and a one-file plan's open items;
   - `propose-branch-plan.sh` places `/new-branch`'s plan; `propose-merge-record.sh` finds what `/smart-merge` stamps and closes;
   - `propose-revision.sh` and `close-revision.sh` open and close revisions for `/master-plan` and `/close-revision`;
-  - `check-draft.sh` checks `/master-plan`'s draft: plan-drafter's reply before the review, its trace's tags against the spec and where each points, and the plan file as written before the commit.
+  - `check-draft.sh` checks `/master-plan`'s draft: plan-drafter's reply before the review, its trace's tags against the spec and where each points, and the plan file as written before the commit;
+  - `memory-check.sh` measures the plan files `/memory-check` reports on: each one's size, classed by how the commands read it, against a threshold.
 
   They share their rules through `scripts/lib/plan-rules.sh`, so a writer and a reader cannot disagree. Because they never write, they are safe to run directly, in a hook, or in CI.
 - **`agents/`** — `plan-drafter`, which `/master-plan` spawns to draft a revision's master plan from a spec. It reads and returns text; it writes nothing.
@@ -194,6 +195,7 @@ Either way, every command finds a plan by its directory *name*, not its path, so
 | `/open-revision <label>` | An alias of `/master-plan`, kept for one revision. |
 | `/close-revision <label>` | Closes a revision you say is finished. Under a revisions index it stamps the revision's `_TODO.md` closed and closes its index line, keeping the note and pointing to the `_TODO.md`. Under a legacy master plan it cuts the revision's section, verbatim, into `docs/plan/<label>/_TODO.md`, leaves a pointer, and moves the revision's merged branch plans into that directory. `--check` verifies the writes before the commit. The command refuses while items are still open. |
 | `/clean-gone`   | Deletes local branches whose upstream is `[gone]` (merged/deleted on the remote) and their worktrees. Confirmation-required, with a prominent warning when more than one branch is in scope. Closes the lifecycle so `commit-commands` isn't needed for cleanup. |
+| `/memory-check [label]` | Reports each plan file's bytes, words, lines and ≈ tokens, classed by how the commands read it: a goal file, an index or a single-file plan is read whole and warned on above a threshold, 2000 ≈ tokens by default, while a master plan, read in windows, is only reported; with totals per branch and for the revision. Diagnostic only: it writes nothing and gates nothing. |
 
 `/step` vs `/hitl-step`: pick based on how interactive each task needs to be. `/step` is fire-and-forget for routine work; `/hitl-step` is for goals where every decision should pass through you.
 
