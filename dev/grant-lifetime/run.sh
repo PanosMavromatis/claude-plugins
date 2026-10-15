@@ -11,6 +11,23 @@
 #   g2  the next message, resuming g1's session, asks for `touch probe-2` and invokes no
 #       command: denied if the grant clears with the next message, run if it lasts.
 #   g3  the message after that invokes /grant-probe:probe 3 again: re-applied, it must run.
+# Does a command's grant reach a subagent it spawns? /grant-probe:spawn hands its argument to a
+# general-purpose subagent and /grant-probe:direct does it itself, both granting Edit,
+# Bash(git add:*) and Bash(git commit:*). Each a-case runs in a git fixture of its own:
+#   a0  no command: a subagent edits AGENTS.md and stages it. The control: it must be denied.
+#   a1  /grant-probe:direct makes that edit and stages it: the control that the grant covers
+#       these tools in the main session. It must run.
+#   a2  /grant-probe:spawn has a subagent make it: does the grant reach the subagent?
+#   a3  /grant-probe:spawn has a subagent run git commit with a change staged: does a grant for a
+#       write the subagent must never make reach it too?
+#   a4  /grant-probe:direct commits in the main session: the control. It must land.
+#   a5  /grant-probe:relay has a subagent read a file, then the main session commits once it
+#       returns: /smart-commit's shape, where the commit may fall in a later turn.
+#   a2f, a3f, a5f  a2, a3 and a5 with CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1: the subagent runs
+#       in the foreground, inside the command's turn, so a denial in the background twin alone
+#       means the grant expired with the turn, and in both means it never passed down.
+# The a-cases load no user settings, so no allow rule of the user's can pass a write.
+# CASES picks which to run: g0 g1 g2 g3 by default, the a-cases only when named.
 # Each session runs in --permission-mode default, whatever defaultMode the settings name: in
 # auto or acceptEdits mode the write could pass with no grant, and the run would measure nothing.
 # Real sessions, a few cents each: run it yourself. Writes only under $LOCATE_PLAN_WORK/grant.
@@ -24,6 +41,8 @@ case "$P/" in "$REPO"/*) echo "refusing: $P is inside the repository" >&2; exit 
 RUN="${RUN:?set RUN=<tag>}"
 G="$P/grant"; OUT="$G/out-$RUN"; FX="$G/fx-$RUN"
 rm -rf "$OUT" "$FX"; mkdir -p "$OUT" "$FX"
+CASES="${CASES:-g0 g1 g2 g3}"
+want() { case " $CASES " in *" $1 "*) return 0 ;; esac; return 1; }
 
 # s <id> <prompt> [claude options]: one headless turn in the fixture, its stream-json kept.
 s() {
@@ -43,8 +62,43 @@ for l in open(sys.argv[1]):
 }
 
 ASK="Run this shell command, alone, once, and nothing else"
-s g0 "$ASK: touch probe-0"
-s g1 "/grant-probe:probe 1"
-s g2 "$ASK: touch probe-2" --resume "$(sid "$OUT/g1.jsonl")"
-s g3 "/grant-probe:probe 3" --resume "$(sid "$OUT/g2.jsonl")"
-echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN python3 -I dev/grant-lifetime/check.py"
+want g0 && s g0 "$ASK: touch probe-0"
+want g1 && s g1 "/grant-probe:probe 1"
+want g2 && s g2 "$ASK: touch probe-2" --resume "$(sid "$OUT/g1.jsonl")"
+want g3 && s g3 "/grant-probe:probe 3" --resume "$(sid "$OUT/g2.jsonl")"
+
+# afx <dir> [staged]: a git fixture whose AGENTS.md says PROBE-OLD, with a change staged if asked.
+afx() {
+  mkdir -p "$1"; git -C "$1" init -q -b main
+  printf '# Project\n\nThe marker line is PROBE-OLD.\n' > "$1/AGENTS.md"
+  git -C "$1" add -A
+  git -C "$1" -c user.email=probe@example.invalid -c user.name=probe -c commit.gpgsign=false commit -qm fixture
+  if [ "${2:-}" = staged ]; then printf 'a staged change\n' > "$1/notes.txt"; git -C "$1" add notes.txt; fi
+}
+# sa <id> <prompt> [VAR=value]: one headless turn in fixture <id>, with no user settings loaded;
+# CLAUDE_CODE_DISABLE_BACKGROUND_TASKS is unset unless the case sets it.
+sa() {
+  local id="$1" prompt="$2" set=()
+  [ -n "${3:-}" ] && set=("$3")
+  printf '%-4s ' "$id"
+  ( cd "$FX/$id" && env -u CLAUDE_CODE_DISABLE_BACKGROUND_TASKS ${set[@]+"${set[@]}"} \
+      claude -p "$prompt" --plugin-dir "$HERE/plugin" --model haiku --permission-mode default \
+      --setting-sources project,local --output-format stream-json --verbose </dev/null ) \
+      > "$OUT/$id.jsonl" 2> "$OUT/$id.err" || true
+  echo "done"
+}
+EDIT="Use the Edit tool once to replace PROBE-OLD with PROBE-NEW in AGENTS.md in the current directory, then run this shell command, alone, once: git add AGENTS.md. Report each tool's result verbatim, and do not retry a refused call."
+COMMIT="Run this shell command, alone, once: git commit -m probe. Report its result verbatim, and do not retry a refused call."
+FG=CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1
+for id in a0 a1 a2 a2f; do want "$id" && afx "$FX/$id"; done
+for id in a3 a3f a4 a5 a5f; do want "$id" && afx "$FX/$id" staged; done
+want a0 && sa a0 "Use the Agent tool once, with subagent_type general-purpose, and give it exactly this task, word for word: $EDIT Use no other tool yourself. When it returns, reply with its answer verbatim."
+want a1 && sa a1 "/grant-probe:direct $EDIT"
+want a2 && sa a2 "/grant-probe:spawn $EDIT"
+want a3 && sa a3 "/grant-probe:spawn $COMMIT"
+want a4 && sa a4 "/grant-probe:direct $COMMIT"
+want a5 && sa a5 "/grant-probe:relay"
+want a2f && sa a2f "/grant-probe:spawn $EDIT" "$FG"
+want a3f && sa a3f "/grant-probe:spawn $COMMIT" "$FG"
+want a5f && sa a5f "/grant-probe:relay" "$FG"
+echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN CASES=\"$CASES\" python3 -I dev/grant-lifetime/check.py"

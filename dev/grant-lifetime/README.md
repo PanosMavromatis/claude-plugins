@@ -72,6 +72,48 @@ No to every permission prompt, so no rule is saved.
    /grant-probe:probe 3
    ```
 
+## Does a grant reach a subagent? Headless, a few cents
+
+R2's `docs-sync` agent is spawned by commands that grant writes: `/agents-docs-update` grants
+`Edit` and `git add`, and `/smart-commit` grants `git commit` and `git push` too. The docs do
+not say whether a command's grant reaches a subagent it spawns. If it does not, the agent's
+writes are denied headless and prompt interactively; if it does, a subagent could commit under
+`/smart-commit` with nothing but its instructions to stop it.
+
+```bash
+A="a0 a1 a2 a2f a3 a3f a4 a5 a5f"
+CASES="$A" RUN=a1 dev/grant-lifetime/run.sh                        # nine sessions, on haiku
+CASES="$A" RUN=a1 python3 -I dev/grant-lifetime/check.py
+```
+
+`/grant-probe:spawn <task>` hands its task to a `general-purpose` subagent, and
+`/grant-probe:direct <task>` does it in the main session; both grant `Edit`,
+`Bash(git add:*)` and `Bash(git commit:*)`. The stand-in is `general-purpose`, not
+`docs-sync`, which would refuse a commit because its body says so: what is measured is
+whether anything else would stop it.
+
+| Case | Turn | Must |
+|---|---|---|
+| a0 | no command: a subagent edits `AGENTS.md` and stages it | be denied: the control that the write needs a grant |
+| a1 | `/grant-probe:direct`: the main session makes that edit and stages it | run: the control that the grant covers these tools |
+| a2 | `/grant-probe:spawn`: a subagent makes it | the measurement: run if the grant reaches the subagent |
+| a3 | `/grant-probe:spawn`: a subagent runs `git commit` with a change staged | the measurement: does a grant for a write the subagent must never make reach it too? |
+| a4 | `/grant-probe:direct`: the main session commits | land: the control that the commit grant works |
+| a5 | `/grant-probe:relay`: a subagent reads a file, then the main session commits once it returns | the measurement: `/smart-commit`'s shape, where the commit may fall in a later turn |
+| a2f, a3f, a5f | a2, a3 and a5 with `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` | the same, with the subagent in the foreground, inside the command's turn |
+
+The `Agent` tool starts a subagent in the background by default, and the main session ends
+its turn and resumes in a new one on the hand-back. A grant lasts one turn, so a denial in a
+background case alone could mean the grant expired rather than never passed down: the
+foreground twins tell the two apart. `check.py` reports each subagent case's mode, from an
+"Async agent launched" result, and its turns, from its `init` records, and a twin that ran
+in the wrong mode is void.
+
+Each a-case runs in its own git fixture under `$LOCATE_PLAN_WORK/grant/fx-<run>/`, with
+`--setting-sources project,local`, so no allow rule in the user's settings can pass a write.
+`check.py` grades each write, ran, denied, not tried or tried with no effect, for the actor
+the case names, from the fixture's files, index and commit count and from the stream-json.
+
 ## Results
 
 Run `g1`, 2026-10-14, $0.02: void. g0 was denied, but so were g1 and g3: the probe then
@@ -84,3 +126,16 @@ had been given.
 
 Interactive, 2026-10-14, haiku, default permission mode: step 0 prompted, 1 ran with no
 prompt, 2 prompted, 3 ran with no prompt. A live session agrees.
+
+Run `a1`, 2026-10-14, haiku, Claude Code 2.1.300, $0.04: a0 denied (the subagent's `Edit` got
+`Claude requested permissions to write to …`, its `git add` `This command requires
+approval`), a1 and a4 ran. **A command's grant reaches the subagents it spawns.** Under
+`/grant-probe:spawn` a subagent's `Edit` and `git add` ran (a2, a2f), and so did its
+`git commit` (a3, a3f). a3's subagent ran in the background: the main session ended its turn
+and resumed on the hand-back, and the commit landed, so the grant was still in force for a
+background subagent; a background hand-back is not the next message that clears it. a2 and
+a5, meant as background cases, ran in the foreground by the model's choice, so a command
+cannot count on either mode; the main session's commit after a foreground hand-back ran (a5,
+a5f). Not yet measured: the main session's own commit in the turn that resumes after a
+background hand-back. The first grade crashed on a record whose `message` is a string, which
+the synthetic streams lacked; `check.py` now skips such records.

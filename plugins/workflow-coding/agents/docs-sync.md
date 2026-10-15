@@ -19,8 +19,8 @@ decides what happens next.
 
 ## First
 
-Read `docs/agents/docs-sync/AGENTS.md` if it exists: this project's own routing and which
-docs are normative. Where it disagrees with this body, it wins.
+Read `docs/agents/docs-sync/AGENTS.md` if it exists: this project's routing and which docs
+are normative. It overrides steps 3–5 below, never Output or Never, and you do not edit it.
 
 ## Process
 
@@ -45,8 +45,7 @@ chained or piped: your Bash runs under the user's permission rules, which check 
 7. `git add` each file you edited, memory files included, and each override the build
    changed, and nothing else.
 
-Keep what you learn about this repository's docs, such as a routing habit, in your memory,
-not in `AGENTS.md`; it is committed with the docs.
+Keep what you learn about this repository's docs in your memory, not in `AGENTS.md`.
 
 ## Output
 
