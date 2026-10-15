@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -178,7 +178,7 @@
+                 warnings.append(f"{ag} opens with the old build's header, but nothing builds it now: delete the header")
+             b = read(ag)
+             n = len(b.decode("utf-8", "replace").splitlines())
+-            over = [w for w, bad in ((f"over {MAX_LINES} lines", n > MAX_LINES),
++            over = [w for w, bad in ((f"over {MAX_LINES} lines", n >= MAX_LINES),
+                                      (f"over ≈{MAX_TOKENS:,} tokens", tokens(len(b)) > MAX_TOKENS)) if bad]
+             sizes.append(f"{ag}: {n} lines, ≈{tokens(len(b)):,} tokens" + (" — " + ", ".join(over) if over else ""))
+             continue

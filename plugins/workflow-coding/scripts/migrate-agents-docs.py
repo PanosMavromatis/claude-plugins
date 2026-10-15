@@ -1,0 +1,508 @@
+#!/usr/bin/env python3
+"""Move a project's agent instructions into §4.3's layout, for /agents-docs-migrate.
+
+  python3 -I migrate-agents-docs.py detect
+  python3 -I migrate-agents-docs.py check <reply>
+
+Run from the repository's root. Each mode reports in `key: value` lines, a key with several
+items continuing on lines indented two spaces and `—` standing for none, `message:` last;
+`problem:` and `fix:` pair up, line for line, on what stops the migration.
+
+detect is read-only. Its targets are the root and each directory with a CLAUDE.md or with
+dispatcher sources, docs/agents/<path>/{core,claude,codex}.md, found in git's list of tracked
+and untracked, unignored files, so an ignored or vendored tree is never one. A CLAUDE.md is
+read without its HTML comments: with no line left it is `empty`; with only @docs/agents/
+imports, a `dispatcher`; with only `@AGENTS.md`, the `shim`; with anything else, `legacy`. An
+AGENTS.md whose first line opens `<!-- Generated from` is `generated`, the old build's copy of
+core.md; any other is `hand`. Each target is then in one state:
+  legacy      (a) a legacy CLAUDE.md, and no dispatcher sources
+  dispatcher  (b) dispatcher sources, or a dispatcher CLAUDE.md
+  migrated    (c) neither, and an AGENTS.md
+A legacy CLAUDE.md beside dispatcher sources is a problem, as is a codex.md beside the
+codex-review/AGENTS.md it would become: either way, moving one would overwrite the other.
+
+It reports, in this order:
+  result    migrate (a target is legacy or dispatcher), migrated, none, or error
+  targets   <path> <state> claude=<kind> agents=<kind>, `.` the root, the root first
+  sources   what docs-classifier classifies: each legacy CLAUDE.md, each core.md and claude.md
+  codex     each codex.md -> the codex-review/AGENTS.md it becomes, moved whole
+  delete    what the destructive step removes once everything is moved: each legacy, dispatcher
+            or empty CLAUDE.md of a target to migrate, and its core.md, claude.md and codex.md
+  local     .claude/CLAUDE.md and each target's CLAUDE.local.md, found on disk since a
+            CLAUDE.local.md is usually ignored: either switches native AGENTS.md off
+  sizes     each migrated target's AGENTS.md, in lines and ≈ tokens (bytes × 3 / 7, the
+            /memory-check estimate), marked over 200 lines or over ≈ 5,000 tokens
+  warnings  what is odd but safe
+
+check is read-only too. <reply> is docs-classifier's report, written to a file as returned. It
+checks the table against detect's sources: each row four cells; its source named as detect names
+it, `<file>:<start>-<end>` or `<file>:<n>`, in range and in order; its destination one of
+AGENTS.md or <path>/AGENTS.md, docs/agents/[<path>/]<guide>/AGENTS.md,
+docs/agents/_history/<area>.md, `drop: <file>[:<line>]` naming a file that is there, or
+`drop: obsolete — <why>`, any <path> a target's; its flag `sure` or `unsure: <why>`; and every
+non-blank line of every source in exactly one row. A table that fails is docs-classifier's to
+redo. One that passes is planned as apply would write it, each row's lines verbatim but for its
+relative links, which are re-expressed from the new folder, a link to a source being deleted
+pointing where that source goes; a new guide or _history/ file opens `# <name>`, a generated
+AGENTS.md is replaced and any other file appended to; and each AGENTS.md closes with
+`## Guides and history`, one line per guide or history file of its target, naming the headings
+its rows bring and nothing else, since AGENTS.md takes no agent's words. It reports:
+  rows       how many, and how many docs-classifier flagged unsure
+  writes     each file apply would write, how, its lines and ≈ tokens; an AGENTS.md marked over
+             200 lines or ≈ 5,000 tokens
+  unread     each new guide no agent of this plugin reads, with its ≈ tokens
+  flags      the rule flags: obsolete drops, dated rows bound for an AGENTS.md, lines over
+             2,000 characters, which Read cuts, and drops whose named file carries less than 80%
+             of their five-word sequences
+  drops      every duplicate drop, with the share of it its file carries
+  repointed  each link pointed from a deleted source to where it goes
+
+Exit: 0, a report with no problem; 1, a report with problems; 2, a usage error and no report.
+Python 3.8 or later, the standard library only, and no file written.
+"""
+import os
+import re
+import subprocess
+import sys
+
+MAX_LINES, MAX_TOKENS = 200, 5000
+SOURCES = ("core.md", "claude.md")
+GENERATED = "<!-- Generated from"
+KNOWN_GUIDES = ("codex-review", "docs-sync", "pr-drafter")   # the guides an agent of this plugin reads
+DATE = re.compile(r"20\d\d-\d\d-\d\d")
+OVERLONG, SHINGLE, SHARE = 2000, 5, 80   # Read's line cut; words a sequence; % a duplicate must carry
+POINTERS = "## Guides and history"
+SRC = re.compile(r"(?P<f>[^:\s]+):(?P<a>\d+)(?:-(?P<b>\d+))?")   # a single line may be <file>:<n>
+OBSOLETE = re.compile(r"drop: obsolete — \S.*")
+DROP = re.compile(r"drop: (?P<f>[^\s:]+)(?::(?P<l>\d+))?")
+HISTORY = re.compile(r"docs/agents/_history/(?P<a>[\w.-]+)\.md")
+GUIDE = re.compile(r"docs/agents/(?:(?P<p>[\w./-]+)/)?(?P<g>[\w-]+)/AGENTS\.md")
+TOP = re.compile(r"(?:(?P<p>[\w./-]+)/)?AGENTS\.md")
+LINK = re.compile(r'(!?\[[^\]\n]*\]\()(<[^>\n]*>|[^)\s]+)((?:\s+"[^"\n]*")?\))')
+REFDEF = re.compile(r"^( {0,3}\[[^\]\n]+\]:[ \t]*)(\S+)", re.M)
+
+
+def git(*args):
+    """git's output in the current directory, or None if git fails."""
+    r = subprocess.run(["git", *args], capture_output=True)
+    return r.stdout.decode("utf-8", "replace") if r.returncode == 0 else None
+
+
+def read(path):
+    with open(path, "rb") as f:
+        return f.read()
+
+
+def join(p, name):
+    return f"{p}/{name}" if p else name
+
+
+def shown(p):
+    return p or "."
+
+
+def tokens(n):
+    return n * 3 // 7
+
+
+def claude_kind(path):
+    """absent, empty, dispatcher, shim or legacy: what a CLAUDE.md holds, comments aside."""
+    if not os.path.isfile(path):
+        return "absent"
+    text = re.sub(r"<!--.*?-->", "", read(path).decode("utf-8", "replace"), flags=re.S)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if not lines:
+        return "empty"
+    if all(re.fullmatch(r"@docs/agents/\S+\.md", l) for l in lines):
+        return "dispatcher"
+    if all(l in ("@AGENTS.md", "@./AGENTS.md") for l in lines):
+        return "shim"
+    return "legacy"
+
+
+def agents_kind(path):
+    if not os.path.isfile(path):
+        return "absent"
+    return "generated" if read(path).startswith(GENERATED.encode()) else "hand"
+
+
+def detect():
+    """The detect report, as (key, value) pairs; whether it found a problem; and its targets,
+    each a dict of its path, state, sources, codex.md and the guide that becomes, for check."""
+    problems, fixes, warnings, tinfo = [], [], [], []
+    top = git("rev-parse", "--show-toplevel")
+    if top is None or os.path.realpath(top.strip()) != os.path.realpath(os.getcwd()):
+        where = "not in a git repository" if top is None else f"in {os.getcwd()}, not at the root {top.strip()}"
+        return [("result", "error"), ("problem", f"run {where}"),
+                ("fix", "run it from the repository's root, the directory git rev-parse --show-toplevel names"),
+                ("message", "Nothing was read: the targets are found from the repository's root.")], True, []
+    listed = git("ls-files", "-z", "--cached", "--others", "--exclude-standard")
+    if listed is None:
+        return [("result", "error"), ("problem", "git ls-files failed in this repository"),
+                ("fix", "run git ls-files here and repair what it reports, then run this again"),
+                ("message", "Nothing was read: the targets come from git's list of files.")], True, []
+    files = [f for f in listed.split("\0") if f]
+    paths = {""}
+    for f in files:
+        d, name = os.path.split(f)
+        if name == "CLAUDE.md" and d != ".claude" and not (d + "/").startswith("docs/agents/"):
+            paths.add(d)
+        elif name in SOURCES + ("codex.md",) and (d + "/").startswith("docs/agents/"):
+            paths.add(d[len("docs/agents/"):])
+    present = set(files)
+    targets, tpaths, sources, codex, delete, local, sizes = [], [], [], [], [], [], []
+    for p in sorted(paths, key=lambda x: (x != "", x)):
+        cl, ag = join(p, "CLAUDE.md"), join(p, "AGENTS.md")
+        ck, ak = claude_kind(cl), agents_kind(ag)
+        src = [join("docs/agents/" + p if p else "docs/agents", s) for s in SOURCES]
+        src = [s for s in src if s in present]
+        cx = join("docs/agents/" + p if p else "docs/agents", "codex.md")
+        cx = cx if cx in present else None
+        if src or cx or ck == "dispatcher":
+            state = "dispatcher"
+            if ck == "legacy":
+                beside = src + ([cx] if cx else [])
+                problems.append(f"{cl} has prose beside the dispatcher's sources {', '.join(beside)}")
+                fixes.append(f"move what {cl} says into {join(os.path.dirname(beside[0]), 'core.md')}, or move {cl} aside, and run this again")
+        elif ck == "legacy":
+            state = "legacy"
+        elif ak != "absent":
+            state = "migrated"
+        else:
+            continue
+        targets.append(f"{shown(p)} {state} claude={ck} agents={ak}")
+        tpaths.append(p)
+        tinfo.append(dict(p=p, state=state, src=[], cx=None, guide=None))
+        if state == "migrated":
+            if ak == "generated":
+                warnings.append(f"{ag} opens with the old build's header, but nothing builds it now: delete the header")
+            b = read(ag)
+            n = len(b.decode("utf-8", "replace").splitlines())
+            over = [w for w, bad in ((f"over {MAX_LINES} lines", n > MAX_LINES),
+                                     (f"over ≈{MAX_TOKENS:,} tokens", tokens(len(b)) > MAX_TOKENS)) if bad]
+            sizes.append(f"{ag}: {n} lines, ≈{tokens(len(b)):,} tokens" + (" — " + ", ".join(over) if over else ""))
+            continue
+        sources += [cl] if state == "legacy" else src
+        tinfo[-1]["src"] = [cl] if state == "legacy" else src
+        if cx:
+            guide = join(os.path.dirname(cx), "codex-review/AGENTS.md")
+            tinfo[-1].update(cx=cx, guide=guide)
+            codex.append(f"{cx} -> {guide}")
+            if os.path.exists(guide):
+                problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
+                fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
+        # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
+        gone = state == "legacy" or ck in ("dispatcher", "empty")
+        delete += ([cl] if gone else []) + src + ([cx] if cx else [])
+    # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
+    for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
+        if os.path.isfile(f):
+            local.append(f)
+    states = [t.split()[1] for t in targets]
+    if problems:
+        result, msg = "error", f"Cannot migrate: {len(problems)} problem{'s' if len(problems) > 1 else ''}, each with its fix."
+    elif {"legacy", "dispatcher"} & set(states):
+        n = sum(s != "migrated" for s in states)
+        result = "migrate"
+        msg = f"{n} target{'s' if n > 1 else ''} to migrate; " + (
+            f"docs-classifier classifies the {len(sources)} source{'s' if len(sources) > 1 else ''}."
+            if sources else "there is no source to classify.")
+    elif targets:
+        result, msg = "migrated", "Already migrated: nothing to move."
+    else:
+        result, msg = "none", "Nothing to migrate: no CLAUDE.md, no dispatcher source and no AGENTS.md."
+    return [("result", result), ("targets", targets), ("sources", sources), ("codex", codex),
+            ("delete", delete), ("local", local), ("sizes", sizes), ("warnings", warnings),
+            ("problem", problems), ("fix", fixes), ("message", msg)], bool(problems), tinfo
+
+
+def words(text):
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def share(text, path):
+    """The % of text's 5-word sequences that path carries, case and punctuation aside."""
+    w, t = words(text), words(read(path).decode("utf-8", "replace"))
+    if len(w) < SHINGLE:
+        return 100 if " ".join(w) in " ".join(t) else 0
+    want = {tuple(w[i:i + SHINGLE]) for i in range(len(w) - SHINGLE + 1)}
+    have = {tuple(t[i:i + SHINGLE]) for i in range(len(t) - SHINGLE + 1)}
+    return len(want & have) * 100 // len(want)
+
+
+def heading(text):
+    """The first of text's shallowest headings, or None."""
+    hs = [(len(m.group(1)), m.group(2).strip()) for m in re.finditer(r"^(#{1,6})[ \t]+(.+)$", text, re.M)]
+    return next(h for n, h in hs if n == min(n for n, _ in hs)) if hs else None
+
+
+def relink(text, src, dst, moved, repointed):
+    """text from src as it reads at dst. Each relative link, image and reference definition is
+    re-expressed from dst's folder, anchor kept; a link to a source being deleted is pointed at
+    where that source goes, and logged in repointed. URLs, #anchors, absolute paths, links out
+    of the repository and code fences are left alone, and so is a link that keeps its folder."""
+    def fix(url):
+        bare = url[1:-1] if url.startswith("<") else url
+        if re.match(r"[A-Za-z][A-Za-z0-9+.-]*:", bare) or bare.startswith(("#", "/")):
+            return url
+        path, mark, frag = bare.partition("#")
+        to = os.path.normpath(os.path.join(os.path.dirname(src), path)) if path else ""
+        if not path or to == ".." or to.startswith("../"):
+            return url
+        if to in moved:
+            repointed.append(f"{dst}: {url} -> {moved[to]}")
+            to = moved[to]
+        elif os.path.dirname(src) == os.path.dirname(dst):
+            return url
+        new = os.path.relpath(to, os.path.dirname(dst) or ".") + mark + frag
+        return f"<{new}>" if url.startswith("<") else new
+    out, fence = [], False
+    for line in text.splitlines(True):
+        if re.match(r" {0,3}(```|~~~)", line):
+            fence = not fence
+        elif not fence:
+            line = LINK.sub(lambda m: m.group(1) + fix(m.group(2)) + m.group(3), line)
+            line = REFDEF.sub(lambda m: m.group(1) + fix(m.group(2)), line)
+        out.append(line)
+    return "".join(out)
+
+
+def destination(dest, tpaths):
+    """A row's destination as (kind, where), or (None, what is wrong with it)."""
+    if OBSOLETE.fullmatch(dest):
+        return "obsolete", None
+    m = DROP.fullmatch(dest)
+    if m:
+        p = os.path.normpath(m["f"])
+        if p.startswith("..") or not os.path.isfile(p):
+            return None, f"names {m['f']}, which is not a file in this repository"
+        if m["l"] and int(m["l"]) > len(read(p).splitlines()):
+            return None, f"names line {m['l']} of {m['f']}, which is shorter"
+        return "drop", p
+    if HISTORY.fullmatch(dest):
+        return "history", ""
+    m = GUIDE.fullmatch(dest)
+    if m and m["g"] != "_history":
+        if (m["p"] or "") not in tpaths:
+            return None, f"is a guide of {m['p']}, which is not a target"
+        return "guide", m["p"] or ""
+    m = TOP.fullmatch(dest)
+    if m and not dest.startswith("docs/agents/"):
+        if (m["p"] or "") not in tpaths:
+            return None, f"is the AGENTS.md of {m['p']}, which is not a target"
+        return "agents", m["p"] or ""
+    return None, "is not one of the five forms docs-classifier's Output section gives"
+
+
+def cells(line):
+    """A table row's cells, a cell that is one code span unwrapped: `AGENTS.md` is AGENTS.md,
+    and `needs` field keeps both its backticks."""
+    out = []
+    for c in line.strip().strip("|").split("|"):
+        c = c.strip()
+        out.append(c[1:-1].strip() if len(c) > 1 and c[0] == c[-1] == "`" and c.count("`") == 2 else c)
+    return out
+
+
+def parse(text, sources, tpaths):
+    """docs-classifier's table as rows, with the problems and fixes that stop it."""
+    probs, fixes = [], []
+    def bad(p, f):
+        probs.append(p)
+        fixes.append(f)
+    lines = text.split("\n")
+    t = lines.index("## Table") if "## Table" in lines else -1
+    n = lines.index("## Notes", t) if t >= 0 and "## Notes" in lines[t:] else -1
+    if n < 0:
+        if any(l.strip() == "## Table" for l in lines):
+            bad("the reply was copied inside the frame Claude Code puts around a subagent's report",
+                "write the report again alone, without the frame or its two-space indent, so that ## Table starts its line")
+        else:
+            bad("the reply has no ## Table followed by ## Notes", "ask docs-classifier again for the two sections its Output section gives")
+        return [], probs, fixes
+    table = [l for l in lines[t + 1:n] if l.startswith("|")]
+    if len(table) < 2 or [c.lower() for c in cells(table[0])] != ["source", "destination", "what", "flag"]:
+        bad("the table does not open with | source | destination | what | flag |",
+            "ask docs-classifier again for its table in the form its Output section gives")
+        return [], probs, fixes
+    body = {s: read(s).decode("utf-8", "replace").splitlines(True) for s in sources}
+    cover = {s: {} for s in sources}
+    rows, last = [], {}
+    again = "ask docs-classifier again, with this problem: line and its fix: line"
+    for i, line in enumerate(table[2:], 1):
+        c = cells(line)
+        if len(c) != 4:
+            bad(f"row {i} has {len(c)} cells: {line[:80]}", f"{again}: four cells to a row, no | inside a cell")
+            continue
+        src, dest, what, flag = c
+        m = SRC.fullmatch(src)
+        if not m or m["f"] not in body:
+            bad(f"row {i} names {src}, which is not a range of a source", f"{again}: name each source as the prompt does, {', '.join(sources)}")
+            continue
+        f, a = m["f"], int(m["a"])
+        b = int(m["b"]) if m["b"] else a
+        if not 1 <= a <= b <= len(body[f]):
+            bad(f"row {i}'s range {src} is not within {f}, which has {len(body[f])} lines", f"{again}: each range within its source")
+            continue
+        if a < last.get(f, 0):
+            bad(f"row {i}, {src}, is out of source order", f"{again}: rows in source order")
+        last[f] = a
+        for k in range(a, b + 1):
+            cover[f].setdefault(k, []).append(i)
+        kind, where = destination(dest, tpaths)
+        if kind is None:
+            bad(f"row {i}'s destination {dest} {where}", f"{again}: each destination one of the five forms, naming a target or a file that exists")
+            continue
+        if not (flag == "sure" or re.fullmatch(r"unsure: \S.*", flag)):
+            bad(f"row {i}'s flag is {flag!r}", f"{again}: each flag sure, or unsure: and why")
+        rows.append(dict(src=src, f=f, a=a, b=b, dest=dest, kind=kind, where=where, what=what, flag=flag,
+                         text="".join(body[f][a - 1:b])))
+    for f in sources:
+        gaps = [k for k, l in enumerate(body[f], 1) if l.strip() and k not in cover[f]]
+        twice = sorted(k for k, r in cover[f].items() if len(r) > 1)
+        for what, ks in (("in no row", gaps), ("in two rows", twice)):
+            if ks:
+                bad(f"{f}: {len(ks)} non-blank line{'s' if len(ks) > 1 else ''} {what}, from line {ks[0]}",
+                    f"{again}: every non-blank line of every source in exactly one row")
+    return rows, probs, fixes
+
+
+def owner(path):
+    """The target whose AGENTS.md points at a guide or history file: the root for _history/."""
+    if HISTORY.fullmatch(path):
+        return ""
+    gm = GUIDE.fullmatch(path)
+    return (gm["p"] or "") if gm else None
+
+
+def describe(items):
+    seen = list(dict.fromkeys(i for i in items if i))
+    return "; ".join(seen[:4] + ([f"and {len(seen) - 4} more"] if len(seen) > 4 else []))
+
+
+def plan(rows, tinfo):
+    """What apply writes, {path: text} in the order first written; how each is written; the
+    links re-pointed; and each new guide no agent of this plugin reads, with its ≈ tokens."""
+    moved, repointed, chunks, how, about = {}, [], {}, {}, {}
+    for t in tinfo:
+        for s in t["src"]:
+            moved[s] = join(t["p"], "AGENTS.md")
+        if t["cx"]:
+            moved[t["cx"]] = t["guide"]
+    def begin(path, title):
+        if path in chunks:
+            return
+        top = not path.startswith("docs/agents/")
+        if os.path.isfile(path) and not (top and agents_kind(path) == "generated"):
+            chunks[path], how[path] = [read(path).decode("utf-8", "replace")], "appends"
+        else:
+            how[path] = "replaces the generated file" if os.path.isfile(path) else "new"
+            chunks[path] = [f"# {title}\n"] if title else []
+        about[path] = []
+    for t in tinfo:
+        if t["state"] != "migrated" and agents_kind(join(t["p"], "AGENTS.md")) == "generated":
+            begin(join(t["p"], "AGENTS.md"), None)   # the old build's copy of core.md is replaced
+        if t["cx"]:
+            begin(t["guide"], None)
+            text = read(t["cx"]).decode("utf-8", "replace")
+            chunks[t["guide"]].append(relink(text, t["cx"], t["guide"], moved, repointed))
+            about[t["guide"]].append(heading(text))
+    for r in rows:
+        if r["kind"] in ("drop", "obsolete"):
+            continue
+        gm, hm = GUIDE.fullmatch(r["dest"]), HISTORY.fullmatch(r["dest"])
+        title = (gm["g"] if r["kind"] == "guide" and gm else
+                 hm["a"] + " history" if r["kind"] == "history" and hm else None)
+        begin(r["dest"], title)
+        chunks[r["dest"]].append(relink(r["text"], r["f"], r["dest"], moved, repointed))
+        about[r["dest"]].append(heading(r["text"]))   # never the what cell: AGENTS.md takes no agent's words
+    for t in tinfo:
+        home = join(t["p"], "AGENTS.md")
+        mine = [p for p in list(chunks) if p.startswith("docs/agents/") and owner(p) == t["p"]]
+        if mine:
+            begin(home, None)
+            chunks[home].append(POINTERS + "\n\n" + "".join(
+                f"- `{p}`" + (f": {describe(about[p])}" if describe(about[p]) else "") + "\n" for p in mine))
+    text = {p: "\n".join(c if c.endswith("\n") else c + "\n" for c in cs) for p, cs in chunks.items()}
+    unread = [(p, tokens(len(text[p].encode()))) for p in text
+              if (gm := GUIDE.fullmatch(p)) and gm["g"] not in KNOWN_GUIDES and how[p] == "new"]
+    return text, how, repointed, unread
+
+
+CHECK_KEYS = ("result", "input", "rows", "writes", "unread", "flags", "drops", "repointed", "problem", "fix", "message")
+
+
+def check(reply):
+    """The check report, as (key, value) pairs, and whether it found a problem."""
+    def out(**kw):
+        return [(k, kw.get(k, [])) for k in CHECK_KEYS]
+    report, bad, tinfo = detect()
+    result = dict(report)["result"]
+    if bad or result != "migrate":
+        why = "detect reports problems" if bad else f"detect reports {result}: there is nothing to migrate"
+        return out(result="error", input=reply, problem=[why], fix=["run detect, and act on its report first"],
+                   message="The table was not read: check works on a repository detect can migrate."), True
+    sources = [s for t in tinfo for s in t["src"]]
+    try:
+        text = read(reply).decode("utf-8", "replace")
+    except OSError as e:
+        return out(result="error", input=reply, problem=[f"cannot read {reply}: {e.strerror}"],
+                   fix=["write docs-classifier's report to that file, then run this again"],
+                   message="The table was not read."), True
+    rows, probs, fixes = parse(text, sources, [t["p"] for t in tinfo])
+    if probs:
+        framed = probs[0].startswith("the reply was copied")
+        return out(result="problems", input=reply, problem=probs, fix=fixes, message=(
+            "The reply was copied in its frame: write it again alone, and check it again." if framed else
+            f"docs-classifier's table has {len(probs)} problem{'s' if len(probs) > 1 else ''}: ask it again, "
+            "giving it each problem: line with its fix: line.")), True
+    text, how, repointed, unread = plan(rows, tinfo)
+    writes, flags, drops = [], [], []
+    for p, t in text.items():
+        n, k = len(t.splitlines()), tokens(len(t.encode()))
+        over = [w for w, hit in ((f"over {MAX_LINES} lines", n > MAX_LINES), (f"over ≈{MAX_TOKENS:,} tokens", k > MAX_TOKENS))
+                if hit and not p.startswith("docs/agents/") and os.path.basename(p) == "AGENTS.md"]
+        writes.append(f"{p} ({how[p]}): {n} lines, ≈{k:,} tokens" + (" — " + ", ".join(over) if over else ""))
+    for r in rows:
+        kinds = (["obsolete"] if r["kind"] == "obsolete" else []) + \
+                (["dated"] if r["kind"] == "agents" and DATE.search(r["text"]) else []) + \
+                (["overlong"] if any(len(l.rstrip("\n")) > OVERLONG for l in r["text"].splitlines()) else [])
+        if r["kind"] == "drop":
+            pct = share(r["text"], r["where"])
+            drops.append(f"{r['src']} -> {r['where']}: {pct}% found")
+            kinds += [f"duplicate, {pct}% found"] if pct < SHARE else []
+        if kinds:
+            flags.append(f"{r['src']} -> {r['dest']}: {', '.join(kinds)}")
+    unsure = sum(r["flag"] != "sure" for r in rows)
+    lost = sum(k for _, k in unread)
+    return out(result="clean", input=reply, rows=f"{len(rows)}, {unsure} flagged unsure by docs-classifier",
+               writes=writes, unread=[f"{p}: ≈{k:,} tokens" for p, k in unread], flags=flags, drops=drops,
+               repointed=repointed, message=(
+                   f"The table covers every non-blank line of the {len(sources)} source{'s' if len(sources) > 1 else ''} "
+                   f"in {len(rows)} row{'s' if len(rows) > 1 else ''}; {len(flags)} of them "
+                   f"{'carries' if len(flags) == 1 else 'carry'} a rule flag, and ≈{lost:,} tokens go to guides "
+                   "no agent reads.")), False
+
+
+def emit(report):
+    for key, value in report:
+        items = value if isinstance(value, list) else [value]
+        print(f"{key}: {items[0] if items else '—'}")
+        for v in items[1:]:
+            print(f"  {v}")
+
+
+def main(argv):
+    if argv[1:] == ["detect"]:
+        report, bad, _ = detect()
+    elif len(argv) == 3 and argv[1] == "check":
+        report, bad = check(argv[2])
+    else:
+        print("usage: migrate-agents-docs.py detect | check <reply>", file=sys.stderr)
+        return 2
+    emit(report)
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

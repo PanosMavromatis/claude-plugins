@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -353,7 +353,7 @@
+         if kind is None:
+             bad(f"row {i}'s destination {dest} {where}", f"{again}: each destination one of the five forms, naming a target or a file that exists")
+             continue
+-        if not (flag == "sure" or re.fullmatch(r"unsure: \S.*", flag)):
++        if not flag:
+             bad(f"row {i}'s flag is {flag!r}", f"{again}: each flag sure, or unsure: and why")
+         rows.append(dict(src=src, f=f, a=a, b=b, dest=dest, kind=kind, where=where, what=what, flag=flag,
+                          text="".join(body[f][a - 1:b])))

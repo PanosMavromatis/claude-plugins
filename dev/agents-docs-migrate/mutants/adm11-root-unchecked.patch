@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -131,7 +131,7 @@
+     each a dict of its path, state, sources, codex.md and the guide that becomes, for check."""
+     problems, fixes, warnings, tinfo = [], [], [], []
+     top = git("rev-parse", "--show-toplevel")
+-    if top is None or os.path.realpath(top.strip()) != os.path.realpath(os.getcwd()):
++    if top is None:
+         where = "not in a git repository" if top is None else f"in {os.getcwd()}, not at the root {top.strip()}"
+         return [("result", "error"), ("problem", f"run {where}"),
+                 ("fix", "run it from the repository's root, the directory git rev-parse --show-toplevel names"),

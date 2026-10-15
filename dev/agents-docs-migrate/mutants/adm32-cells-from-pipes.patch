@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -298,7 +298,7 @@
+     """A table row's cells, a cell that is one code span unwrapped: `AGENTS.md` is AGENTS.md,
+     and `needs` field keeps both its backticks."""
+     out = []
+-    for c in line.strip().strip("|").split("|"):
++    for c in line.strip().split("|"):
+         c = c.strip()
+         out.append(c[1:-1].strip() if len(c) > 1 and c[0] == c[-1] == "`" and c.count("`") == 2 else c)
+     return out

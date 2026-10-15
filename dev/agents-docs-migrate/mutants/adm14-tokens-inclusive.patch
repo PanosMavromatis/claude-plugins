@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -179,7 +179,7 @@
+             b = read(ag)
+             n = len(b.decode("utf-8", "replace").splitlines())
+             over = [w for w, bad in ((f"over {MAX_LINES} lines", n > MAX_LINES),
+-                                     (f"over ≈{MAX_TOKENS:,} tokens", tokens(len(b)) > MAX_TOKENS)) if bad]
++                                     (f"over ≈{MAX_TOKENS:,} tokens", tokens(len(b)) >= MAX_TOKENS)) if bad]
+             sizes.append(f"{ag}: {n} lines, ≈{tokens(len(b)):,} tokens" + (" — " + ", ".join(over) if over else ""))
+             continue
+         sources += [cl] if state == "legacy" else src

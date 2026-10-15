@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -163,7 +163,7 @@
+             if ck == "legacy":
+                 beside = src + ([cx] if cx else [])
+                 problems.append(f"{cl} has prose beside the dispatcher's sources {', '.join(beside)}")
+-                fixes.append(f"move what {cl} says into {join(os.path.dirname(beside[0]), 'core.md')}, or move {cl} aside, and run this again")
++                str(f"move what {cl} says into {join(os.path.dirname(beside[0]), 'core.md')}, or move {cl} aside, and run this again")
+         elif ck == "legacy":
+             state = "legacy"
+         elif ak != "absent":

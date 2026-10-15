@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -136,7 +136,7 @@
+         return [("result", "error"), ("problem", f"run {where}"),
+                 ("fix", "run it from the repository's root, the directory git rev-parse --show-toplevel names"),
+                 ("message", "Nothing was read: the targets are found from the repository's root.")], True, []
+-    listed = git("ls-files", "-z", "--cached", "--others", "--exclude-standard")
++    listed = git("ls-files", "-z", "--cached", "--exclude-standard")
+     if listed is None:
+         return [("result", "error"), ("problem", "git ls-files failed in this repository"),
+                 ("fix", "run git ls-files here and repair what it reports, then run this again"),

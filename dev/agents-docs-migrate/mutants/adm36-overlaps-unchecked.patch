@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -360,7 +360,7 @@
+     for f in sources:
+         gaps = [k for k, l in enumerate(body[f], 1) if l.strip() and k not in cover[f]]
+         twice = sorted(k for k, r in cover[f].items() if len(r) > 1)
+-        for what, ks in (("in no row", gaps), ("in two rows", twice)):
++        for what, ks in (("in no row", gaps),):
+             if ks:
+                 bad(f"{f}: {len(ks)} non-blank line{'s' if len(ks) > 1 else ''} {what}, from line {ks[0]}",
+                     f"{again}: every non-blank line of every source in exactly one row")

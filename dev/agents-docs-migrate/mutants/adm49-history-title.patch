@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -412,7 +412,7 @@
+             continue
+         gm, hm = GUIDE.fullmatch(r["dest"]), HISTORY.fullmatch(r["dest"])
+         title = (gm["g"] if r["kind"] == "guide" and gm else
+-                 hm["a"] + " history" if r["kind"] == "history" and hm else None)
++                 hm["a"] if r["kind"] == "history" and hm else None)
+         begin(r["dest"], title)
+         chunks[r["dest"]].append(relink(r["text"], r["f"], r["dest"], moved, repointed))
+         about[r["dest"]].append(heading(r["text"]))   # never the what cell: AGENTS.md takes no agent's words

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -415,7 +415,7 @@
+                  hm["a"] + " history" if r["kind"] == "history" and hm else None)
+         begin(r["dest"], title)
+         chunks[r["dest"]].append(relink(r["text"], r["f"], r["dest"], moved, repointed))
+-        about[r["dest"]].append(heading(r["text"]))   # never the what cell: AGENTS.md takes no agent's words
++        about[r["dest"]].append(heading(r["text"]) or r["what"])   # never the what cell: AGENTS.md takes no agent's words
+     for t in tinfo:
+         home = join(t["p"], "AGENTS.md")
+         mine = [p for p in list(chunks) if p.startswith("docs/agents/") and owner(p) == t["p"]]

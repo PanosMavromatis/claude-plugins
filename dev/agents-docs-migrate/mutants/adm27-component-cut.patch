@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -148,7 +148,7 @@
+         if name == "CLAUDE.md" and d != ".claude" and not (d + "/").startswith("docs/agents/"):
+             paths.add(d)
+         elif name in SOURCES + ("codex.md",) and (d + "/").startswith("docs/agents/"):
+-            paths.add(d[len("docs/agents/"):])
++            paths.add(d[len("docs/agents/"):].split("/")[0])
+     present = set(files)
+     targets, tpaths, sources, codex, delete, local, sizes = [], [], [], [], [], [], []
+     for p in sorted(paths, key=lambda x: (x != "", x)):

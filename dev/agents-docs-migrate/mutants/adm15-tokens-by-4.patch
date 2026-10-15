@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -102,7 +102,7 @@
+ 
+ 
+ def tokens(n):
+-    return n * 3 // 7
++    return n // 4
+ 
+ 
+ def claude_kind(path):

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -115,7 +115,7 @@
+         return "empty"
+     if all(re.fullmatch(r"@docs/agents/\S+\.md", l) for l in lines):
+         return "dispatcher"
+-    if all(l in ("@AGENTS.md", "@./AGENTS.md") for l in lines):
++    if all(l in ("@AGENTS.md",) for l in lines):
+         return "shim"
+     return "legacy"
+ 

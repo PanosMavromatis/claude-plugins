@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -438,7 +438,7 @@
+         return [(k, kw.get(k, [])) for k in CHECK_KEYS]
+     report, bad, tinfo = detect()
+     result = dict(report)["result"]
+-    if bad or result != "migrate":
++    if bad:
+         why = "detect reports problems" if bad else f"detect reports {result}: there is nothing to migrate"
+         return out(result="error", input=reply, problem=[why], fix=["run detect, and act on its report first"],
+                    message="The table was not read: check works on a repository detect can migrate."), True

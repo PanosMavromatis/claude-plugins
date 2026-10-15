@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -465,7 +465,7 @@
+         writes.append(f"{p} ({how[p]}): {n} lines, ≈{k:,} tokens" + (" — " + ", ".join(over) if over else ""))
+     for r in rows:
+         kinds = (["obsolete"] if r["kind"] == "obsolete" else []) + \
+-                (["dated"] if r["kind"] == "agents" and DATE.search(r["text"]) else []) + \
++                (["dated"] if DATE.search(r["text"]) else []) + \
+                 (["overlong"] if any(len(l.rstrip("\n")) > OVERLONG for l in r["text"].splitlines()) else [])
+         if r["kind"] == "drop":
+             pct = share(r["text"], r["where"])

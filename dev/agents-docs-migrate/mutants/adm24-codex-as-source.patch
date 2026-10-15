@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -154,7 +154,7 @@
+     for p in sorted(paths, key=lambda x: (x != "", x)):
+         cl, ag = join(p, "CLAUDE.md"), join(p, "AGENTS.md")
+         ck, ak = claude_kind(cl), agents_kind(ag)
+-        src = [join("docs/agents/" + p if p else "docs/agents", s) for s in SOURCES]
++        src = [join("docs/agents/" + p if p else "docs/agents", s) for s in SOURCES + ("codex.md",)]
+         src = [s for s in src if s in present]
+         cx = join("docs/agents/" + p if p else "docs/agents", "codex.md")
+         cx = cx if cx in present else None

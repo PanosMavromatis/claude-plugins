@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -151,7 +151,7 @@
+             paths.add(d[len("docs/agents/"):])
+     present = set(files)
+     targets, tpaths, sources, codex, delete, local, sizes = [], [], [], [], [], [], []
+-    for p in sorted(paths, key=lambda x: (x != "", x)):
++    for p in sorted(paths, key=lambda x: (x == "", x)):
+         cl, ag = join(p, "CLAUDE.md"), join(p, "AGENTS.md")
+         ck, ak = claude_kind(cl), agents_kind(ag)
+         src = [join("docs/agents/" + p if p else "docs/agents", s) for s in SOURCES]

@@ -164,6 +164,15 @@ python3 -I dev/agents-docs/suite.py                      # 73 cases, no model, ~
 python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch each mutant, ~3 min
 ```
 
+Test the script `/agents-docs-migrate` is built on, `scripts/migrate-agents-docs.py`, which
+finds a repository's agent instructions and checks `docs-classifier`'s table against them,
+after a change to it:
+
+```bash
+python3 -I dev/agents-docs-migrate/suite.py              # 45 cases, no model
+python3 -I dev/agents-docs-migrate/suite.py --mutants    # the suite must catch each mutant
+```
+
 Test the hook that keeps `workflow-coding`'s own agents to the few commands they need,
 `hooks/guard-agent-git.py`, and the wrapper `hooks/hooks.json` runs both guards through, so
 they refuse those agents' calls when they cannot run, `hooks/fail-closed.sh`, after a change

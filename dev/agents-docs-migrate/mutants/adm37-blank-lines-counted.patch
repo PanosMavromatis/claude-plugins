@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -358,7 +358,7 @@
+         rows.append(dict(src=src, f=f, a=a, b=b, dest=dest, kind=kind, where=where, what=what, flag=flag,
+                          text="".join(body[f][a - 1:b])))
+     for f in sources:
+-        gaps = [k for k, l in enumerate(body[f], 1) if l.strip() and k not in cover[f]]
++        gaps = [k for k, l in enumerate(body[f], 1) if k not in cover[f]]
+         twice = sorted(k for k, r in cover[f].items() if len(r) > 1)
+         for what, ks in (("in no row", gaps), ("in two rows", twice)):
+             if ks:

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -70,7 +70,7 @@
+ GENERATED = "<!-- Generated from"
+ KNOWN_GUIDES = ("codex-review", "docs-sync", "pr-drafter")   # the guides an agent of this plugin reads
+ DATE = re.compile(r"20\d\d-\d\d-\d\d")
+-OVERLONG, SHINGLE, SHARE = 2000, 5, 80   # Read's line cut; words a sequence; % a duplicate must carry
++OVERLONG, SHINGLE, SHARE = 2000, 1, 80   # Read's line cut; words a sequence; % a duplicate must carry
+ POINTERS = "## Guides and history"
+ SRC = re.compile(r"(?P<f>[^:\s]+):(?P<a>\d+)(?:-(?P<b>\d+))?")   # a single line may be <file>:<n>
+ OBSOLETE = re.compile(r"drop: obsolete — \S.*")

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -393,7 +393,7 @@
+         if path in chunks:
+             return
+         top = not path.startswith("docs/agents/")
+-        if os.path.isfile(path) and not (top and agents_kind(path) == "generated"):
++        if os.path.isfile(path):
+             chunks[path], how[path] = [read(path).decode("utf-8", "replace")], "appends"
+         else:
+             how[path] = "replaces the generated file" if os.path.isfile(path) else "new"

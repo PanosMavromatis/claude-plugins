@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -109,7 +109,7 @@
+     """absent, empty, dispatcher, shim or legacy: what a CLAUDE.md holds, comments aside."""
+     if not os.path.isfile(path):
+         return "absent"
+-    text = re.sub(r"<!--.*?-->", "", read(path).decode("utf-8", "replace"), flags=re.S)
++    text = read(path).decode("utf-8", "replace")
+     lines = [l.strip() for l in text.splitlines() if l.strip()]
+     if not lines:
+         return "empty"

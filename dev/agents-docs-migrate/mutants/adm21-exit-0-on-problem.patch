@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -501,7 +501,7 @@
+         print("usage: migrate-agents-docs.py detect | check <reply>", file=sys.stderr)
+         return 2
+     emit(report)
+-    return 1 if bad else 0
++    return 0
+ 
+ 
+ if __name__ == "__main__":

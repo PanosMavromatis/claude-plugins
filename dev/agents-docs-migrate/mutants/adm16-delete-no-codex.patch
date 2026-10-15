@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -193,7 +193,7 @@
+                 fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
+         # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
+         gone = state == "legacy" or ck in ("dispatcher", "empty")
+-        delete += ([cl] if gone else []) + src + ([cx] if cx else [])
++        delete += ([cl] if gone else []) + src
+     # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
+     for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
+         if os.path.isfile(f):

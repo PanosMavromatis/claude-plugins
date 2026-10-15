@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -466,7 +466,7 @@
+     for r in rows:
+         kinds = (["obsolete"] if r["kind"] == "obsolete" else []) + \
+                 (["dated"] if r["kind"] == "agents" and DATE.search(r["text"]) else []) + \
+-                (["overlong"] if any(len(l.rstrip("\n")) > OVERLONG for l in r["text"].splitlines()) else [])
++                (["overlong"] if any(len(l.rstrip("\n")) > OVERLONG + 1 for l in r["text"].splitlines()) else [])
+         if r["kind"] == "drop":
+             pct = share(r["text"], r["where"])
+             drops.append(f"{r['src']} -> {r['where']}: {pct}% found")

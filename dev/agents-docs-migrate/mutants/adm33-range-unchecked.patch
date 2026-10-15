@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -341,7 +341,7 @@
+             continue
+         f, a = m["f"], int(m["a"])
+         b = int(m["b"]) if m["b"] else a
+-        if not 1 <= a <= b <= len(body[f]):
++        if not 1 <= a <= b:
+             bad(f"row {i}'s range {src} is not within {f}, which has {len(body[f])} lines", f"{again}: each range within its source")
+             continue
+         if a < last.get(f, 0):

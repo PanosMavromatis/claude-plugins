@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -470,7 +470,7 @@
+         if r["kind"] == "drop":
+             pct = share(r["text"], r["where"])
+             drops.append(f"{r['src']} -> {r['where']}: {pct}% found")
+-            kinds += [f"duplicate, {pct}% found"] if pct < SHARE else []
++            kinds += [f"duplicate, {pct}% found"] if pct > SHARE else []
+         if kinds:
+             flags.append(f"{r['src']} -> {r['dest']}: {', '.join(kinds)}")
+     unsure = sum(r["flag"] != "sure" for r in rows)

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -283,7 +283,7 @@
+         return "history", ""
+     m = GUIDE.fullmatch(dest)
+     if m and m["g"] != "_history":
+-        if (m["p"] or "") not in tpaths:
++        if False:
+             return None, f"is a guide of {m['p']}, which is not a target"
+         return "guide", m["p"] or ""
+     m = TOP.fullmatch(dest)

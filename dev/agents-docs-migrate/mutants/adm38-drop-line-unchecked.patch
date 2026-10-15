@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -276,7 +276,7 @@
+         p = os.path.normpath(m["f"])
+         if p.startswith("..") or not os.path.isfile(p):
+             return None, f"names {m['f']}, which is not a file in this repository"
+-        if m["l"] and int(m["l"]) > len(read(p).splitlines()):
++        if False:
+             return None, f"names line {m['l']} of {m['f']}, which is shorter"
+         return "drop", p
+     if HISTORY.fullmatch(dest):
