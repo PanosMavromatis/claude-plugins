@@ -8,7 +8,7 @@
 
 ## Goals
 
-- [ ] 01 — Hooks inside a subagent and the dp-compile gate are tested before the agent is built
+- [x] 01 — Hooks inside a subagent and the dp-compile gate are tested before the agent is built
 - [ ] 02 — agents/docs-sync.md does /agents-docs-update's work
 - [ ] 03 — /agents-docs-update thins to a wrapper around docs-sync
 - [ ] 04 — /smart-commit spawns docs-sync with the Agent tool

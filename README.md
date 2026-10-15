@@ -186,6 +186,12 @@ plugin's "Scoped `allowed-tools`" convention rests on: four headless turns on a 
 fixture plugin, and one interactive check by hand. They are real sessions, a few cents, so
 run them yourself; `dev/grant-lifetime/README.md` covers how.
 
+`dev/subagent-hooks/` tests whether a plugin's hooks fire on a subagent's tool calls, the fact
+R2's `docs-sync` agent rests on: four headless turns on fixture repositories, a subagent
+editing a generated `AGENTS.override.md` between a main-session and a subagent control, and a
+subagent staging a doc before `dp-compile`'s gate. They are real sessions, a few cents, so run
+them yourself; `dev/subagent-hooks/README.md` covers how.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one

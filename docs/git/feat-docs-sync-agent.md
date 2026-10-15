@@ -25,3 +25,5 @@ R2 subgoal 8. `/agents-docs-update`'s work moves into a subagent, `agents/docs-s
 - A hook changed here is not live in this repository until 0.11.0 is installed (subgoal 14)
 
 ## Notes
+
+- 2026-10-14, goal 01: `dev/subagent-hooks/` runs four headless haiku sessions on fixtures with this repository's plugins loaded by `--plugin-dir`. In run `s2`, `protect-agent-docs.py` fires on a subagent's `Edit`, between a blocked main-session control and a subagent edit of `AGENTS.md` that lands, so `/agents-docs-update` needs no `check-agents-md.sh` re-run; and `dp-compile`'s gate blocks the main session's commit, naming the kernel, having seen the `AGENTS.md` a subagent staged. Run `s1`'s gate case was void: `dp-compile` loaded alone by `--plugin-dir` is dropped silently for its missing dependency, left for R4. The `Agent` tool ran each subagent in the background, so `/smart-commit` must commit after `docs-sync` hands back. A note under R2 subgoal 14 records that until 0.11.0 a fresh install gets `main` labelled 0.10.1

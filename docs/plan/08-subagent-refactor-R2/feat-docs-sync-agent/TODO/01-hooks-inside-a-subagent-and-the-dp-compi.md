@@ -1,6 +1,11 @@
 # 01 — Hooks inside a subagent and the dp-compile gate are tested before the agent is built
 
-**Goal**: [ ]
+**Goal**: [x]
+> **Done:** `dev/subagent-hooks/` shows, in run `s2`, that `protect-agent-docs.py` fires on a subagent's `Edit` and that `dp-compile`'s gate sees the docs a subagent stages; goal 03 needs no `check-agents-md.sh` re-run.
+> **Q:** Should goal 01 build `dev/subagent-hooks/` as `dev/grant-lifetime/` is built (`run.sh`, `check.py`, a `README.md` recording results): four headless haiku sessions the user runs, on two fixtures under `$LOCATE_PLAN_WORK/subhooks/` with `--plugin-dir` copies of this repository's plugins, in `acceptEdits` mode with `git add` and `git commit` allowed so only a hook can block; `h0` the main session `Edit`s `AGENTS.override.md` (blocked: the hook is loaded), `h1` a `general-purpose` subagent does (the measurement), `h2` a subagent `Edit`s `AGENTS.md` (changed: a subagent's edit lands), and `d1` a subagent edits and stages `AGENTS.md` before the main session's `git commit` with a kernel staged, where the gate must block, name the kernel and leave a `.gate-saw` listing both files; graded from the files and the stream-json, including that the subagent attempted the edit (A), or differently, such as by hand (B)?
+> **A:** A.
 
-- [ ] Whether `protect-agent-docs.py` fires on an `Edit` made inside a subagent is tested on a fixture, and the result is recorded with its method
-- [ ] Whether `dp-compile`'s gate still sees the docs a subagent stages is tested, and the result is recorded
+- [x] Whether `protect-agent-docs.py` fires on an `Edit` made inside a subagent is tested on a fixture, and the result is recorded with its method
+  > **Note:** It fires. In `dev/subagent-hooks/` run `s2` (2026-10-14, haiku, Claude Code 2.1.300, $0.02), a `general-purpose` subagent's own `Edit` of `AGENTS.override.md` came back `PreToolUse:Edit hook error: … Blocked: …` and the file kept its text, between a blocked main-session `Edit` (h0) and a subagent's `Edit` of `AGENTS.md` that landed (h2); run `s1` agreed. Goal 03's §8 fallback, re-running `check-agents-md.sh` after the agent returns, is not needed.
+- [x] Whether `dp-compile`'s gate still sees the docs a subagent stages is tested, and the result is recorded
+  > **Note:** It does. In run `s2`, with a kernel staged, a subagent edited and staged `AGENTS.md`, and the main session's `git commit` was blocked by the gate naming `src/probe_python.py`; its `.gate-saw` lists `AGENTS.md` and the kernel. Run `s1`'s d1 was void: `dp-compile` declares `workflow-coding` a dependency, and a session that loaded it alone by `--plugin-dir` dropped it with no message, against `dp-compile`'s README, which says its runtime detection survives for `--plugin-dir` sessions; that is R4's. In both runs the `Agent` tool started the subagent in the background and the main session acted only on its hand-back, so `/smart-commit` must commit after `docs-sync` hands back.
