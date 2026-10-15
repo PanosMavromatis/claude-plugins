@@ -13,4 +13,4 @@
 - [x] 03 — /agents-docs-update thins to a wrapper around docs-sync
 - [x] 03a — A hook stops docs-sync committing or pushing
 - [x] 04 — /smart-commit spawns docs-sync with the Agent tool
-- [~] 05 — The §7.7 cases pass end to end
+- [x] 05 — The §7.7 cases pass end to end

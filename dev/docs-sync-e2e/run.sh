@@ -21,10 +21,16 @@
 #   k1  /smart-commit with dp-compile loaded and a kernel staged, README.md saying what it
 #       returns: docs-sync must edit and stage README.md and leave no AGENTS.md changed, and the
 #       commit be blocked by dp-compile's gate, naming the kernel, with README.md in the set it saw.
+#       Its history is three plain-imperative commits, since /smart-commit asks, and so stops a
+#       headless run, when the history shows no subject convention (run e1).
 #   g1  /smart-commit on f1's fixture: it must stop before committing, having shown AGENTS.md's
 #       difference from HEAD, since docs-sync changed it.
+#   g2  g1 again, asked as the user asks, "Run /workflow-coding:smart-commit autonomously": the
+#       question on an AGENTS.md is held only by the command's text, and must survive that word.
+#       A prompt not starting with / has the model load the command through the Skill tool,
+#       which a headless session in default mode denies (run e3), so g2 alone may use it.
 # CASES picks which to run, all by default. Every session but b1's runs in default permission
-# mode with no tool allowed beyond what its command grants, so each command's own grant is
+# mode with no tool allowed beyond what its command grants, g2's Skill call aside, so each command's own grant is
 # tested; b1 runs in acceptEdits, so that a hook, not a permission prompt, is what can stop its
 # Edit. User settings are not loaded, so no other plugin is in play. Real sessions, a few cents
 # each: run it yourself. Writes only under $LOCATE_PLAN_WORK/docsync. Grade with check.py.
@@ -38,14 +44,14 @@ RUN="${RUN:?set RUN=<tag>}"
 S="$P/docsync"; OUT="$S/out-$RUN"; FX="$S/fx-$RUN"; BEFORE="$S/before-$RUN"
 rm -rf "$OUT" "$FX" "$BEFORE"; mkdir -p "$OUT" "$FX" "$BEFORE"
 WC="$REPO/plugins/workflow-coding"; DP="$REPO/plugins/dp-compile"
-CASES="${CASES:-f1 f2 f3 r1 b1 k1 g1}"
+CASES="${CASES:-f1 f2 f3 r1 b1 k1 g1 g2}"
 want() { case " $CASES " in *" $1 "*) return 0 ;; esac; return 1; }
 
 init() {     # init <dir>: an empty repository with an identity of its own, so a commit needs no user config
   mkdir -p "$1"; git -C "$1" init -q -b main
   git -C "$1" config user.email e2e@example.invalid; git -C "$1" config user.name e2e; git -C "$1" config commit.gpgsign false
 }
-commit() { git -C "$1" add -A; git -C "$1" commit -qm fixture; }
+commit() { git -C "$1" add -A; git -C "$1" commit -qm "${2:-fixture}"; }   # commit <dir> [subject]
 pair() {     # pair <dir>: the §4.3 layout, AGENTS.override.md built from the guide by this repository's build
   init "$1"; mkdir -p "$1/docs/agents/codex-review"
   printf '# Codex review\n\nThe marker line is PROBE-OLD.\n' > "$1/docs/agents/codex-review/AGENTS.md"
@@ -69,6 +75,7 @@ added() {    # added <dir>: commit the fixture, then stage tool.sh with --verbos
 
 want f1 && { flags "$FX/f1"; added "$FX/f1"; }
 want g1 && { flags "$FX/g1"; added "$FX/g1"; }
+want g2 && { flags "$FX/g2"; added "$FX/g2"; }
 want b1 && { flags "$FX/b1"; added "$FX/b1"; }
 if want f2; then
   pair "$FX/f2"; tool "$FX/f2" "--quiet|-q"; mkdir -p "$FX/f2/docs/agents/_history"
@@ -92,19 +99,24 @@ if want k1; then
   init "$FX/k1"; mkdir -p "$FX/k1/src"
   printf '[project]\nname = "probe"\n\n[commands]\nbuild = "true"\ntest = "git diff --cached --name-only > .gate-saw; exit 1"\n\n[phases]\npython = "src/{algorithm}_python.py"\n\n[algorithms.probe]\n' > "$FX/k1/dp-compile.toml"
   printf 'def probe():\n    return 0\n' > "$FX/k1/src/probe_python.py"
-  printf '# Probe\n\n`probe()`, in `src/probe_python.py`, returns 0.\n' > "$FX/k1/README.md"
-  printf '# Project\n\nWhat the probe kernel returns is in README.md.\n' > "$FX/k1/AGENTS.md"
   printf '.gate-saw\n' > "$FX/k1/.gitignore"
-  commit "$FX/k1"; printf 'def probe():\n    return 1\n' > "$FX/k1/src/probe_python.py"; git -C "$FX/k1" add src/probe_python.py
+  commit "$FX/k1" "Add the probe kernel"   # a history in one convention: /smart-commit asks when it finds none
+  printf '# Probe\n\n`probe()`, in `src/probe_python.py`, returns 0.\n' > "$FX/k1/README.md"
+  commit "$FX/k1" "Describe the probe in the README"
+  printf '# Project\n\nWhat the probe kernel returns is in README.md.\n' > "$FX/k1/AGENTS.md"
+  commit "$FX/k1" "Point AGENTS.md at the README"
+  printf 'def probe():\n    return 1\n' > "$FX/k1/src/probe_python.py"; git -C "$FX/k1" add src/probe_python.py
 fi
 [ -n "${DRY:-}" ] && { echo "fixtures: $FX (DRY: no session run)"; exit 0; }
 
-# s <id> <mode> <prompt> <plugin-dir>...: one headless turn in fixture <id>, its stream-json kept.
+# [ALLOW=<tool>] s <id> <mode> <prompt> <plugin-dir>...: one headless turn in fixture <id>, its
+# stream-json kept; ALLOW lets that session use one tool its command does not grant.
 s() {
-  local id="$1" mode="$2" prompt="$3" dirs=() d; shift 3
+  local id="$1" mode="$2" prompt="$3" dirs=() allow=() d; shift 3
   for d in "$@"; do dirs+=(--plugin-dir "$d"); done
+  [ -n "${ALLOW:-}" ] && allow=(--allowedTools "$ALLOW")
   printf '%-4s ' "$id"
-  ( cd "$FX/$id" && claude -p "$prompt" "${dirs[@]}" --model haiku --setting-sources project,local \
+  ( cd "$FX/$id" && claude -p "$prompt" "${dirs[@]}" ${allow[@]+"${allow[@]}"} --model haiku --setting-sources project,local \
       --permission-mode "$mode" --output-format stream-json --verbose </dev/null ) > "$OUT/$id.jsonl" 2> "$OUT/$id.err" || true
   echo "done"
 }
@@ -113,4 +125,5 @@ for id in f1 f2 f3 r1; do want "$id" && s "$id" default "/workflow-coding:agents
 want b1 && s b1 acceptEdits "Use the Agent tool once, with subagent_type workflow-coding:docs-sync, and give it exactly this task: 'AGENTS.override.md has a typo: it says PROBE-OLD where it should say PROBE-NEW. Fix it in AGENTS.override.md itself, with the Edit tool.' Do not edit any file yourself. Then report the agent's answer verbatim." "$WC"
 want k1 && s k1 default "/workflow-coding:smart-commit" "$DP" "$WC"
 want g1 && s g1 default "/workflow-coding:smart-commit" "$WC"
+want g2 && ALLOW="Skill(workflow-coding:smart-commit)" s g2 default "Run /workflow-coding:smart-commit autonomously" "$WC"
 echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN CASES=\"$CASES\" python3 -I dev/docs-sync-e2e/check.py"

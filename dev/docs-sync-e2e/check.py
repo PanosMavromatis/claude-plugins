@@ -60,8 +60,10 @@ def missing(cid, *names):  # the plugins a case needs that its session's init re
     gone = [n for n in names if n not in loaded]
     return f"{' and '.join(gone)} did not load" if gone else None
 
+BASE = {"k1": "3"}   # the commits each fixture starts with, where not one
+
 def git(cid, *a): return subprocess.run(["git", *a], cwd=f"{FX}/{cid}", capture_output=True, text=True)
-def head(cid): return git(cid, "rev-list", "--count", "HEAD").stdout.strip()
+def landed(cid): return git(cid, "rev-list", "--count", "HEAD").stdout.strip() != BASE.get(cid, "1")
 def blob(cid, spec):  # a file at HEAD (HEAD:path) or in the index (:path), or None
     r = git(cid, "show", spec); return r.stdout if r.returncode == 0 else None
 def work(cid, path):
@@ -82,6 +84,8 @@ def start(cid, *plugins):
     if res is None: return ["no session"], res, calls
     gone = missing(cid, *plugins)
     if gone: return [gone], res, calls
+    if any(d.get("tool_name") == "Skill" for d in res.get("permission_denials") or []):
+        return ["the Skill tool was denied, so the command never ran"], res, calls   # run e3
     if spawned(calls) is None: return ["docs-sync was never spawned"], res, calls
     return [], res, calls
 
@@ -95,7 +99,7 @@ def f1(cid="f1"):
     a = work(cid, "AGENTS.md") or ""
     if "--verbose" not in a: probs.append("AGENTS.md does not name --verbose")
     elif not staged(cid, "AGENTS.md"): probs.append("AGENTS.md's edit is not staged")
-    if head(cid) != "1": probs.append("a commit landed")
+    if landed(cid):probs.append("a commit landed")
     return probs + others(cid, ["AGENTS.md", "tool.sh"]), res
 
 def f2(cid="f2"):
@@ -107,7 +111,7 @@ def f2(cid="f2"):
     elif not any("-q" in l for l in added): probs.append(f"{HIST}'s new lines do not name -q: {added}")
     elif not staged(cid, HIST): probs.append(f"{HIST}'s edit is not staged")
     if not work(cid, "AGENTS.md") == blob(cid, ":AGENTS.md") == blob(cid, "HEAD:AGENTS.md"): probs.append("AGENTS.md changed")
-    if head(cid) != "1": probs.append("a commit landed")
+    if landed(cid):probs.append("a commit landed")
     return probs + others(cid, [HIST, "tool.sh"]), res
 
 def f3(cid="f3"):
@@ -119,9 +123,10 @@ def f3(cid="f3"):
     if git(cid, "ls-files", "docs/ops/runbook.md").stdout: probs.append("docs/ops/runbook.md was added to the index")
     said = (res.get("result") or "")
     notes = said[said.lower().find("notes"):] if "notes" in said.lower() else ""
-    for name in ("README.md", "runbook.md"):
-        if name not in notes: probs.append(f"the report's notes do not name {name}")
-    if head(cid) != "1": probs.append("a commit landed")
+    if "README.md" not in notes: probs.append("the report's notes do not name README.md")
+    if "runbook.md" not in notes and "docs/ops" not in notes:   # plain git status lists an untracked directory, not its files
+        probs.append("the report's notes name neither runbook.md nor docs/ops/")
+    if landed(cid):probs.append("a commit landed")
     return probs + others(cid, ["AGENTS.md", "tool.sh", "README.md", "docs/ops/runbook.md"]), res
 
 def r1(cid="r1"):
@@ -131,7 +136,7 @@ def r1(cid="r1"):
     if "PROBE-NEW" not in ov or not ov.endswith(guide): probs.append(f"{OVERRIDE} was not rebuilt from the guide")
     elif not staged(cid, OVERRIDE): probs.append(f"{OVERRIDE} was rebuilt but not staged")
     if not any("build-agents-md.sh" in cmd(c) for c in bash(calls, "sub")): probs.append("docs-sync ran no build")
-    if head(cid) != "1": probs.append("a commit landed")
+    if landed(cid):probs.append("a commit landed")
     return probs + others(cid, [OVERRIDE, "docs/agents/codex-review/AGENTS.md"]), res
 
 def b1(cid="b1"):
@@ -158,7 +163,7 @@ def k1(cid="k1"):
     else:
         out = results(calls, {c.get("id") for c in commits})
         if GATE not in out or KERNEL not in out: probs.append(f"the commit was not blocked by the gate naming the kernel: {out[:120]!r}")
-    if head(cid) != "1": probs.append("the commit landed")
+    if landed(cid):probs.append("the commit landed")
     saw = set(open(f"{FX}/{cid}/.gate-saw").read().split()) if os.path.exists(f"{FX}/{cid}/.gate-saw") else None
     if saw is None: probs.append("the gate never ran its test")
     elif not {KERNEL, "README.md"} <= saw or any(not p.startswith(MEM) for p in saw - {KERNEL, "README.md"}):
@@ -174,7 +179,7 @@ def g1(cid="g1"):
     if not any(cmd(c).lstrip().startswith("git status") for c in after): probs.append("no git status after the hand-back")
     if not any(cmd(c).lstrip().startswith("git diff") and "HEAD" in cmd(c) for c in after): probs.append("AGENTS.md's difference from HEAD was never shown")
     if any(cmd(c).lstrip().startswith("git commit") for c in bash(calls)): probs.append("the main session ran git commit")
-    if head(cid) != "1": probs.append("a commit landed")
+    if landed(cid):probs.append("a commit landed")
     return probs + others(cid, ["AGENTS.md", "tool.sh"]), res
 
 ALL = [("f1", f1, "a flag added: AGENTS.md edited, nothing committed"),
@@ -183,7 +188,8 @@ ALL = [("f1", f1, "a flag added: AGENTS.md edited, nothing committed"),
        ("r1", r1, "a codex-review/ change: AGENTS.override.md rebuilt"),
        ("b1", b1, "docs-sync told to Edit AGENTS.override.md"),
        ("k1", k1, "/smart-commit with a kernel staged: docs-sync, then dp-compile's gate"),
-       ("g1", g1, "/smart-commit stops before committing an AGENTS.md docs-sync changed")]
+       ("g1", g1, "/smart-commit stops before committing an AGENTS.md docs-sync changed"),
+       ("g2", lambda: g1("g2"), "g1, asked to run /smart-commit autonomously")]
 picked = (os.environ.get("CASES") or " ".join(c[0] for c in ALL)).split()
 bad, cost = 0, 0.0
 for cid, fn, what in [c for c in ALL if c[0] in picked]:

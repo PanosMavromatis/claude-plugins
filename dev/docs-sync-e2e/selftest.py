@@ -4,7 +4,9 @@
 
 Each fixture is built by run.sh with DRY=1, then given the end state a session would leave and
 a stream-json for it; check.py must pass the right one and fail the wrong one, naming why. b1
-is faked twice more: declined, with no Edit tried, which passes and says so. Run it after a
+is faked once more, declined, with no Edit tried, which passes and says so; f3 twice more, its
+untracked doc named by its directory, which passes, and not named at all, which fails; and g2
+once more, its Skill call refused, which fails saying so. Run it after a
 change to check.py or to run.sh's fixtures. Writes only under $LOCATE_PLAN_WORK/docsync, in
 runs named st-*."""
 import json, os, subprocess, sys
@@ -29,18 +31,20 @@ def git(fx, *a): subprocess.run(["git", *a], cwd=fx, check=True, capture_output=
 def write(fx, path, s, append=False):
     p = f"{fx}/{path}"; os.makedirs(os.path.dirname(p), exist_ok=True); open(p, "a" if append else "w").write(s)
 
-def stream(run, case, main_after=(), sub=(), result="done", plugins=("workflow-coding",)):
-    """A session's stream-json: init, one Agent call, then sub, [(tool, input, output)] the agent
-    makes, and main_after, [(command, output)] the main session runs after the hand-back."""
-    L = [{"type": "system", "subtype": "init", "session_id": "st", "plugins": [{"name": n} for n in plugins]},
-         {"type": "assistant", "session_id": "st", "message": {"content": [{"type": "tool_use", "id": "ag", "name": "Agent", "input": {}}]}}]
+def stream(run, case, main_after=(), sub=(), result="done", plugins=("workflow-coding",), agent=True, denied=()):
+    """A session's stream-json: init, one Agent call unless agent is false, then sub, [(tool,
+    input, output)] the agent makes, and main_after, [(command, output)] the main session runs
+    after the hand-back; denied names the tools its result lists as refused."""
+    L = [{"type": "system", "subtype": "init", "session_id": "st", "plugins": [{"name": n} for n in plugins]}]
+    if agent:
+        L.append({"type": "assistant", "session_id": "st", "message": {"content": [{"type": "tool_use", "id": "ag", "name": "Agent", "input": {}}]}})
     for i, (tool, inp, out) in enumerate(sub):
         L += [{"type": "assistant", "parent_tool_use_id": "ag", "message": {"content": [{"type": "tool_use", "id": f"s{i}", "name": tool, "input": inp}]}},
               {"type": "user", "parent_tool_use_id": "ag", "message": {"content": [{"type": "tool_result", "tool_use_id": f"s{i}", "content": out}]}}]
     for i, (c, out) in enumerate(main_after):
         L += [{"type": "assistant", "message": {"content": [{"type": "tool_use", "id": f"m{i}", "name": "Bash", "input": {"command": c}}]}},
               {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": f"m{i}", "content": out}]}}]
-    L.append({"type": "result", "result": result, "total_cost_usd": 0.0})
+    L.append({"type": "result", "result": result, "total_cost_usd": 0.0, "permission_denials": [{"tool_name": t} for t in denied]})
     os.makedirs(f"{S}/out-{run}", exist_ok=True)
     open(f"{S}/out-{run}/{case}.jsonl", "w").write("\n".join(json.dumps(x) for x in L) + "\n")
 
@@ -84,6 +88,7 @@ CASES = {  # case: (end state, stream for the right outcome, stream for the wron
  "k1": (k1, dict(plugins=BOTH, main_after=[("git commit -m x", GATE)]),
             dict(plugins=BOTH, main_after=[("git commit -m x", "1 file changed")]), "not blocked by the gate"),
  "g1": (g1, dict(main_after=ASK), dict(main_after=ASK + [("git commit -m x", "")]), "ran git commit"),
+ "g2": (g1, dict(main_after=ASK), dict(main_after=[("git commit -m x", "")]), "never shown"),
 }
 bad = 0
 for case, (mutate, ok_kw, bad_kw, reason) in CASES.items():
@@ -94,4 +99,13 @@ for case, (mutate, ok_kw, bad_kw, reason) in CASES.items():
         print(f"{'ok ' if right else 'BAD'} {run}: {line}"); bad += not right
 run = "st-b1-declined"; build(run, "b1"); stream(run, "b1"); line = grade(run, "b1")
 right = line.startswith("PASS") and "declined" in line; print(f"{'ok ' if right else 'BAD'} {run}: {line}"); bad += not right
+# f3's untracked doc may be named by the directory plain git status lists it under (run e1), but must be named
+for run, said, want in (("st-f3-dir", "edited: AGENTS.md\nnotes: left README.md and docs/ops/ alone", "PASS"),
+                        ("st-f3-unnamed", "edited: AGENTS.md\nnotes: left README.md alone", "name neither runbook.md nor docs/ops/")):
+    fx = build(run, "f3"); f3(fx, True); stream(run, "f3", result=said); line = grade(run, "f3")
+    right = line.startswith("PASS") if want == "PASS" else (line.startswith("FAIL") and want in line)
+    print(f"{'ok ' if right else 'BAD'} {run}: {line}"); bad += not right
+# g2 whose Skill call was refused: the command never ran, and the verdict must say so (run e3)
+run = "st-g2-skill-denied"; build(run, "g2"); stream(run, "g2", agent=False, denied=("Skill",)); line = grade(run, "g2")
+right = line.startswith("FAIL") and "Skill tool was denied" in line; print(f"{'ok ' if right else 'BAD'} {run}: {line}"); bad += not right
 print(f"\n{bad} wrong"); sys.exit(1 if bad else 0)

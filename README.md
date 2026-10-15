@@ -210,7 +210,8 @@ a few cents, so run them yourself; `dev/subagent-hooks/README.md` covers how.
 spawn it: a flag change, a pure-history change, the user's unstaged and untracked docs left
 alone, a `codex-review/` rebuild, an edit of the generated override, `/smart-commit` with a
 kernel staged before `dp-compile`'s gate, and `/smart-commit` stopping on an `AGENTS.md` the
-agent changed. Seven headless sessions on fixture repositories, in default permission mode,
+agent changed, asked plainly and asked to run autonomously. Eight headless sessions on
+fixture repositories, in default permission mode,
 so each command's grant is tested too. They are real sessions, a few cents each, so run them
 yourself; `DRY=1` builds the fixtures alone, `selftest.py` tests the grader at no cost, and
 `dev/docs-sync-e2e/README.md` covers how.
