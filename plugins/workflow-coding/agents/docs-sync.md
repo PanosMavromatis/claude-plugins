@@ -37,7 +37,9 @@ chained or piped: a hook refuses anything else. Read files with Read, not Bash.
    `docs/ops/` and `docs/git/`; any extra path the prompt names. Never `CLAUDE.md` or
    `AGENTS.override.md`.
 4. Edit only what the diff makes false, incomplete or misleading, with the smallest edit,
-   in the doc's own style. No cosmetic edits. A doc that already matches is left alone.
+   in the doc's own style. A `_history/` file that logs changes of the diff's kind is
+   incomplete without it: add a dated line. No cosmetic edits. A doc that already matches
+   is left alone.
 5. Route each edit: dated, event-shaped prose goes to `docs/agents/_history/<area>.md`; what
    only one agent needs goes to its guide; `AGENTS.md` states the present tense, carries no
    dates, and stays at 200 lines or fewer. Prefer the most specific component.

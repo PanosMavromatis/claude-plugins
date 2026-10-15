@@ -206,6 +206,15 @@ saving a memory entry, to show where a plugin agent's memory goes, and a fixture
 every input it gets, to show what in it identifies a subagent's call. They are real sessions,
 a few cents, so run them yourself; `dev/subagent-hooks/README.md` covers how.
 
+`dev/docs-sync-e2e/` runs the §7.7 cases for the `docs-sync` agent through the commands that
+spawn it: a flag change, a pure-history change, the user's unstaged and untracked docs left
+alone, a `codex-review/` rebuild, an edit of the generated override, `/smart-commit` with a
+kernel staged before `dp-compile`'s gate, and `/smart-commit` stopping on an `AGENTS.md` the
+agent changed. Seven headless sessions on fixture repositories, in default permission mode,
+so each command's grant is tested too. They are real sessions, a few cents each, so run them
+yourself; `DRY=1` builds the fixtures alone, `selftest.py` tests the grader at no cost, and
+`dev/docs-sync-e2e/README.md` covers how.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE), and the copy inside each plugin directory, which is the one
