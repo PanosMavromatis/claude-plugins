@@ -26,6 +26,11 @@ def text(content):  # a tool_result's content, flattened to one string
     if isinstance(content, str): return content
     return "\n".join(c.get("text", "") if isinstance(c, dict) else str(c) for c in content or [])
 
+def blocks(d):  # a record's message content, or nothing: some records carry message as a string
+    m = d.get("message")
+    content = m.get("content") if isinstance(m, dict) else None
+    return [c for c in content if isinstance(c, dict)] if isinstance(content, list) else []
+
 def records(cid):
     """(session's result, [(by, kind, block)]): by is 'main' or 'sub', kind tool_use or tool_result."""
     p = f"{OUT}/{cid}.jsonl"
@@ -37,16 +42,13 @@ def records(cid):
         sid = sid or d.get("session_id")
         if d.get("type") == "result": res = d
         by = "sub" if d.get("parent_tool_use_id") else "main"
-        for c in ((d.get("message") or {}).get("content") or []) if isinstance((d.get("message") or {}).get("content"), list) else []:
-            if isinstance(c, dict) and c.get("type") in ("tool_use", "tool_result"): calls.append((by, c["type"], c))
+        calls += [(by, c["type"], c) for c in blocks(d) if c.get("type") in ("tool_use", "tool_result")]
     if sid and not any(by == "sub" for by, _, _ in calls):   # the stream carried no subagent messages
         for t in glob.glob(os.path.expanduser(f"~/.claude/projects/*/{sid}/subagents/*.jsonl")):
             for line in open(t):
                 try: d = json.loads(line)
                 except ValueError: continue
-                content = (d.get("message") or {}).get("content")
-                for c in content if isinstance(content, list) else []:
-                    if isinstance(c, dict) and c.get("type") in ("tool_use", "tool_result"): calls.append(("sub", c["type"], c))
+                calls += [("sub", c["type"], c) for c in blocks(d) if c.get("type") in ("tool_use", "tool_result")]
     return res, calls
 
 def missing(cid, *names):  # the plugins a case needs that its session's init record does not list
@@ -107,22 +109,43 @@ def memory_case(cid):
     if not found: return "no agent-memory directory was written", res
     return "memory in " + ", ".join(found), res
 
+def inputs_case(cid):
+    """What identified each actor's Bash call in a PreToolUse hook's input, read from the
+    fixture hook's log: agent_type, or agent_id alone, or neither (the main session)."""
+    res, _ = records(cid)
+    if res is None: return "no session", res
+    if missing(cid, "workflow-coding", "hook-inputs"): return missing(cid, "workflow-coding", "hook-inputs"), res
+    p = f"{FX}/{cid}/.hook-inputs.jsonl"
+    if not os.path.exists(p): return "the logging hook never fired", res
+    seen = {}
+    for line in open(p):
+        try: d = json.loads(line)
+        except ValueError: continue
+        key = d.get("agent_type") or ("agent_id without agent_type" if d.get("agent_id") else "main session")
+        seen.setdefault(key, "agent_id present" if d.get("agent_id") else "no agent_id")
+    gone = [w for w in ("main session", "general-purpose") if w not in seen] + ([] if any("docs-sync" in k for k in seen) else ["docs-sync"])
+    shown = "; ".join(f"{k}: {v}" for k, v in sorted(seen.items()))
+    return (f"inputs: {shown}" if not gone else f"no call seen from {', '.join(gone)}: {shown}"), res
+
 ALL = [("h0", lambda: edit_case("h0", "main", "AGENTS.override.md"), "blocked", "control: the main session edits AGENTS.override.md"),
        ("h1", lambda: edit_case("h1", "sub", "AGENTS.override.md"), None, "a subagent edits AGENTS.override.md"),
        ("h2", lambda: edit_case("h2", "sub", "AGENTS.md"), "edited", "control: a subagent edits AGENTS.md"),
        ("d1", lambda: gate_case("d1"), "blocked, naming the kernel, with AGENTS.md staged", "the gate after a subagent stages a doc"),
-       ("m1", lambda: memory_case("m1"), "memory", "docs-sync saves a memory entry")]
+       ("m1", lambda: memory_case("m1"), "memory", "docs-sync saves a memory entry"),
+       ("i1", lambda: inputs_case("i1"), "inputs", "what a hook's input says about who made the call")]
 picked = (os.environ.get("CASES") or "h0 h1 h2 d1").split()
 bad, cost, got = 0, 0.0, {}
 for cid, fn, want, what in [c for c in ALL if c[0] in picked]:
     g, res = fn(); got[cid] = g
     cost += (res or {}).get("total_cost_usd") or 0
-    ok = g.startswith("memory in ") if want == "memory" else g == want if want else g in ("blocked", "edited")
-    print(f"{'PASS' if ok else 'FAIL'}  {cid}  {what}: {g}" + ("" if ok or not want or want == "memory" else f", want {want}"))
+    ok = (g.startswith("memory in ") if want == "memory" else g.startswith("inputs: ") if want == "inputs"
+          else g == want if want else g in ("blocked", "edited"))
+    print(f"{'PASS' if ok else 'FAIL'}  {cid}  {what}: {g}" + ("" if ok or not want or want in ("memory", "inputs") else f", want {want}"))
     bad += not ok
 if bad: print(f"\nresult: void or failing, {bad} case(s); cost ${cost:.2f}"); sys.exit(1)
 found = []
 if "h1" in got: found.append(f"protect-agent-docs.py {'fires' if got['h1'] == 'blocked' else 'does not fire'} on a subagent's Edit")
 if "d1" in got: found.append("dp-compile's gate sees the docs a subagent stages")
 if "m1" in got: found.append(f"docs-sync's {got['m1']}")
+if "i1" in got: found.append(f"in a hook's input, {got['i1'][len('inputs: '):]}")
 print(f"\nresult: {'; '.join(found)}; cost ${cost:.2f}")

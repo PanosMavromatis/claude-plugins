@@ -19,6 +19,8 @@ RUN=s1 dev/subagent-hooks/run.sh                    # four real sessions, on hai
 RUN=s1 python3 -I dev/subagent-hooks/check.py       # grades them; read-only
 CASES=m1 RUN=m1 dev/subagent-hooks/run.sh           # docs-sync's memory directory: one session
 CASES=m1 RUN=m1 python3 -I dev/subagent-hooks/check.py
+CASES=i1 RUN=i1 dev/subagent-hooks/run.sh           # what a hook's input says about who called
+CASES=i1 RUN=i1 python3 -I dev/subagent-hooks/check.py
 ```
 
 | Case | Who acts | Must |
@@ -28,6 +30,7 @@ CASES=m1 RUN=m1 python3 -I dev/subagent-hooks/check.py
 | h2 | a subagent `Edit`s `AGENTS.md`, which no hook protects | be edited: the control that a subagent's edit lands |
 | d1 | a subagent edits and stages `AGENTS.md`; the main session runs `git commit` with a kernel staged | be blocked by the gate, which names the kernel and records both files staged |
 | m1 | `workflow-coding:docs-sync` syncs a staged CLI-flag change and saves one memory entry; run only when `CASES` names it | write an agent-memory directory: which name a plugin agent gets there (D-N7) |
+| i1 | with `inputs-plugin` loaded, whose `PreToolUse` hook on `Bash` logs every input to `.hook-inputs.jsonl`, the main session, `workflow-coding:docs-sync` and a `general-purpose` subagent each run `git`; run only when `CASES` names it | show a call from each, and what identifies it: `agent_type`, `agent_id`, or neither |
 
 h1 counts only between its controls. If h0 is not blocked, the hook never loaded; if h2 does
 not land, a subagent cannot edit, and an unchanged file in h1 proves nothing. h1 counts only
@@ -80,3 +83,12 @@ Run `m1`, 2026-10-14, haiku with `docs-sync` on sonnet, $0.05: **a plugin agent'
 file. `docs-sync` read its guide (absent), ran `git status` and `git diff --cached` alone,
 changed the one `AGENTS.md` line the staged flag made false, ran no build, staged the doc and
 its memory together, and returned its four output lines.
+
+Run `i1`, 2026-10-14, $0.04: **a subagent's call carries `agent_id` and `agent_type` in a
+`PreToolUse` hook's input, and a plugin agent's `agent_type` is its namespaced name.** The
+main session's `git status` came with neither field; `docs-sync`'s four calls (`git diff
+--cached`, `git status`, `git add AGENTS.md`, `git status --short`) with
+`agent_type: workflow-coding:docs-sync`; the `general-purpose` subagent's with
+`agent_type: general-purpose`. Every input also carries `session_id`, `transcript_path`,
+`cwd`, `permission_mode`, `prompt_id`, `effort`, `tool_name`, `tool_input` and
+`tool_use_id`.

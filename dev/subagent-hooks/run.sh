@@ -18,7 +18,10 @@
 #       --plugin-dir drops it without a word (run s1).
 #   m1  workflow-coding:docs-sync syncs a staged CLI-flag change and saves one memory entry:
 #       which .claude/agent-memory/<name>/ the harness writes for a plugin agent (D-N7).
-# CASES picks which to run, all of h0 h1 h2 d1 by default; m1 runs only when named.
+#   i1  inputs-plugin, a fixture whose PreToolUse hook on Bash logs every input it gets, watches
+#       the main session, workflow-coding:docs-sync and a general-purpose subagent each run git:
+#       what in a hook's input identifies a subagent, and what a plugin agent's agent_type is.
+# CASES picks which to run, all of h0 h1 h2 d1 by default; m1 and i1 run only when named.
 # Every session runs in acceptEdits mode, with its git commands allowed, so a hook is the
 # only thing that can stop an edit or the commit; user settings are not loaded, so no other
 # plugin's hook is in play. Real sessions, a few cents each: run it yourself. Writes only
@@ -61,6 +64,7 @@ mem() {      # mem <dir>: the pair, documenting a CLI flag in AGENTS.md, with a 
   pair "$1"
   printf '#!/bin/sh\n# tool.sh [--quiet]\n' > "$1/tool.sh"
   printf '# Project\n\nThe marker line is PROBE-OLD.\n\n`tool.sh` takes one flag, `--quiet`.\n' > "$1/AGENTS.md"
+  printf '.hook-inputs.jsonl\n' > "$1/.gitignore"
   commit "$1"
   printf '#!/bin/sh\n# tool.sh [--quiet] [--verbose]\n' > "$1/tool.sh"
   git -C "$1" add tool.sh
@@ -84,9 +88,11 @@ MINE="Do not edit any file yourself. Then report the subagent's answer verbatim.
 for id in h0 h1 h2; do want "$id" && pair "$FX/$id"; done
 want d1 && gate "$FX/d1"
 want m1 && mem "$FX/m1"
+want i1 && mem "$FX/i1"
 want h0 && s h0 "$EDIT AGENTS.override.md in the current directory. Use no other tool. Report the Edit tool's result verbatim." "$WC"
 want h1 && s h1 "$SUB '$EDIT AGENTS.override.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
 want h2 && s h2 "$SUB '$EDIT AGENTS.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
 want d1 && s d1 "Do two steps, in order. First, $SUB 'Append the line Gate probe. to AGENTS.md in the current directory with the Edit tool, then run this shell command, alone, once: git add AGENTS.md. Report what you did.' Second, once it has returned, run this shell command yourself, alone, once: git commit -m probe. Run no other git command. Report the commit command's result verbatim." "$DP" "$WC"
 want m1 && s m1 "Use the Agent tool once, with subagent_type workflow-coding:docs-sync, and give it exactly this task: 'Bring the docs in line with the staged diff. Before you return, save one entry to your memory: that this repository documents the flags of tool.sh in AGENTS.md.' Do not edit any file yourself. Then report the agent's answer verbatim." "$WC"
+want i1 && s i1 "Do three steps, in order. First, run this shell command yourself, alone, once: git status. Second, use the Agent tool once, with subagent_type workflow-coding:docs-sync, and give it exactly this task: 'Bring the docs in line with the staged diff.' Wait for it to return. Third, use the Agent tool once, with subagent_type general-purpose, and give it exactly this task: 'Run this shell command, alone, once: git status. Report its output.' Then report what each step did." "$WC" "$HERE/inputs-plugin"
 echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN CASES=\"$CASES\" python3 -I dev/subagent-hooks/check.py"

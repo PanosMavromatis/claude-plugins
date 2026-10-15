@@ -190,9 +190,10 @@ hand. They are real sessions, a few cents, so run them yourself;
 `dev/subagent-hooks/` tests whether a plugin's hooks fire on a subagent's tool calls, the fact
 R2's `docs-sync` agent rests on: four headless turns on fixture repositories, a subagent
 editing a generated `AGENTS.override.md` between a main-session and a subagent control, and a
-subagent staging a doc before `dp-compile`'s gate; and, run on its own, `docs-sync` saving a
-memory entry, to show where a plugin agent's memory goes. They are real sessions, a few cents,
-so run them yourself; `dev/subagent-hooks/README.md` covers how.
+subagent staging a doc before `dp-compile`'s gate; and, each run on its own, `docs-sync`
+saving a memory entry, to show where a plugin agent's memory goes, and a fixture hook logging
+every input it gets, to show what in it identifies a subagent's call. They are real sessions,
+a few cents, so run them yourself; `dev/subagent-hooks/README.md` covers how.
 
 ## License
 

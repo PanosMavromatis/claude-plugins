@@ -1,0 +1,5 @@
+{
+  "name": "hook-inputs",
+  "version": "0.0.0",
+  "description": "A fixture: logs every PreToolUse input on Bash, to see what identifies a subagent's call."
+}
