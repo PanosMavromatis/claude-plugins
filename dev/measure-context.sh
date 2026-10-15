@@ -142,10 +142,6 @@ fi
 #    so it is stated here. Keep this table in step with the commands: a command that
 #    stops reading a file whole must be taken off it, or the report overstates.
 # ---------------------------------------------------------------------------
-AGENT_DOCS=(); while IFS= read -r f; do AGENT_DOCS+=("$f"); done < <(
-  { [ -f "$REPO/README.md" ] && echo "$REPO/README.md"
-    for d in docs/agents docs/ops docs/git; do [ -d "$REPO/$d" ] && find "$REPO/$d" -type f -name '*.md'; done; } | sort)
-SYNC_READS=0; [ ${#AGENT_DOCS[@]} -gt 0 ] && SYNC_READS=$(sum "${AGENT_DOCS[@]}")
 cmd() { local f="$PLUGIN/commands/$1.md"; [ -f "$f" ] && bytes "$f" || echo 0; }
 
 printf '\n2. Per command (≈tokens)\n  %-20s %7s %15s  %s\n' "command" "own" "per call" "also reads whole"
@@ -158,15 +154,13 @@ PLAN_LABEL="branch plan (median-max)"
 crow "/hitl-step"          "$(cmd hitl-step)"          "$PLAN_LABEL" "$PLAN_MED" "$PLAN_MAX"
 crow "/step"               "$(cmd step)"               "$PLAN_LABEL" "$PLAN_MED" "$PLAN_MAX"
 crow "/smart-merge"        "$(cmd smart-merge)"        "$PLAN_LABEL + branch doc" "$PLAN_MED" "$PLAN_MAX"
-crow "/agents-docs-update" "$(cmd agents-docs-update)" "README + docs/{agents,ops,git}" "$SYNC_READS" "$SYNC_READS"
-crow "/smart-commit"       "$(( $(cmd smart-commit) + $(cmd agents-docs-update) ))" "as /agents-docs-update, same ctx" "$SYNC_READS" "$SYNC_READS"
 OTHERS=""; for f in "$PLUGIN"/commands/*.md; do
   n="$(basename "$f" .md)"
-  case "$n" in hitl-step|step|smart-merge|agents-docs-update|smart-commit) continue;; esac
+  case "$n" in hitl-step|step|smart-merge) continue;; esac
   OTHERS="$OTHERS /$n $(tok "$(bytes "$f")"),"
 done
 echo "  others, own text only:${OTHERS%,}"
-echo "  (/smart-merge's branch doc is per-branch and not included; /smart-commit's own column adds /agents-docs-update's text)"
+echo "  (/smart-merge's branch doc is per-branch and not included; /agents-docs-update's and /smart-commit's doc reads are docs-sync's, in its own context)"
 
 # ---------------------------------------------------------------------------
 # 3. docs/agents/**

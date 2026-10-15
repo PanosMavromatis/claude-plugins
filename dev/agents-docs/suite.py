@@ -137,10 +137,23 @@ def blocked(path, guide):
 ROOT_BLOCK = blocked("AGENTS.override.md", "docs/agents/codex-review/AGENTS.md")
 UI_BLOCK = blocked("ui/AGENTS.override.md", "docs/agents/ui/codex-review/AGENTS.md")
 AB_BLOCK = blocked("a/b/AGENTS.override.md", "docs/agents/a/b/codex-review/AGENTS.md")
+DS = "workflow-coding:docs-sync"
+GITLINK, GITSYM = W + "/ad-gitlink", W + "/ad-sym"   # a symlink to pair's .git/, and a .git that is a symlink
+def git_blocked(agent, path):
+    return (f"Blocked: {agent} may not write {path}: a hook or config under .git/ runs at the main session's "
+            "next git command, a commit the user confirms included.\n"
+            "This plugin's agents edit documentation, never git's own files.\n")
+DOCLINK, DOTSYM = W + "/ad-doclink.md", W + "/ad-dot"   # a .md that is a symlink to code, and a .claude to docs/
+NOT_MD, DOT_CLAUDE = "it is not a Markdown file", "under .claude/ only its own memory is documentation"
+def docs_blocked(agent, path, why):
+    return (f"Blocked: {agent} may not write {path}: {why}.\n"
+            "This plugin's agents edit documentation: Markdown, never CLAUDE.md, and under .claude/ only their own memory.\n")
+def loads(name): return f"every session loads {name} as instructions"
 
 # id, script, fixture, expectations. A build's `built` is the pair it must leave behind;
 # `cwd` runs from a subdirectory, `dst` sets DST_DIR. A hook's `unset` drops CLAUDE_PROJECT_DIR
-# and runs from the project, where the others run from outside it.
+# and runs from the project, where the others run from outside it; its `agent` is the input's
+# agent_type (none: the main session), and `seam` sets WORKFLOW_CODING_GUARDED_AGENTS.
 C = [
  ("b01", "build", "new", dict(exit=0, built=True)),
  ("b02", "build", "pair", dict(exit=0, built=True)),
@@ -185,6 +198,49 @@ C = [
  ("h20", "hook", "pair", dict(tool="Write", path=FX + "/new/AGENTS.override.md", exit=0)),
  ("h21", "hook", "pair", dict(tool="Write", path="AGENTS.override.md", unset=True, exit=2, err=ROOT_BLOCK)),
  ("h22", "hook", "pair", dict(raw="{not json", exit=1, prefix="protect-agent-docs: malformed hook input: ")),
+ # this plugin's agents kept out of .git/
+ ("h23", "hook", "pair", dict(tool="Write", path=".git/config", agent=DS, exit=2, err=git_blocked(DS, FX + "/pair/.git/config"))),
+ ("h24", "hook", "pair", dict(tool="Edit", path=".git/hooks/pre-commit", agent=DS, exit=2,
+                              err=git_blocked(DS, FX + "/pair/.git/hooks/pre-commit"))),
+ ("h25", "hook", "pair", dict(tool="MultiEdit", path="ui/.git/config", agent=DS, exit=2, err=git_blocked(DS, FX + "/pair/ui/.git/config"))),
+ ("h26", "hook", "pair", dict(tool="Write", path=GITLINK + "/config", agent=DS, exit=2, err=git_blocked(DS, GITLINK + "/config"))),
+ ("h27", "hook", "pair", dict(tool="Write", path=GITSYM + "/.git/config", agent=DS, exit=2, err=git_blocked(DS, GITSYM + "/.git/config"))),
+ ("h28", "hook", "pair", dict(tool="Write", path="AGENTS.override.md", agent=DS, exit=2, err=ROOT_BLOCK)),
+ ("h29", "hook", "pair", dict(tool="Edit", path=".gitignore", agent=DS, exit=2, err=docs_blocked(DS, FX + "/pair/.gitignore", NOT_MD))),
+ ("h30", "hook", "pair", dict(tool="Write", path="docs/agents/plan/AGENTS.md", agent=DS, exit=0)),
+ ("h31", "hook", "pair", dict(tool="Write", path=".git/config", exit=0)),
+ ("h32", "hook", "pair", dict(tool="Write", path=".git/config", agent="general-purpose", exit=0)),
+ ("h33", "hook", "pair", dict(tool="Write", path=".git/config", agent="general-purpose", seam="general-purpose", exit=2,
+                              err=git_blocked("general-purpose", FX + "/pair/.git/config"))),
+ ("h34", "hook", "pair", dict(tool="Write", path=".git/config", agent=DS, seam="", exit=0)),
+ ("h35", "hook", "pair", dict(tool="Write", path=".GIT/hooks/pre-commit", agent=DS, exit=2,   # .git itself, on macOS
+                              err=git_blocked(DS, FX + "/pair/.GIT/hooks/pre-commit"))),
+ ("h36", "hook", "pair", dict(tool="Write", path=".git. /config", agent=DS, exit=2, err=git_blocked(DS, FX + "/pair/.git. /config"))),
+ ("h37", "hook", "pair", dict(tool="Write", path=".git::$INDEX_ALLOCATION/config", agent=DS, exit=2,   # .git itself, on NTFS
+                              err=git_blocked(DS, FX + "/pair/.git::$INDEX_ALLOCATION/config"))),
+ ("h38", "hook", "pair", dict(tool="Edit", path="GIT~1/hooks/pre-commit", agent=DS, exit=2,   # its 8.3 short name
+                              err=git_blocked(DS, FX + "/pair/GIT~1/hooks/pre-commit"))),
+ ("h39", "hook", "pair", dict(tool="Write", path="docs/git~1.md", agent=DS, exit=0)),
+ # documentation only: Markdown, never CLAUDE.md, and under .claude/ only the agent's own memory
+ ("h40", "hook", "pair", dict(tool="Write", path="src/app.py", agent=DS, exit=2, err=docs_blocked(DS, FX + "/pair/src/app.py", NOT_MD))),
+ ("h41", "hook", "pair", dict(tool="Write", path=DOCLINK, agent=DS, exit=2, err=docs_blocked(DS, DOCLINK, NOT_MD))),
+ ("h42", "hook", "pair", dict(tool="Edit", path="CLAUDE.md", agent=DS, exit=2, err=docs_blocked(DS, FX + "/pair/CLAUDE.md", loads("CLAUDE.md")))),
+ ("h43", "hook", "pair", dict(tool="Write", path="ui/claude.md", agent=DS, exit=2,   # CLAUDE.md itself, on macOS
+                              err=docs_blocked(DS, FX + "/pair/ui/claude.md", loads("claude.md")))),
+ ("h44", "hook", "pair", dict(tool="Write", path="CLAUDE.local.md", agent=DS, exit=2,
+                              err=docs_blocked(DS, FX + "/pair/CLAUDE.local.md", loads("CLAUDE.local.md")))),
+ ("h45", "hook", "pair", dict(tool="Write", path=".claude/commands/x.md", agent=DS, exit=2,
+                              err=docs_blocked(DS, FX + "/pair/.claude/commands/x.md", DOT_CLAUDE))),
+ ("h46", "hook", "pair", dict(tool="Write", path=".claude/agent-memory/workflow-coding-docs-sync/MEMORY.md", agent=DS, exit=0)),
+ ("h47", "hook", "pair", dict(tool="Edit", path=".claude/agent-memory/other-agent/MEMORY.md", agent=DS, exit=2,
+                              err=docs_blocked(DS, FX + "/pair/.claude/agent-memory/other-agent/MEMORY.md", DOT_CLAUDE))),
+ ("h48", "hook", "pair", dict(tool="Write", path="README.MD", agent=DS, exit=0)),
+ ("h49", "hook", "pair", dict(tool="Write", path="src/app.py", exit=0)),
+ ("h50", "hook", "pair", dict(tool="Edit", path="CLAUDE.md", agent="general-purpose", exit=0)),
+ ("h51", "hook", "pair", dict(tool="Write", path="CLAUDE~1/commands/x.md", agent=DS, exit=2,   # .claude's 8.3 short name
+                              err=docs_blocked(DS, FX + "/pair/CLAUDE~1/commands/x.md", DOT_CLAUDE))),
+ ("h52", "hook", "pair", dict(tool="Write", path=DOTSYM + "/.claude/x.md", agent=DS, exit=2,   # docs/x.md once resolved
+                              err=docs_blocked(DS, DOTSYM + "/.claude/x.md", DOT_CLAUDE))),
 ]
 
 # --- running them -----------------------------------------------------------------------------
@@ -215,6 +271,13 @@ def build():
         for t in targets:
             d = bindir(prog, t); shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
             os.symlink(t, f"{d}/{prog}")
+    for p in (GITLINK, GITSYM, W + "/ad-gitreal", DOCLINK, DOTSYM, W + "/ad-code"):
+        if os.path.islink(p): os.remove(p)
+        else: shutil.rmtree(p, ignore_errors=True)
+    os.symlink(FX + "/pair/.git", GITLINK)   # no .git in the path as written, only once resolved
+    os.makedirs(W + "/ad-gitreal"); os.makedirs(GITSYM); os.symlink(W + "/ad-gitreal", GITSYM + "/.git")   # the reverse
+    os.makedirs(W + "/ad-code"); write(W + "/ad-code", {"app.py": "x\n"}); os.symlink(W + "/ad-code/app.py", DOCLINK)
+    os.makedirs(DOTSYM); os.symlink(FX + "/pair/docs", DOTSYM + "/.claude")
     d = bindir("mktemp", MKTEMP); shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
     open(d + "/mktemp", "w").write(f'#!/bin/sh\nd="$({MKTEMP} "$@")" || exit $?\necho "$d" >> "{MKLOG}"\necho "$d"\n')
     os.chmod(d + "/mktemp", 0o755)
@@ -231,7 +294,7 @@ def state(repo):  # what "untouched" means: every file, git's view of them, and 
     return snap(repo), git("status", "--porcelain", "--untracked-files=all", cwd=repo), git("rev-parse", "HEAD", cwd=repo)
 def env_for(prog, target):
     env = dict(os.environ)
-    for k in ("DST_DIR", "CLAUDE_PROJECT_DIR"): env.pop(k, None)
+    for k in ("DST_DIR", "CLAUDE_PROJECT_DIR", "WORKFLOW_CODING_GUARDED_AGENTS"): env.pop(k, None)
     env["PATH"] = bindir(prog, target) + ":" + env["PATH"]
     return env
 def first(got, want):
@@ -320,14 +383,16 @@ def run_hook(exp, fx, py):
     env = env_for("python3", py)
     if exp.get("unset"): cwd = repo
     else: env["CLAUDE_PROJECT_DIR"] = repo; cwd = W
+    if "seam" in exp: env["WORKFLOW_CODING_GUARDED_AGENTS"] = exp["seam"]
     if "raw" in exp: stdin = exp["raw"]
     else:
         ti = {}
         if exp["path"]: ti["file_path"] = exp["path"] if exp["path"].startswith("/") else f"{repo}/{exp['path']}"
         ti.update({"Write": {"content": "x\n"}, "Edit": {"old_string": "a", "new_string": "b"},
                    "MultiEdit": {"edits": [{"old_string": "a", "new_string": "b"}]}}.get(exp["tool"], {}))
-        stdin = json.dumps({"session_id": "suite", "hook_event_name": "PreToolUse", "cwd": repo,
-                            "tool_name": exp["tool"], "tool_input": ti})
+        d = {"session_id": "suite", "hook_event_name": "PreToolUse", "cwd": repo, "tool_name": exp["tool"], "tool_input": ti}
+        if exp.get("agent"): d.update(agent_type=exp["agent"], agent_id="a1")
+        stdin = json.dumps(d)
     before = state(repo)
     r = sh([HOOK], cwd, env, stdin)   # as hooks.json runs it: the file itself, by its shebang
     if state(repo) != before: probs.append("the fixture changed")

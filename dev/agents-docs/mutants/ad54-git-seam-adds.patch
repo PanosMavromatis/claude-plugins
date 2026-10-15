@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -67,7 +67,7 @@
+         return False
+     named = os.environ.get("WORKFLOW_CODING_GUARDED_AGENTS")
+     if named is not None:
+-        return agent_type in {a.strip() for a in named.split(",") if a.strip()}
++        return agent_type in {a.strip() for a in named.split(",") if a.strip()} or agent_type.startswith(PREFIX)
+     return agent_type.startswith(PREFIX)
+ 
+ 

@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -165,8 +165,6 @@
+ def main():
+     try:
+         payload = json.load(sys.stdin)
+-        if not isinstance(payload, dict):
+-            raise ValueError("not a JSON object")
+     except ValueError as e:   # json.JSONDecodeError is one
+         print(f"guard-agent-git: malformed hook input: {e}", file=sys.stderr)
+         sys.exit(1)

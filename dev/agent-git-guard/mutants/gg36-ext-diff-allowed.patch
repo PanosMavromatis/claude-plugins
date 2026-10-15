@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -49,7 +49,7 @@
+ from pathlib import PurePath
+ 
+ GIT_OK = ("status", "diff", "add", "log", "show", "rev-parse", "ls-files")
+-GIT_UNSAFE = ("--output", "--ext-diff", "--textconv")   # write any file, or run a configured program
++GIT_UNSAFE = ("--output", "--textconv")   # write any file, or run a configured program
+ GH_OK = (("pr", "list"), ("pr", "view"))
+ GH_VALUED = {"-R", "--repo"}
+ PREFIX = "workflow-coding:"

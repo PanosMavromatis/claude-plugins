@@ -1,0 +1,10 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -182,7 +182,6 @@
+         "gh pr list and pr view, and the plugin's build-agents-md.sh, each alone, with no shell syntax, "
+         "wrapper or assignment: commits, pushes, tags and every other git or gh write are the "
+         "main session's, made after the user confirms them.",
+-        file=sys.stderr,
+     )
+     sys.exit(2)
+ 

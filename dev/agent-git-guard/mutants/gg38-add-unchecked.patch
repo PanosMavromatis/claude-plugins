@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -123,7 +123,7 @@
+     unsafe = next((a for a in w[2:] if a.split("=", 1)[0] in GIT_UNSAFE), None)
+     if unsafe:
+         return f"git {sub} {unsafe}"
+-    if sub == "add":
++    if False:
+         bad = add_refused(w[2:], cwd, agent_type)
+         if bad is not None:
+             return f"git add {bad}".rstrip()

@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -73,7 +73,7 @@
+ 
+ def _fs_name(part):
+     """A path component as a case-insensitive or Windows filesystem reads it."""
+-    return part.split(":", 1)[0].lower().rstrip(". ")
++    return part.lower().rstrip(". ")
+ 
+ 
+ def _names_dir(part, name):

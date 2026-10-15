@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -169,7 +169,7 @@
+             raise ValueError("not a JSON object")
+     except ValueError as e:   # json.JSONDecodeError is one
+         print(f"guard-agent-git: malformed hook input: {e}", file=sys.stderr)
+-        sys.exit(1)
++        sys.exit(0)
+     if payload.get("tool_name") != "Bash" or not guarded(payload.get("agent_type")):
+         sys.exit(0)
+     found = refused((payload.get("tool_input") or {}).get("command") or "", payload.get("cwd") or os.getcwd(),

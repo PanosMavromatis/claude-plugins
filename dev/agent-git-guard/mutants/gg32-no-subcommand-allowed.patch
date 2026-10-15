@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -117,7 +117,7 @@
+ 
+ def git_refused(w, cwd, agent_type):
+     """What the agents may not run in the git command w, run in cwd, or None."""
+-    sub = w[1] if len(w) > 1 else ""
++    sub = w[1] if len(w) > 1 else "status"
+     if sub not in GIT_OK:   # no subcommand, a global option, or a subcommand not on the list
+         return " ".join(w[:2])
+     unsafe = next((a for a in w[2:] if a.split("=", 1)[0] in GIT_UNSAFE), None)

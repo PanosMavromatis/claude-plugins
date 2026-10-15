@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -85,7 +85,7 @@
+         return f"every session loads {parts[-1]} as instructions"
+     own = ["agent-memory", (agent_type or "").lower().replace(":", "-")]
+     for i, p in enumerate(parts[:-1]):
+-        if fs_name(p) == CLAUDE_DIR and [fs_name(q) for q in parts[i + 1:i + 3]] != own:
++        if fs_name(p) == CLAUDE_DIR and True:
+             return "under .claude/ only its own memory is documentation"
+     return None
+ 

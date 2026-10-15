@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -159,7 +159,7 @@
+         return gh_refused(w)
+     if os.path.realpath(os.path.join(cwd, w[0])) == BUILD:
+         return None if len(w) == 1 else " ".join(w)
+-    return w[0]
++    return None
+ 
+ 
+ def main():

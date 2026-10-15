@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -144,7 +144,7 @@
+                 file=sys.stderr,
+             )
+             sys.exit(2)
+-        why = _not_a_doc(written, agent_type) or _not_a_doc(resolved, agent_type)
++        why = _not_a_doc(written, agent_type)
+         if why:
+             print(
+                 f"Blocked: {agent_type} may not write {file_path}: {why}.\n"

@@ -1,0 +1,11 @@
+--- a/hooks/fail-closed.sh
++++ b/hooks/fail-closed.sh
+@@ -16,7 +16,7 @@
+ # command. Every occurrence is matched, so none can hide another. If grep fails too, the call
+ # is refused.
+ input=$(cat)
+-printf '%s\n' "$input" | "$@"
++"$@" </dev/null
+ status=$?
+ case $status in 0|2) exit "$status" ;; esac
+ agent='"workflow-coding:'

@@ -1,0 +1,11 @@
+--- a/hooks/fail-closed.sh
++++ b/hooks/fail-closed.sh
+@@ -18,7 +18,7 @@
+ input=$(cat)
+ printf '%s\n' "$input" | "$@"
+ status=$?
+-case $status in 0|2) exit "$status" ;; esac
++case $status in 2) exit "$status" ;; esac
+ agent='"workflow-coding:'
+ [ -n "${WORKFLOW_CODING_GUARDED_AGENTS+set}" ] && agent='"'
+ printf '%s\n' "$input" | grep -Eq "\"agent_type\"[[:space:]]*:[[:space:]]*$agent"

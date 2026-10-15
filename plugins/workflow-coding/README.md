@@ -5,7 +5,7 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
 ## What's in here
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
-- **`hooks/`** — a `PreToolUse` hook (`protect-agent-docs.py`) that prevents direct edits to a generated `AGENTS.override.md` (root and per-component) once its `codex-review/AGENTS.md` guide under `docs/agents/` exists, and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
+- **`hooks/`** — two `PreToolUse` hooks: `protect-agent-docs.py`, which prevents direct edits to a generated `AGENTS.override.md` (root and per-component) once its `codex-review/AGENTS.md` guide under `docs/agents/` exists, and holds this plugin's agents to documentation (Markdown, never `CLAUDE.md`, under `.claude/` only their own memory, and never `.git/`), and `guard-agent-git.py`, which keeps this plugin's agents' Bash to the few `git`, `gh` and build commands they need, `git add` only of those docs, so a commit, push or tag stays the main session's, both run through `fail-closed.sh`, which refuses this plugin's agents' calls when a hook cannot run, rather than letting them through; and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
 - **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (builds each `AGENTS.override.md` from the Codex reviewer's guide) and `check-agents-md.sh` (verifies they're in sync, and lints the hand-authored `AGENTS.md` files). One, `export-session.py`, writes `/session-export-full`'s export, never inside the repository. The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
   - `locate-plan.sh` resolves a plan and finds its next item, for `/step`, `/hitl-step` and `/smart-merge`, and checks a revision `/master-plan` has just written. It reports a `problem:` and a `fix:` rather than guessing when a plan convention is broken;
   - `check-plan-index.sh` reports where a per-goal plan's index and goal files disagree, and a one-file plan's open items;
@@ -15,7 +15,7 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
   - `memory-check.sh` measures the plan files `/memory-check` reports on: each one's size, classed by how the commands read it, against a threshold.
 
   They share their rules through `scripts/lib/plan-rules.sh`, so a writer and a reader cannot disagree. Because they never write, they are safe to run directly, in a hook, or in CI.
-- **`agents/`** — `plan-drafter`, which `/master-plan` spawns to draft a revision's master plan from a spec. It reads and returns text; it writes nothing.
+- **`agents/`** — `plan-drafter`, which `/master-plan` spawns to draft a revision's master plan from a spec. It reads and returns text; it writes nothing. `docs-sync` brings a project's docs in line with a staged diff and stages its edits; it never commits.
 - **`references/`** — `subdividing.md`, the rules a revision is drafted by: one subgoal per branch, ordered by dependency, nothing invented, everything left out listed with its reason.
 
 ## Installing & the `commit-commands` overlap
@@ -141,9 +141,11 @@ Two notes on how the two behave together:
   naming: pfsmgraph loaded *this* plugin that way until 2026-09-09, when it moved to a
   marketplace install.
 - **The hooks cannot collide.** `dp-compile` ships a `PreToolUse` hook on `Bash` that gates
-  a commit on the consumer's test suite when a kernel file is staged; this plugin's
-  `protect-agent-docs.py` matches `Write|Edit|MultiEdit`. No tool call matches both. Because
-  hooks stack, that gate fires inside the `git commit` `/smart-commit` runs — so delegating
+  a commit on the consumer's test suite when a kernel file is staged. This plugin's
+  `protect-agent-docs.py` matches `Write|Edit|MultiEdit`, and its `guard-agent-git.py`
+  matches `Bash` too, but refuses only this plugin's own agents' calls outside its allowlist,
+  never the main session's commit, so the two `Bash` hooks decide on different calls. Because
+  hooks stack, the gate fires inside the `git commit` `/smart-commit` runs — so delegating
   the commit does not bypass it. See
   [`_meta/plugin-conflict-report.md`](_meta/plugin-conflict-report.md) §4.4.
 
@@ -189,7 +191,7 @@ Either way, every command finds a plan by its directory *name*, not its path, so
 | `/new-branch`   | Creates `<type>/<slug>`, writes `docs/git/<type>-<slug>.md` (purpose, scope, context) and a status-stamped branch plan in `<type>-<slug>/`: inside the open revision's directory for one of its subgoals, flat under `docs/plan/` otherwise. The doc is consumed and deleted at merge; the plan survives on `main`. |
 | `/step N [path]` | Executes the next `N` unchecked items from a plan file. Plain checkbox model (`[ ]` / `[x]`), inline `> **Q:** / > **A:**` log under each item so reasoning survives `/clear` or compaction. Hard-stops at `N`. Resolves the branch plan on a branch, the master plan on `main`, or an explicit path. |
 | `/hitl-step N [path]` | Same loop against a `TODO.md` plan file, resolved identically, but with a richer marker model (`[ ] [~] [x] [!] [-]`), explicit confirmation gates on writes, and parent/subgoal state propagation. Use this when each goal needs back-and-forth with you. |
-| `/smart-commit` | Delegates to `/agents-docs-update` to sync docs with the staged diff, then commits and pushes. Reads the subject convention from the repository's own history rather than prescribing one. Confirmation-required. |
+| `/smart-commit` | Spawns the `docs-sync` agent to sync docs with the staged diff, shows you any `AGENTS.md` or `AGENTS.override.md` that differs from the last commit and asks before committing, then commits and pushes. Reads the subject convention from the repository's own history rather than prescribing one. Confirmation-required. |
 | `/smart-merge`  | Reads the branch doc and plan to draft PR title and body, warns on unfinished plan items, deletes the doc, stamps the plan `merged` and closes the master-plan item in one pre-merge commit, gates on CI, then merges. Prefers the GitHub MCP server and falls back to `gh`. Walks merge-strategy choice with tradeoffs. |
 | `/master-plan <label> [spec]` | Opens a revision — a milestone whose subgoals each spawn a branch. The `plan-drafter` agent drafts the revision's master plan, `docs/plan/<label>/_TODO.md`, from a spec (a document, pasted text, or the conversation); `check-draft.sh` checks its form and its trace's tags against the spec; you review and edit it; the root plan gains the revision's line, created as an index, appended to one, or converted from a legacy master plan with no revision open. `--dry-run <path>` writes the result there instead. The label (`04-revision-lifecycle`) is yours; the command invents no label, subgoal or decision. |
 | `/open-revision <label>` | An alias of `/master-plan`, kept for one revision. |
@@ -217,11 +219,11 @@ The build reads only the `codex-review/` guides, so it refuses the dispatcher la
 |--------------------------|------|
 | `/agents-docs-init`      | One-time migration: splits an existing `CLAUDE.md` into `docs/agents/{core,claude}.md` and replaces `CLAUDE.md` with the dispatcher. Handles root and every component (any nesting depth). |
 | `/agents-docs-codex-init`| Generates `docs/agents/[<path>/]codex.md` sidecars that configure Codex as a cross-provider reviewer. One per target. |
-| `/agents-docs-update`    | Standalone or invoked by `/smart-commit`. Reviews the staged diff, edits the relevant `docs/agents/*.md` sources to match, runs `/agents-docs-build` if `core.md` or `codex.md` changed, and stages everything. Idempotent. |
+| `/agents-docs-update`    | Standalone; `/smart-commit` spawns the same agent. Spawns the `docs-sync` agent, which brings `AGENTS.md`, the guides under `docs/agents/`, `README.md` and the other docs in line with the staged diff, rebuilds `AGENTS.override.md` only when a `codex-review/` guide changed, and stages its edits; the command shows the agent's report. It never commits. Idempotent. |
 | `/agents-docs-build`     | Builds `AGENTS.override.md` (root and per-component) from each `codex-review/AGENTS.md` guide under `docs/agents/`. Deterministic. Refuses the dispatcher layout, naming the move. |
 | `/agents-docs-check`     | Verifies each committed `AGENTS.override.md` matches what `/agents-docs-build` would write, and warns, without failing, on an `AGENTS.md` over 200 lines or with a dated line. Useful in pre-commit hooks or CI. |
 
-Typical inner loop, once initialized: edit code → `/smart-commit` runs `/agents-docs-update` → docs stay in sync without you thinking about it.
+Typical inner loop, once initialized: edit code → `/smart-commit` runs `docs-sync` → docs stay in sync without you thinking about it, and a change to an agent's instructions is shown to you before it is committed.
 
 ### Session commands
 

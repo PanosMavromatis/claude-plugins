@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -50,7 +50,7 @@
+ 
+ GIT_OK = ("status", "diff", "add", "log", "show", "rev-parse", "ls-files")
+ GIT_UNSAFE = ("--output", "--ext-diff", "--textconv")   # write any file, or run a configured program
+-GH_OK = (("pr", "list"), ("pr", "view"))
++GH_OK = ()
+ GH_VALUED = {"-R", "--repo"}
+ PREFIX = "workflow-coding:"
+ CLAUDE_DIR = ".claude"

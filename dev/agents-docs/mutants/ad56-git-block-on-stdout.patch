@@ -1,0 +1,10 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -141,7 +141,6 @@
+                 f"Blocked: {agent_type} may not write {file_path}: a hook or config under .git/ runs "
+                 "at the main session's next git command, a commit the user confirms included.\n"
+                 "This plugin's agents edit documentation, never git's own files.",
+-                file=sys.stderr,
+             )
+             sys.exit(2)
+         why = _not_a_doc(written, agent_type) or _not_a_doc(resolved, agent_type)

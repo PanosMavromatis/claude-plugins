@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -153,7 +153,7 @@
+         return command
+     if not w:
+         return None
+-    if w[0] == "git":
++    if os.path.basename(w[0]) == "git":
+         return git_refused(w, cwd, agent_type)
+     if w[0] == "gh":
+         return gh_refused(w)

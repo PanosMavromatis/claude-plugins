@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -64,7 +64,7 @@
+ def _guarded(agent_type):
+     """Whether writes from agent_type are held to documentation: guard-agent-git.py's rule."""
+     if not agent_type:
+-        return False
++        return True
+     named = os.environ.get("WORKFLOW_CODING_GUARDED_AGENTS")
+     if named is not None:
+         return agent_type in {a.strip() for a in named.split(",") if a.strip()}

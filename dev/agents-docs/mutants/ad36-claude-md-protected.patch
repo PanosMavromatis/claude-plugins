@@ -1,8 +1,8 @@
 --- a/hooks/protect-agent-docs.py
 +++ b/hooks/protect-agent-docs.py
-@@ -71,7 +71,7 @@
-     except (OSError, RuntimeError):
-         sys.exit(0)
+@@ -154,7 +154,7 @@
+             )
+             sys.exit(2)
  
 -    if target.name != PROTECTED:
 +    if target.name not in (PROTECTED, "CLAUDE.md"):

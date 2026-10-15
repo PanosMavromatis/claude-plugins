@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -136,7 +136,7 @@
+     agent_type = payload.get("agent_type")
+     if _guarded(agent_type):
+         written, resolved = Path(file_path).parts, target.parts
+-        if any(_names_dir(p, GIT_DIR) for p in written + resolved):
++        if any(_names_dir(p, GIT_DIR) for p in resolved):
+             print(
+                 f"Blocked: {agent_type} may not write {file_path}: a hook or config under .git/ runs "
+                 "at the main session's next git command, a commit the user confirms included.\n"

@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -71,7 +71,7 @@
+ 
+ def fs_name(part):
+     """A path component as a case-insensitive or Windows filesystem reads it."""
+-    return part.split(":", 1)[0].lower().rstrip(". ")
++    return part.lower().rstrip(". ")
+ 
+ 
+ def not_a_doc(parts, agent_type):

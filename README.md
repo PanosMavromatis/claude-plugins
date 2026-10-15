@@ -8,7 +8,7 @@ standalone repository.
 
 | Plugin | What it does |
 |---|---|
-| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources, and commands that hand a session to the next or export its whole log. Applicable to most projects. |
+| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources and keep its agents from committing or pushing, and commands that hand a session to the next or export its whole log. Applicable to most projects. |
 | [`dp-compile`](plugins/dp-compile) | Staged translation of dynamic-programming kernels — formalization → Python → Cython → CPU-parallel → CUDA — enforcing equivalence against the reference implementation at every stage. Requires a `dp-compile.toml` at the consumer's repository root. |
 
 `dp-compile` declares `workflow-coding` in its `dependencies`: it delegates branches, plans,
@@ -155,12 +155,23 @@ python3 -I dev/export-session/suite.py --mutants         # the suite must catch 
 
 Test the agent-docs pair, the build `/agents-docs-build` runs, `scripts/build-agents-md.sh`,
 the check `/agents-docs-check` runs, `scripts/check-agents-md.sh`, and the hook that guards
-the generated `AGENTS.override.md`, `hooks/protect-agent-docs.py`, after a change to any of
-them. The check runs the build beside it, so one suite tests all three:
+the generated `AGENTS.override.md` and holds the plugin's agents to documentation,
+`hooks/protect-agent-docs.py`, after a change to any of them. The check runs the build
+beside it, so one suite tests all three:
 
 ```bash
-python3 -I dev/agents-docs/suite.py                      # 43 cases, no model, ~20 s
+python3 -I dev/agents-docs/suite.py                      # 73 cases, no model, ~20 s
 python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch each mutant, ~3 min
+```
+
+Test the hook that keeps `workflow-coding`'s own agents to the few commands they need,
+`hooks/guard-agent-git.py`, and the wrapper `hooks/hooks.json` runs both guards through, so
+they refuse those agents' calls when they cannot run, `hooks/fail-closed.sh`, after a change
+to any of the three:
+
+```bash
+python3 -I dev/agent-git-guard/suite.py                  # 157 cases, no model, ~20 s
+python3 -I dev/agent-git-guard/suite.py --mutants        # the suite must catch each mutant, ~2 min
 ```
 
 Check the commands' phrasing after a change to a command's `allowed-tools` or to the text
@@ -181,10 +192,29 @@ runs against a stub `gh` with MCP off, so it never reaches GitHub. Those are rea
 which cost money, so run them yourself, after a change to the command text;
 `dev/per-goal-e2e/README.md` covers how.
 
-`dev/grant-lifetime/` measures how long a command's `allowed-tools` grant lasts, the fact the
-plugin's "Scoped `allowed-tools`" convention rests on: four headless turns on a one-command
-fixture plugin, and one interactive check by hand. They are real sessions, a few cents, so
-run them yourself; `dev/grant-lifetime/README.md` covers how.
+`dev/grant-lifetime/` measures how long a command's `allowed-tools` grant lasts, and whether
+it reaches the subagents the command spawns, the facts the plugin's "Scoped `allowed-tools`"
+convention rests on: headless turns on a small fixture plugin, and one interactive check by
+hand. They are real sessions, a few cents, so run them yourself;
+`dev/grant-lifetime/README.md` covers how.
+
+`dev/subagent-hooks/` tests whether a plugin's hooks fire on a subagent's tool calls, the fact
+R2's `docs-sync` agent rests on: four headless turns on fixture repositories, a subagent
+editing a generated `AGENTS.override.md` between a main-session and a subagent control, and a
+subagent staging a doc before `dp-compile`'s gate; and, each run on its own, `docs-sync`
+saving a memory entry, to show where a plugin agent's memory goes, and a fixture hook logging
+every input it gets, to show what in it identifies a subagent's call. They are real sessions,
+a few cents, so run them yourself; `dev/subagent-hooks/README.md` covers how.
+
+`dev/docs-sync-e2e/` runs the §7.7 cases for the `docs-sync` agent through the commands that
+spawn it: a flag change, a pure-history change, the user's unstaged and untracked docs left
+alone, a `codex-review/` rebuild, an edit of the generated override, `/smart-commit` with a
+kernel staged before `dp-compile`'s gate, and `/smart-commit` stopping on an `AGENTS.md` the
+agent changed, asked plainly and asked to run autonomously. Eight headless sessions on
+fixture repositories, in default permission mode,
+so each command's grant is tested too. They are real sessions, a few cents each, so run them
+yourself; `DRY=1` builds the fixtures alone, `selftest.py` tests the grader at no cost, and
+`dev/docs-sync-e2e/README.md` covers how.
 
 ## License
 
