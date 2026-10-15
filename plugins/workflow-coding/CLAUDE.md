@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working on the 
 
 ## What this plugin is
 
-A Claude Code **plugin** (`.claude-plugin/plugin.json`) that ships a curated set of slash commands in `commands/`, with supporting hooks (`hooks/`), helper scripts (`scripts/`, their shared rules in `scripts/lib/plan-rules.sh`), one agent (`agents/plan-drafter.md`) and one reference (`references/subdividing.md`). There is no build. Most edits are to the prompt text of the Markdown commands; the plan scripts' test suites and the end-to-end harness live outside the plugin, in the marketplace's `dev/`.
+A Claude Code **plugin** (`.claude-plugin/plugin.json`) that ships a curated set of slash commands in `commands/`, with supporting hooks (`hooks/`), helper scripts (`scripts/`, their shared rules in `scripts/lib/plan-rules.sh`), two agents (`agents/plan-drafter.md` and `agents/docs-sync.md`) and one reference (`references/subdividing.md`). There is no build. Most edits are to the prompt text of the Markdown commands; the plan scripts' test suites and the end-to-end harness live outside the plugin, in the marketplace's `dev/`.
 
-When the plugin is installed in a consuming project, files under `commands/` become available as `/<filename-without-md>` slash commands, and the agent as `workflow-coding:plan-drafter`, which `/master-plan` spawns.
+When the plugin is installed in a consuming project, files under `commands/` become available as `/<filename-without-md>` slash commands, and the agents as `workflow-coding:plan-drafter`, which `/master-plan` spawns, and `workflow-coding:docs-sync`, which brings a project's docs in line with its staged diff.
 
 ## Command-file format
 

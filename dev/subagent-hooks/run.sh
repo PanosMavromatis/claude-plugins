@@ -16,7 +16,10 @@
 #       record that it saw AGENTS.md staged too. d1 loads dp-compile with workflow-coding:
 #       dp-compile's manifest declares that dependency, and a session that loads it alone by
 #       --plugin-dir drops it without a word (run s1).
-# Every session runs in acceptEdits mode, with the two git commands allowed, so a hook is the
+#   m1  workflow-coding:docs-sync syncs a staged CLI-flag change and saves one memory entry:
+#       which .claude/agent-memory/<name>/ the harness writes for a plugin agent (D-N7).
+# CASES picks which to run, all of h0 h1 h2 d1 by default; m1 runs only when named.
+# Every session runs in acceptEdits mode, with its git commands allowed, so a hook is the
 # only thing that can stop an edit or the commit; user settings are not loaded, so no other
 # plugin's hook is in play. Real sessions, a few cents each: run it yourself. Writes only
 # under $LOCATE_PLAN_WORK/subhooks. Grade with check.py.
@@ -30,6 +33,8 @@ RUN="${RUN:?set RUN=<tag>}"
 S="$P/subhooks"; OUT="$S/out-$RUN"; FX="$S/fx-$RUN"
 rm -rf "$OUT" "$FX"; mkdir -p "$OUT" "$FX"
 WC="$REPO/plugins/workflow-coding"; DP="$REPO/plugins/dp-compile"
+CASES="${CASES:-h0 h1 h2 d1}"
+want() { case " $CASES " in *" $1 "*) return 0 ;; esac; return 1; }
 
 commit() {   # commit <dir>: a fixture's first commit, independent of the user's git config
   git -C "$1" add -A
@@ -52,6 +57,14 @@ gate() {     # gate <dir>: a dp-compile.toml whose test fails after recording th
   printf 'def probe():\n    return 1\n' > "$1/src/probe_python.py"
   git -C "$1" add src/probe_python.py
 }
+mem() {      # mem <dir>: the pair, documenting a CLI flag in AGENTS.md, with a second flag staged
+  pair "$1"
+  printf '#!/bin/sh\n# tool.sh [--quiet]\n' > "$1/tool.sh"
+  printf '# Project\n\nThe marker line is PROBE-OLD.\n\n`tool.sh` takes one flag, `--quiet`.\n' > "$1/AGENTS.md"
+  commit "$1"
+  printf '#!/bin/sh\n# tool.sh [--quiet] [--verbose]\n' > "$1/tool.sh"
+  git -C "$1" add tool.sh
+}
 
 # s <id> <prompt> <plugin-dir>...: one headless turn in fixture <id>, its stream-json kept.
 s() {
@@ -60,7 +73,7 @@ s() {
   printf '%-4s ' "$id"
   ( cd "$FX/$id" && claude -p "$prompt" "${dirs[@]}" --model haiku \
       --setting-sources project,local --permission-mode acceptEdits \
-      --allowedTools "Bash(git add AGENTS.md)" "Bash(git commit -m probe)" \
+      --allowedTools "Bash(git status:*)" "Bash(git diff:*)" "Bash(git add:*)" "Bash(git commit -m probe)" \
       --output-format stream-json --verbose </dev/null ) > "$OUT/$id.jsonl" 2> "$OUT/$id.err" || true
   echo "done"
 }
@@ -68,10 +81,12 @@ s() {
 EDIT="Use the Edit tool once to replace PROBE-OLD with PROBE-NEW in"
 SUB="Use the Agent tool once, with subagent_type general-purpose, and give the subagent exactly this task:"
 MINE="Do not edit any file yourself. Then report the subagent's answer verbatim."
-for id in h0 h1 h2; do pair "$FX/$id"; done
-gate "$FX/d1"
-s h0 "$EDIT AGENTS.override.md in the current directory. Use no other tool. Report the Edit tool's result verbatim." "$WC"
-s h1 "$SUB '$EDIT AGENTS.override.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
-s h2 "$SUB '$EDIT AGENTS.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
-s d1 "Do two steps, in order. First, $SUB 'Append the line Gate probe. to AGENTS.md in the current directory with the Edit tool, then run this shell command, alone, once: git add AGENTS.md. Report what you did.' Second, once it has returned, run this shell command yourself, alone, once: git commit -m probe. Run no other git command. Report the commit command's result verbatim." "$DP" "$WC"
-echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN python3 -I dev/subagent-hooks/check.py"
+for id in h0 h1 h2; do want "$id" && pair "$FX/$id"; done
+want d1 && gate "$FX/d1"
+want m1 && mem "$FX/m1"
+want h0 && s h0 "$EDIT AGENTS.override.md in the current directory. Use no other tool. Report the Edit tool's result verbatim." "$WC"
+want h1 && s h1 "$SUB '$EDIT AGENTS.override.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
+want h2 && s h2 "$SUB '$EDIT AGENTS.md in the current directory. Use no other tool to change it. Report the Edit tool's result verbatim.' $MINE" "$WC"
+want d1 && s d1 "Do two steps, in order. First, $SUB 'Append the line Gate probe. to AGENTS.md in the current directory with the Edit tool, then run this shell command, alone, once: git add AGENTS.md. Report what you did.' Second, once it has returned, run this shell command yourself, alone, once: git commit -m probe. Run no other git command. Report the commit command's result verbatim." "$DP" "$WC"
+want m1 && s m1 "Use the Agent tool once, with subagent_type workflow-coding:docs-sync, and give it exactly this task: 'Bring the docs in line with the staged diff. Before you return, save one entry to your memory: that this repository documents the flags of tool.sh in AGENTS.md.' Do not edit any file yourself. Then report the agent's answer verbatim." "$WC"
+echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN CASES=\"$CASES\" python3 -I dev/subagent-hooks/check.py"

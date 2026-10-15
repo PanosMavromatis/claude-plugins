@@ -17,6 +17,8 @@ it relies on are tested here before the agent is built, as the subgoal asks:
 export LOCATE_PLAN_WORK=/tmp/lp-suite               # outside this repository
 RUN=s1 dev/subagent-hooks/run.sh                    # four real sessions, on haiku
 RUN=s1 python3 -I dev/subagent-hooks/check.py       # grades them; read-only
+CASES=m1 RUN=m1 dev/subagent-hooks/run.sh           # docs-sync's memory directory: one session
+CASES=m1 RUN=m1 python3 -I dev/subagent-hooks/check.py
 ```
 
 | Case | Who acts | Must |
@@ -25,6 +27,7 @@ RUN=s1 python3 -I dev/subagent-hooks/check.py       # grades them; read-only
 | h1 | a `general-purpose` subagent `Edit`s `AGENTS.override.md` | the measurement: blocked if hooks fire inside a subagent, edited if not |
 | h2 | a subagent `Edit`s `AGENTS.md`, which no hook protects | be edited: the control that a subagent's edit lands |
 | d1 | a subagent edits and stages `AGENTS.md`; the main session runs `git commit` with a kernel staged | be blocked by the gate, which names the kernel and records both files staged |
+| m1 | `workflow-coding:docs-sync` syncs a staged CLI-flag change and saves one memory entry; run only when `CASES` names it | write an agent-memory directory: which name a plugin agent gets there (D-N7) |
 
 h1 counts only between its controls. If h0 is not blocked, the hook never loaded; if h2 does
 not land, a subagent cannot edit, and an unchanged file in h1 proves nothing. h1 counts only
@@ -44,8 +47,9 @@ algorithm whose kernel is staged before the session starts, and its `[commands].
 `git diff --cached --name-only` to `.gate-saw` and fails: the gate prints the kernel's name
 only when it blocks, and `.gate-saw` is the staged set exactly as the gate saw it.
 
-Every session runs in `acceptEdits` mode, with `git add AGENTS.md` and `git commit -m probe`
-allowed, so a hook is the only thing that can stop an edit or the commit, and with
+Every session runs in `acceptEdits` mode, with `git status`, `git diff`, `git add` and
+`git commit -m probe` allowed (runs s1 and s2 allowed only `git add AGENTS.md` and the commit),
+so a hook is the only thing that can stop an edit or the commit, and with
 `--setting-sources project,local`, so no plugin enabled in the user's settings adds a hook
 of its own.
 
@@ -69,3 +73,10 @@ Run `s2`, 2026-10-14, $0.02, after the fix: all four pass.
 In both runs the `Agent` tool started the subagent in the background, and the main session
 acted only on its hand-back: in d1 the commit came after the subagent's `git add`, the
 ordering §5.3 of the design asks about.
+
+Run `m1`, 2026-10-14, haiku with `docs-sync` on sonnet, $0.05: **a plugin agent's
+`memory: project` directory is `.claude/agent-memory/<plugin>-<agent>/`**, here
+`.claude/agent-memory/workflow-coding-docs-sync/`, holding a `MEMORY.md` index and one entry
+file. `docs-sync` read its guide (absent), ran `git status` and `git diff --cached` alone,
+changed the one `AGENTS.md` line the staged flag made false, ran no build, staged the doc and
+its memory together, and returned its four output lines.

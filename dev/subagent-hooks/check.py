@@ -96,17 +96,33 @@ def gate_case(cid):
     if sorted(saw) != sorted([KERNEL, "AGENTS.md"]): return f"the gate saw {saw}", res
     return "blocked, naming the kernel, with AGENTS.md staged", res
 
-CASES = [("h0", lambda: edit_case("h0", "main", "AGENTS.override.md"), "blocked", "control: the main session edits AGENTS.override.md"),
-         ("h1", lambda: edit_case("h1", "sub", "AGENTS.override.md"), None, "a subagent edits AGENTS.override.md"),
-         ("h2", lambda: edit_case("h2", "sub", "AGENTS.md"), "edited", "control: a subagent edits AGENTS.md"),
-         ("d1", lambda: gate_case("d1"), "blocked, naming the kernel, with AGENTS.md staged", "the gate after a subagent stages a doc")]
+def memory_case(cid):
+    """Which agent-memory directory docs-sync's run created, under the fixture or the user's home."""
+    res, calls = records(cid)
+    if res is None: return "no session", res
+    if missing(cid, "workflow-coding"): return missing(cid, "workflow-coding"), res
+    if not any(b == "sub" for b, _, _ in calls): return "docs-sync made no tool call", res
+    found = [os.path.relpath(d, f"{FX}/{cid}") for d in sorted(glob.glob(f"{FX}/{cid}/.claude/agent-memory*/*/"))]
+    found += [d for d in sorted(glob.glob(os.path.expanduser("~/.claude/agent-memory/*docs-sync*/")))]
+    if not found: return "no agent-memory directory was written", res
+    return "memory in " + ", ".join(found), res
+
+ALL = [("h0", lambda: edit_case("h0", "main", "AGENTS.override.md"), "blocked", "control: the main session edits AGENTS.override.md"),
+       ("h1", lambda: edit_case("h1", "sub", "AGENTS.override.md"), None, "a subagent edits AGENTS.override.md"),
+       ("h2", lambda: edit_case("h2", "sub", "AGENTS.md"), "edited", "control: a subagent edits AGENTS.md"),
+       ("d1", lambda: gate_case("d1"), "blocked, naming the kernel, with AGENTS.md staged", "the gate after a subagent stages a doc"),
+       ("m1", lambda: memory_case("m1"), "memory", "docs-sync saves a memory entry")]
+picked = (os.environ.get("CASES") or "h0 h1 h2 d1").split()
 bad, cost, got = 0, 0.0, {}
-for cid, fn, want, what in CASES:
+for cid, fn, want, what in [c for c in ALL if c[0] in picked]:
     g, res = fn(); got[cid] = g
     cost += (res or {}).get("total_cost_usd") or 0
-    ok = g == want if want else g in ("blocked", "edited")
-    print(f"{'PASS' if ok else 'FAIL'}  {cid}  {what}: {g}" + ("" if ok or not want else f", want {want}"))
+    ok = g.startswith("memory in ") if want == "memory" else g == want if want else g in ("blocked", "edited")
+    print(f"{'PASS' if ok else 'FAIL'}  {cid}  {what}: {g}" + ("" if ok or not want or want == "memory" else f", want {want}"))
     bad += not ok
 if bad: print(f"\nresult: void or failing, {bad} case(s); cost ${cost:.2f}"); sys.exit(1)
-print(f"\nresult: protect-agent-docs.py {'fires' if got['h1'] == 'blocked' else 'does not fire'} on a subagent's Edit;"
-      f" dp-compile's gate sees the docs a subagent stages; cost ${cost:.2f}")
+found = []
+if "h1" in got: found.append(f"protect-agent-docs.py {'fires' if got['h1'] == 'blocked' else 'does not fire'} on a subagent's Edit")
+if "d1" in got: found.append("dp-compile's gate sees the docs a subagent stages")
+if "m1" in got: found.append(f"docs-sync's {got['m1']}")
+print(f"\nresult: {'; '.join(found)}; cost ${cost:.2f}")
