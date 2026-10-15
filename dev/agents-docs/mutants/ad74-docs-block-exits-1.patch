@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -152,7 +152,7 @@
+                 ".claude/ only their own memory.",
+                 file=sys.stderr,
+             )
+-            sys.exit(2)
++            sys.exit(1)
+ 
+     if target.name != PROTECTED:
+         sys.exit(0)

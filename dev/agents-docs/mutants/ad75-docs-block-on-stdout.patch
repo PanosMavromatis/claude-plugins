@@ -1,0 +1,10 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -150,7 +150,6 @@
+                 f"Blocked: {agent_type} may not write {file_path}: {why}.\n"
+                 "This plugin's agents edit documentation: Markdown, never CLAUDE.md, and under "
+                 ".claude/ only their own memory.",
+-                file=sys.stderr,
+             )
+             sys.exit(2)
+ 

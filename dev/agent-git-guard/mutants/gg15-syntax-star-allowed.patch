@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -55,7 +55,7 @@
+ PREFIX = "workflow-coding:"
+ CLAUDE_DIR = ".claude"
+ INSTRUCTIONS = ("claude.md", "claude.local.md")   # what every session loads
+-SHELL = set(";&|<>(){}$`\\*?[~\n")   # chains, substitution, redirection, escapes, globs and ~+, which is $PWD
++SHELL = set(";&|<>(){}$`\\?[~\n")   # chains, substitution, redirection, escapes, globs and ~+, which is $PWD
+ BUILD = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "scripts", "build-agents-md.sh")
+ 
+ 

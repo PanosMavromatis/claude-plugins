@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -150,7 +150,7 @@
+     try:
+         w = shlex.split(command)
+     except ValueError:   # an unbalanced quote
+-        return command
++        return None
+     if not w:
+         return None
+     if w[0] == "git":

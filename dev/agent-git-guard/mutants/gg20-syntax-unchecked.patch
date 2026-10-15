@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -144,7 +144,7 @@
+ 
+ def refused(command, cwd, agent_type):
+     """What the agent may not run in command, run in cwd, or None."""
+-    syntax = next((c for c in command if c in SHELL), None)
++    syntax = None
+     if syntax:
+         return syntax
+     try:

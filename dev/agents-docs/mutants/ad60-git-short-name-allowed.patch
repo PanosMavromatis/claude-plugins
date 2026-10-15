@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -80,7 +80,7 @@
+     """Whether a path component is the hidden directory name (.git, .claude), its 8.3 short
+     name (GIT~1) included."""
+     n = _fs_name(part)
+-    return n == name or re.fullmatch(name[1:] + r"~\d+", n) is not None
++    return n == name
+ 
+ 
+ def _not_a_doc(parts, agent_type):

@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -85,7 +85,7 @@
+ 
+ def _not_a_doc(parts, agent_type):
+     """Why a guarded agent may not write the path whose components are parts, or None."""
+-    name = _fs_name(parts[-1]) if parts else ""
++    name = parts[-1] if parts else ""
+     if not name.endswith(".md"):
+         return "it is not a Markdown file"
+     if name in INSTRUCTIONS:

@@ -1,0 +1,10 @@
+--- a/hooks/fail-closed.sh
++++ b/hooks/fail-closed.sh
+@@ -22,6 +22,6 @@
+ agent='"workflow-coding:'
+ [ -n "${WORKFLOW_CODING_GUARDED_AGENTS+set}" ] && agent='"'
+ printf '%s\n' "$input" | grep -Eq "\"agent_type\"[[:space:]]*:[[:space:]]*$agent"
+-[ $? -eq 1 ] && exit "$status"
++:
+ echo "Blocked: ${1##*/}, the hook that guards this plugin's agents, failed with exit $status, so the call is refused rather than let through unchecked. Check that python3 runs." >&2
+ exit 2

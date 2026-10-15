@@ -155,20 +155,23 @@ python3 -I dev/export-session/suite.py --mutants         # the suite must catch 
 
 Test the agent-docs pair, the build `/agents-docs-build` runs, `scripts/build-agents-md.sh`,
 the check `/agents-docs-check` runs, `scripts/check-agents-md.sh`, and the hook that guards
-the generated `AGENTS.override.md`, `hooks/protect-agent-docs.py`, after a change to any of
-them. The check runs the build beside it, so one suite tests all three:
+the generated `AGENTS.override.md` and holds the plugin's agents to documentation,
+`hooks/protect-agent-docs.py`, after a change to any of them. The check runs the build
+beside it, so one suite tests all three:
 
 ```bash
-python3 -I dev/agents-docs/suite.py                      # 43 cases, no model, ~20 s
+python3 -I dev/agents-docs/suite.py                      # 73 cases, no model, ~20 s
 python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch each mutant, ~3 min
 ```
 
-Test the hook that keeps `workflow-coding`'s own agents to the `git` and `gh` subcommands they
-need, `hooks/guard-agent-git.py`, after any change to it:
+Test the hook that keeps `workflow-coding`'s own agents to the few commands they need,
+`hooks/guard-agent-git.py`, and the wrapper `hooks/hooks.json` runs both guards through, so
+they refuse those agents' calls when they cannot run, `hooks/fail-closed.sh`, after a change
+to any of the three:
 
 ```bash
-python3 -I dev/agent-git-guard/suite.py                  # 76 cases, no model, ~10 s
-python3 -I dev/agent-git-guard/suite.py --mutants        # the suite must catch each mutant, ~1 min
+python3 -I dev/agent-git-guard/suite.py                  # 157 cases, no model, ~20 s
+python3 -I dev/agent-git-guard/suite.py --mutants        # the suite must catch each mutant, ~2 min
 ```
 
 Check the commands' phrasing after a change to a command's `allowed-tools` or to the text

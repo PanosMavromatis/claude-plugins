@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -143,7 +143,7 @@
+                 "This plugin's agents edit documentation, never git's own files.",
+                 file=sys.stderr,
+             )
+-            sys.exit(2)
++            sys.exit(1)
+         why = _not_a_doc(written, agent_type) or _not_a_doc(resolved, agent_type)
+         if why:
+             print(

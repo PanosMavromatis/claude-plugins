@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -78,7 +78,7 @@
+     """Why a guarded agent may not write or stage the path whose components are parts, or
+     None: protect-agent-docs.py's rule, which says why. Its 8.3 names (CLAUDE~1) need no
+     check here: `~` is shell syntax, refused before a path is read."""
+-    name = fs_name(parts[-1]) if parts else ""
++    name = parts[-1] if parts else ""
+     if not name.endswith(".md"):
+         return "it is not a Markdown file"
+     if name in INSTRUCTIONS:

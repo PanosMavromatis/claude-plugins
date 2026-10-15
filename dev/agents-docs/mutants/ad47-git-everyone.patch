@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -134,7 +134,7 @@
+         sys.exit(0)
+ 
+     agent_type = payload.get("agent_type")
+-    if _guarded(agent_type):
++    if True:
+         written, resolved = Path(file_path).parts, target.parts
+         if any(_names_dir(p, GIT_DIR) for p in written + resolved):
+             print(

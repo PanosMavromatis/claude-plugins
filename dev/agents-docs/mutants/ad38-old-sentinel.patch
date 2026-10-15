@@ -1,11 +1,11 @@
 --- a/hooks/protect-agent-docs.py
 +++ b/hooks/protect-agent-docs.py
-@@ -32,7 +32,7 @@
+@@ -54,7 +54,7 @@
  from pathlib import Path
  
  PROTECTED = "AGENTS.override.md"
 -GUIDE = Path("codex-review") / "AGENTS.md"
 +GUIDE = Path("codex.md")
- 
- 
- def _component_path(target, project_root):
+ GIT_DIR = ".git"
+ CLAUDE_DIR = ".claude"
+ INSTRUCTIONS = ("claude.md", "claude.local.md")   # what every session loads

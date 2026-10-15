@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -108,7 +108,7 @@
+     if not paths:
+         return ""
+     for p in paths:
+-        if p.startswith(":") or os.path.isdir(os.path.join(base, os.path.normpath(p))):
++        if p.startswith(":") or os.path.isdir(os.path.join(base, p)):
+             return p
+         if not_a_doc(PurePath(os.path.normpath(p)).parts, agent_type):
+             return p

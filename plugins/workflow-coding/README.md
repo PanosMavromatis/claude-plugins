@@ -5,7 +5,7 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
 ## What's in here
 
 - **`commands/`** — slash commands that show up as `/<filename>` in any project that installs the plugin.
-- **`hooks/`** — two `PreToolUse` hooks: `protect-agent-docs.py`, which prevents direct edits to a generated `AGENTS.override.md` (root and per-component) once its `codex-review/AGENTS.md` guide under `docs/agents/` exists, and `guard-agent-git.py`, which keeps this plugin's agents to the `git` and `gh` subcommands they need, so a commit, push or tag stays the main session's; and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
+- **`hooks/`** — two `PreToolUse` hooks: `protect-agent-docs.py`, which prevents direct edits to a generated `AGENTS.override.md` (root and per-component) once its `codex-review/AGENTS.md` guide under `docs/agents/` exists, and holds this plugin's agents to documentation (Markdown, never `CLAUDE.md`, under `.claude/` only their own memory, and never `.git/`), and `guard-agent-git.py`, which keeps this plugin's agents' Bash to the few `git`, `gh` and build commands they need, `git add` only of those docs, so a commit, push or tag stays the main session's, both run through `fail-closed.sh`, which refuses this plugin's agents' calls when a hook cannot run, rather than letting them through; and a `SessionStart` hook (`remind-disable-commit-commands.py`) that nudges you to disable the overlapping `commit-commands` plugin (see below).
 - **`scripts/`** — deterministic helpers the commands call, bundled so consumers don't need their own copies. Two serve the agent-docs workflow: `build-agents-md.sh` (builds each `AGENTS.override.md` from the Codex reviewer's guide) and `check-agents-md.sh` (verifies they're in sync, and lints the hand-authored `AGENTS.md` files). One, `export-session.py`, writes `/session-export-full`'s export, never inside the repository. The rest serve the plan workflow and are all **read-only** — they propose, render or report, and the command that calls them performs every write:
   - `locate-plan.sh` resolves a plan and finds its next item, for `/step`, `/hitl-step` and `/smart-merge`, and checks a revision `/master-plan` has just written. It reports a `problem:` and a `fix:` rather than guessing when a plan convention is broken;
   - `check-plan-index.sh` reports where a per-goal plan's index and goal files disagree, and a one-file plan's open items;
@@ -143,7 +143,7 @@ Two notes on how the two behave together:
 - **The hooks cannot collide.** `dp-compile` ships a `PreToolUse` hook on `Bash` that gates
   a commit on the consumer's test suite when a kernel file is staged. This plugin's
   `protect-agent-docs.py` matches `Write|Edit|MultiEdit`, and its `guard-agent-git.py`
-  matches `Bash` too, but refuses only a `git` or `gh` write from this plugin's own agents,
+  matches `Bash` too, but refuses only this plugin's own agents' calls outside its allowlist,
   never the main session's commit, so the two `Bash` hooks decide on different calls. Because
   hooks stack, the gate fires inside the `git commit` `/smart-commit` runs — so delegating
   the commit does not bypass it. See

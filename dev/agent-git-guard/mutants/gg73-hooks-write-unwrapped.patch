@@ -1,0 +1,11 @@
+--- a/hooks/hooks.json
++++ b/hooks/hooks.json
+@@ -6,7 +6,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/fail-closed.sh \"${CLAUDE_PLUGIN_ROOT}\"/hooks/protect-agent-docs.py"
++            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/protect-agent-docs.py"
+           }
+         ]
+       },

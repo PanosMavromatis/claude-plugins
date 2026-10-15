@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -121,7 +121,7 @@
+     if sub not in GIT_OK:   # no subcommand, a global option, or a subcommand not on the list
+         return " ".join(w[:2])
+     unsafe = next((a for a in w[2:] if a.split("=", 1)[0] in GIT_UNSAFE), None)
+-    if unsafe:
++    if False:
+         return f"git {sub} {unsafe}"
+     if sub == "add":
+         bad = add_refused(w[2:], cwd, agent_type)

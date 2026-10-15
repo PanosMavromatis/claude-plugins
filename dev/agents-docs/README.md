@@ -7,7 +7,7 @@ These are the tests for the agent-docs pair in `plugins/workflow-coding/`:
 - `scripts/check-agents-md.sh`, which checks the pair is in sync and lints the hand-authored
   `AGENTS.md` files;
 - `hooks/protect-agent-docs.py`, which blocks a direct edit of a generated
-  `AGENTS.override.md`.
+  `AGENTS.override.md`, and holds this plugin's agents to documentation, out of `.git/`.
 
 They live here, outside the plugin, so they don't ship with it. The behaviour they test is
 R2 subgoal 7's, settled in goals 01–03 of the `refactor-agents-override-pair` branch plan,
@@ -18,8 +18,8 @@ tests the three together: run it after a change to any of them.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/lp-suite          # outside this repository, as dev/locate-plan/ requires
-python3 -I dev/agents-docs/suite.py            # 43 cases, twice under each Bash or python3 found (~20 s)
-python3 -I dev/agents-docs/suite.py --mutants  # 45 mutants, every one must be caught (~3 min)
+python3 -I dev/agents-docs/suite.py            # 73 cases, twice under each Bash or python3 found (~20 s)
+python3 -I dev/agents-docs/suite.py --mutants  # 75 mutants, every one must be caught (~3.5 min)
 ```
 
 `--mutants` runs the suite on each mutant once, under the first shell and `python3` found,
@@ -56,10 +56,27 @@ skipped if absent. Only BSD userland has been tested: `ad12-wc-padded` is caught
   temporary directory. A `mktemp` first on `PATH` logs each directory it makes: macOS's
   `mktemp` prefers `_CS_DARWIN_USER_TEMP_DIR` to `TMPDIR`, so an empty `TMPDIR` proves
   nothing there.
-- **The hook** gets JSON on stdin, run as `hooks.json` runs it, the file itself by its
-  shebang, with `CLAUDE_PROJECT_DIR` set and the working directory outside the project,
+- **The hook** gets JSON on stdin, run as `hooks.json`'s wrapper, `fail-closed.sh`, runs it,
+  the file itself by its shebang (the wrapper and `hooks.json` are tested in
+  `dev/agent-git-guard/`), with `CLAUDE_PROJECT_DIR` set and the working directory outside the project,
   except in `h21`, which unsets it. It is graded on its exit status and its exact stderr,
   and must print nothing on stdout.
+- **The `.git/` rule** (`h23`–`h39`, added in goal 03a of the `feat-docs-sync-agent` branch
+  plan): `docs-sync` writing `.git/config`, a hook, a nested `ui/.git/config`, a path that
+  reaches `.git/` only through a symlink, one whose `.git` is itself a symlink, `.GIT/`,
+  which is `.git/` on macOS's case-insensitive filesystem, `.git. /`, which Windows reads as
+  `.git/`, and `.git::$INDEX_ALLOCATION/` and `GIT~1/`, which NTFS does, is blocked;
+  `docs/git~1.md`, an ordinary guide, the main session and a `general-purpose` agent pass,
+  and the seam `WORKFLOW_CODING_GUARDED_AGENTS` replaces the set guarded, as it does for
+  `guard-agent-git.py`. Only macOS has run them: on it the NTFS names are ordinary
+  directories, so their cases test the rule, not Windows.
+- **Documentation only** (`h40`–`h52`, and `h29`, `.gitignore`): `docs-sync` writing
+  `src/app.py`, a `.md` that is a symlink to code, `CLAUDE.md`, `ui/claude.md`, which is
+  `CLAUDE.md` on macOS, `CLAUDE.local.md`, `.claude/commands/x.md`, another agent's memory,
+  `.claude` by its 8.3 name `CLAUDE~1`, or a path through a `.claude` that is a symlink to
+  `docs/`, is blocked; its own memory, `.claude/agent-memory/workflow-coding-docs-sync/`,
+  and `README.MD` pass, and the main session and a `general-purpose` agent are not held to
+  it.
 - **Every run is repeated**: twice under each Bash for the scripts, and twice under each
   `python3` for the hook. Each is put first on `PATH`, so the check's call to the build
   and the hook's shebang find it, and every run must print the same thing.

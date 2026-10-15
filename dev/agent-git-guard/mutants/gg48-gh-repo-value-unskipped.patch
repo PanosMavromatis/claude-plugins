@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -51,7 +51,7 @@
+ GIT_OK = ("status", "diff", "add", "log", "show", "rev-parse", "ls-files")
+ GIT_UNSAFE = ("--output", "--ext-diff", "--textconv")   # write any file, or run a configured program
+ GH_OK = (("pr", "list"), ("pr", "view"))
+-GH_VALUED = {"-R", "--repo"}
++GH_VALUED = set()
+ PREFIX = "workflow-coding:"
+ CLAUDE_DIR = ".claude"
+ INSTRUCTIONS = ("claude.md", "claude.local.md")   # what every session loads

@@ -1,0 +1,11 @@
+--- a/hooks/protect-agent-docs.py
++++ b/hooks/protect-agent-docs.py
+@@ -90,7 +90,7 @@
+         return "it is not a Markdown file"
+     if name in INSTRUCTIONS:
+         return f"every session loads {parts[-1]} as instructions"
+-    own = ["agent-memory", (agent_type or "").lower().replace(":", "-")]
++    own = ["agent-memory", (agent_type or "").lower()]
+     for i, p in enumerate(parts[:-1]):
+         if _names_dir(p, CLAUDE_DIR) and [_fs_name(q) for q in parts[i + 1:i + 3]] != own:
+             return "under .claude/ only its own memory is documentation"

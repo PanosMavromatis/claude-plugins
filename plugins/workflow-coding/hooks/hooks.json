@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/protect-agent-docs.py"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/fail-closed.sh \"${CLAUDE_PLUGIN_ROOT}\"/hooks/protect-agent-docs.py"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/guard-agent-git.py"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/fail-closed.sh \"${CLAUDE_PLUGIN_ROOT}\"/hooks/guard-agent-git.py"
           }
         ]
       }
