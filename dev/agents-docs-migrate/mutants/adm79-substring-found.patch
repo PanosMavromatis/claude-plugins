@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -438,7 +438,7 @@
+ def occurrences(text, within):
+     """How often text occurs in within as whole lines, repeats side by side counted each."""
+     t = text.rstrip("\n")
+-    return sum(1 for _ in re.finditer("(?=" + re.escape("\n" + t + "\n") + ")", "\n" + within + "\n")) if t else 0
++    return sum(1 for _ in re.finditer("(?=" + re.escape(t) + ")", "\n" + within + "\n")) if t else 0
+ 
+ 
+ def owner(path):

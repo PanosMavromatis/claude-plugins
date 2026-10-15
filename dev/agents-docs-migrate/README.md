@@ -15,8 +15,8 @@ not the script's.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/adm-suite                  # outside this repository: each fixture is a git repository
-python3 -I dev/agents-docs-migrate/suite.py             # 58 cases, twice under each python3 found
-python3 -I dev/agents-docs-migrate/suite.py --mutants   # 70 mutants, every one must be caught: over 10 minutes
+python3 -I dev/agents-docs-migrate/suite.py             # 65 cases, twice under each python3 found
+python3 -I dev/agents-docs-migrate/suite.py --mutants   # 79 mutants, every one caught but one: over 10 minutes
 ```
 
 `-v` prints each report. `--plugin PATH` tests the script under another plugin root.
@@ -63,13 +63,22 @@ python3 -I dev/agents-docs-migrate/suite.py --mutants   # 70 mutants, every one 
   whole, and the copy's files must then be the fixture's, but for the expected files, byte for
   byte. `apply` writes each of `lx`, `dx`, `mx` and `px` as `check` planned it; a second
   `apply` finds its own uncommitted writes and stops; and a table with a missing row writes
-  nothing. `verify` passes after `apply` on `lx` and `dx`, and stops the destructive step when
-  `apply` has not run, when a moved line was edited away afterwards, and when the table does
-  not parse. Two fixtures test the links:
+  nothing. A second `apply` after a commit, when git sees nothing changed, is stopped by what
+  the files already carry, on `lx` and on `dx`, whose generated `AGENTS.md` carries `core.md`'s
+  text and must not count as a run. `verify` passes after `apply` on `lx` and `dx`, and stops
+  the destructive step when `apply` has not run, when a moved line was edited away afterwards,
+  when a row is written twice, when a moved line has words added at its end, which a test for a
+  substring would still find, and when the table does not parse. Two fixtures test the links:
   - `kx`, a link already dead in its source, which `verify` lists under `dead:` and does not
     count against the move;
   - `bx`, a link to `ui/CLAUDE.md`, re-pointed to `ui/AGENTS.md`, which nothing writes since
     every row of `ui` is dropped: a link the move broke, which stops the destructive step.
+- **Symbolic links out of the repository**, to `$LOCATE_PLAN_WORK/adm/outside`, which every
+  `apply` and `verify` case checks is as it was. `sl`'s guide folder is one, and its table
+  routes a row there: `check` names the link, and `apply` writes nothing, there or anywhere.
+  `ss`'s `CLAUDE.md` is one: `detect` refuses it. A commit security review found that `apply`
+  followed such a link on 2026-10-15, and it was reproduced on a scratch repository before the
+  fix.
 - **Each report is checked whole**, line for line, against the expected report, with its exit
   status, the same output across runs and pythons, and the fixture's files left as they were.
 - **`mutants/`** holds one unified diff per mutant, each one exact substitution, applied fresh
@@ -82,4 +91,9 @@ python3 -I dev/agents-docs-migrate/suite.py --mutants   # 70 mutants, every one 
   no words with its drop. A weaker four-cell rule cannot fail but by a crash, so
   `adm32-cells-from-pipes` breaks the cell parser instead. `adm70-verify-ungated` survived
   until `v07` ran `verify` on a table that does not parse: without its stop, `verify` read no
-  rows, found nothing missing, and offered the destructive step.
+  rows, found nothing missing, and offered the destructive step. `adm73-apply-link-recheck` is
+  declared equivalent and must survive: `apply` checks each path for a link again at the write,
+  but `check` refuses the same link first, so no case reaches the second check. It reports
+  `CHANGED` if the first check is ever removed. `adm76-replaced-counted` survived while `dx`'s
+  generated `AGENTS.md` was a header and a title: the old build's file is a copy of `core.md`,
+  and only a fixture that is one shows `apply` must not count it as a run of its own.

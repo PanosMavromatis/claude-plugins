@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -181,7 +181,7 @@
+@@ -204,7 +204,7 @@
          cx = cx if cx in present else None
          if src or cx or ck == "dispatcher":
              state = "dispatcher"

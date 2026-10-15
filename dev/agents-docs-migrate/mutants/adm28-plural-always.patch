@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -230,7 +230,7 @@
+@@ -258,7 +258,7 @@
      elif {"legacy", "dispatcher"} & set(states):
          n = sum(s != "migrated" for s in states)
          result = "migrate"

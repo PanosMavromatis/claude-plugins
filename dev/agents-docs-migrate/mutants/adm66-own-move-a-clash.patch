@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -217,7 +217,7 @@
+@@ -245,7 +245,7 @@
      # A guide that opens with its codex.md, moved, is apply's own work, as verify finds it.
      for cx, guide in clashes:
          mine = relink(read(cx).decode("utf-8", "replace"), cx, guide, moves(tinfo), [])

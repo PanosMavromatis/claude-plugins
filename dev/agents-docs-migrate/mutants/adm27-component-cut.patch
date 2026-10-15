@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -169,7 +169,7 @@
+@@ -192,7 +192,7 @@
          if name == "CLAUDE.md" and d != ".claude" and not (d + "/").startswith("docs/agents/"):
              paths.add(d)
          elif name in SOURCES + ("codex.md",) and (d + "/").startswith("docs/agents/"):

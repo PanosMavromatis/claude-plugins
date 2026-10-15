@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -617,7 +617,7 @@
+     for t in tinfo:
+         if t["cx"] and os.path.isfile(t["guide"]) and read(t["guide"]).decode("utf-8", "replace").startswith(
+                 relink(read(t["cx"]).decode("utf-8", "replace"), t["cx"], t["guide"], mv, [])):
+-            already.setdefault(t["guide"], []).append(t["cx"])
++            pass
+     if already:
+         return out(result="problems", input=reply,
+                    problem=[f"{d} already carries {describe(ls)}: apply has run already" for d, ls in already.items()],

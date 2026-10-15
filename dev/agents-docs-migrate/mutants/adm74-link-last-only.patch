@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -140,7 +140,7 @@
+     acc = ""
+     for part in path.split("/"):
+         acc = join(acc, part)
+-        if os.path.islink(acc):
++        if acc == path and os.path.islink(acc):
+             return acc
+     return None
+ 

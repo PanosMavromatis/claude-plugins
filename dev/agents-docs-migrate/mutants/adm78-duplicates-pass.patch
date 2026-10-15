@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -665,7 +665,7 @@
+             probs.append(f"{label}: its text is not in {dest}" + (", which is not there" if have is None else ""))
+             fixes.append("run apply on this reply; if it ran, restore what it wrote, and run it again")
+             continue
+-        if n > wants.count((want, dest)):   # more than the rows that carry the same text there
++        if False:   # more than the rows that carry the same text there
+             probs.append(f"{label}: its text is in {dest} {n} times")
+             fixes.append("restore what apply wrote, and run apply once")
+         found += 1

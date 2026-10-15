@@ -25,7 +25,9 @@ if (W + "/").startswith(os.path.realpath(REPO) + "/"): sys.exit(f"refusing: {W} 
 FX = W + "/adm"
 PYTHONS = [p for p in ("/usr/bin/python3", "/opt/homebrew/bin/python3") if os.access(p, os.X_OK)]
 if "--once" in sys.argv: PYTHONS = PYTHONS[:1]
-EQUIVALENT = set()
+# apply checks each path for a link again at the write; check refuses the same link first, so no
+# case reaches the second check, and its mutant must survive. CHANGED would mean the first is gone.
+EQUIVALENT = {"adm73-apply-link-recheck"}
 
 # --- the fixtures --------------------------------------------------------------------------
 
@@ -103,7 +105,10 @@ LX_W = {"AGENTS.md": ("new", "# Widget\n\nWidget turns CSV files into charts —
 # link out of docs/agents/ and to claude.md, which is deleted, and whose _history/notes.md exists.
 DX_CORE = ("# Proj\n\nProj builds things. Read [claude.md](claude.md) and the [runbook](../ops/runbook.md).\n\n"
            "## Invariants\n\nNever import from `.scratch/`. Since 2026-09-01 this is checked.\n\n## Notes\n\n" + "y" * 2001 + "\n")
-FIX["dx"] = {"CLAUDE.md": DISP, "AGENTS.md": GEN, "AGENTS.override.md": "<!-- Generated from docs/agents/codex.md. -->\n",
+# Its AGENTS.md is what the old build wrote, its header and a copy of core.md, which apply replaces
+# and must not count as a run of its own.
+FIX["dx"] = {"CLAUDE.md": DISP, "AGENTS.md": GEN.split("# Project")[0] + DX_CORE,
+             "AGENTS.override.md": "<!-- Generated from docs/agents/codex.md. -->\n",
              "docs/agents/core.md": DX_CORE,
              "docs/agents/claude.md": "# Proj for Claude\n\nAdd content here, not to [core.md](core.md).\n\n"
                                       "## Plugins\n\nLoad plugins with --plugin-dir.\n",
@@ -177,18 +182,33 @@ BX_W = {"AGENTS.md": ("new", "# B\n\nSee [the ui notes](ui/AGENTS.md).\n")}
 REPLIES.update({"a-lx": ("lx", reply(LX_ROWS)), "a-dx": ("dx", reply(DX_ROWS)), "a-mx": ("mx", reply(MX_ROWS)),
                 "a-px": ("px", reply(PX_ROWS)), "a-kx": ("kx", reply(KX_ROWS)), "a-bx": ("bx", reply(BX_ROWS))})
 
+# sl and ss: a symbolic link out of the repository, to $LOCATE_PLAN_WORK/adm/outside. sl's guide
+# folder is one, and its table routes a row there; ss's CLAUDE.md is one. Nothing may be read or
+# written through either, so outside/ must be as it was after every case.
+OUTSIDE = f"{FX}/outside"
+FIX["sl"] = {"CLAUDE.md": "# S\n\nSome release steps.\n"}
+FIX["ss"] = {}
+LINKS = {"sl": [("docs/agents/release", OUTSIDE)], "ss": [("CLAUDE.md", f"{OUTSIDE}/CLAUDE.md")]}
+REPLIES["a-sl"] = ("sl", reply(["| CLAUDE.md:1-3 | docs/agents/release/AGENTS.md | release steps | sure |"]))
+
 COMMITTED = {"monorepo": ["CLAUDE.md", "docs", "a"],   # the rest stays untracked
-             **{n: ["."] for n in ("lx", "dx", "mx", "px", "kx", "bx")}}   # apply writes only over committed files
+             **{n: ["."] for n in ("lx", "dx", "mx", "px", "kx", "bx", "sl")}}   # apply writes only over committed files
 NOT_GIT = {"plain"}
 FIX["plain"] = {"CLAUDE.md": LEG}
 
 def build():
     shutil.rmtree(FX, ignore_errors=True)
+    os.makedirs(OUTSIDE)
+    open(f"{OUTSIDE}/CLAUDE.md", "w").write("# Outside\n\nNot this repository's.\n")
     for name, files in FIX.items():
         root = f"{FX}/{name}"
+        os.makedirs(root, exist_ok=True)
         for rel, text in files.items():
             os.makedirs(os.path.dirname(f"{root}/{rel}"), exist_ok=True)
             open(f"{root}/{rel}", "w").write(text)
+        for rel, to in LINKS.get(name, []):
+            os.makedirs(os.path.dirname(f"{root}/{rel}"), exist_ok=True)
+            os.symlink(to, f"{root}/{rel}")
         if name in NOT_GIT: continue
         for c in (["init", "-q", "-b", "main"], ["config", "user.email", "s@example.invalid"],
                   ["config", "user.name", "suite"], ["config", "commit.gpgsign", "false"]):
@@ -388,6 +408,16 @@ def blocked(rid, moved, drops, pairs):
                   fix=[f for _, f in pairs], message=f"The destructive step is not offered: {n} problem{'s' if n > 1 else ''}, "
                                                      "each with its fix.")
 MOVED = "{} of {} rows and codex.md moves found in their destinations"
+LINK_ROW = "row 1's destination docs/agents/release/AGENTS.md passes through the symbolic link docs/agents/release"
+LINK_FIX = f"replace the link with the file or folder it points to, or {AGAIN}: route the row elsewhere"
+REPLIES["s01"] = REPLIES["a-sl"]
+C += [
+ ("s01", "sl", None, 1, problems("s01", [(LINK_ROW, LINK_FIX)])),
+ ("s03", "ss", None, 1, rep(result="error", targets=[". legacy claude=legacy agents=absent"], sources=["CLAUDE.md"],
+   delete=["CLAUDE.md"], problem=["CLAUDE.md is a symbolic link"],
+   fix=["replace CLAUDE.md with the file or folder it points to, or remove it, and run this again"],
+   message="Cannot migrate: 1 problem, each with its fix.")),
+]
 LX_DROPS = ["CLAUDE.md:5 -> drop: obsolete — describes CLAUDE.md, which the migration removes",
             "CLAUDE.md:15 -> docs/adr/0003-renderer.md: 100% found"]
 DIRTY = sorted(LX_W)
@@ -395,6 +425,19 @@ RERUN = "run apply on this reply; if it ran, restore what it wrote, and run it a
 TAMPERED = {**LX_W, "AGENTS.md": ("new", LX_W["AGENTS.md"][1].replace("- `make test` runs the suite — every test of it.\n", ""))}
 def tamper(root):
     open(f"{root}/AGENTS.md", "w").write(TAMPERED["AGENTS.md"][1])
+DOUBLED = {**LX_W, "AGENTS.md": ("new", LX_W["AGENTS.md"][1] + "\n## Commands\n\n- `make test` runs the suite — every test of it.\n")}
+def double(root):   # one row written twice, as a second apply after a commit would have
+    open(f"{root}/AGENTS.md", "w").write(DOUBLED["AGENTS.md"][1])
+STRETCHED = {**LX_W, "AGENTS.md": ("new", LX_W["AGENTS.md"][1].replace("(docs/adr/README.md).\n", "(docs/adr/README.md). And more.\n"))}
+def stretch(root):  # a moved line with words added at its end: no longer the line that was moved
+    open(f"{root}/AGENTS.md", "w").write(STRETCHED["AGENTS.md"][1])
+def commit(root):   # a checkpoint between apply and the destructive step
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "checkpoint"], cwd=root, check=True)
+AGAIN_RAN = "go on to verify, or restore what apply wrote and start again"
+def ran(rid, pairs):
+    return report(APPLY_KEYS, rid, result="problems", problem=[f"{d} already carries {c}: apply has run already" for d, c in pairs],
+                  fix=[AGAIN_RAN] * len(pairs), message="Nothing was written: apply has run already.")
 AV = [
  ("a01", "lx", "a-lx", ["apply"], 0, wrote("a-lx", LX_W), LX_W),
  ("a02", "dx", "a-dx", ["apply"], 0, wrote("a-dx", DX_W, ["AGENTS.md: claude.md -> AGENTS.md"]), DX_W),
@@ -424,6 +467,22 @@ AV = [
    [("CLAUDE.md:1-3: ui/CLAUDE.md resolves in CLAUDE.md, but ui/AGENTS.md does not in AGENTS.md",
      "restore what apply wrote; then point the link elsewhere in CLAUDE.md, or route a row to ui/AGENTS.md, and start again")]),
    BX_W),
+ # A link out of the repository: apply writes nothing, there or anywhere.
+ ("s02", "sl", "a-sl", ["apply"], 1, report(APPLY_KEYS, "a-sl", result="problems", problem=[LINK_ROW], fix=[LINK_FIX],
+   message="docs-classifier's table has 1 problem: ask it again, giving it each problem: line with its fix: line."), {}),
+ # Committed between two runs, a first run's writes look clean to git: what the files carry says it ran.
+ ("a07", "lx", "a-lx", ["apply", commit, "apply"], 1, ran("a-lx", [
+   ("AGENTS.md", "CLAUDE.md:1-3; CLAUDE.md:7-9"), ("docs/agents/_history/parser.md", "CLAUDE.md:11-13"),
+   ("docs/agents/release/AGENTS.md", "CLAUDE.md:17-19")]), LX_W),
+ # The generated AGENTS.md that a first run replaces carries core.md's text, and is not counted.
+ ("a08", "dx", "a-dx", ["apply", commit, "apply"], 1, ran("a-dx", [
+   ("AGENTS.md", "docs/agents/core.md:1-3; docs/agents/core.md:5-7"),
+   ("docs/agents/_history/notes.md", "docs/agents/core.md:9-11"),
+   ("docs/agents/codex-review/AGENTS.md", "docs/agents/codex.md")]), DX_W),
+ ("v08", "lx", "a-lx", ["apply", double, "verify"], 1, blocked("a-lx", MOVED.format(4, 4), LX_DROPS,
+   [("CLAUDE.md:7-9: its text is in AGENTS.md 2 times", "restore what apply wrote, and run apply once")]), DOUBLED),
+ ("v09", "lx", "a-lx", ["apply", stretch, "verify"], 1, blocked("a-lx", MOVED.format(3, 4), LX_DROPS,
+   [("CLAUDE.md:1-3: its text is not in AGENTS.md", RERUN)]), STRETCHED),
  # A table that does not parse is never verified: a verify that read no rows would find nothing missing.
  ("v07", "lx", "c07", ["verify"], 1, report(VERIFY_KEYS, "c07", result="problems", problem=[gap(2, 7)[0]], fix=[COVER],
    message="docs-classifier's table has 1 problem: ask it again, giving it each problem: line with its fix: line."), {}),
@@ -470,7 +529,7 @@ def run(cid, fx, sub, code, want, py):
 def run_av(cid, fx, rid, steps, code, want, files, py):
     root = f"{FX}-run/{cid}"
     shutil.rmtree(root, ignore_errors=True); shutil.copytree(f"{FX}/{fx}", root, symlinks=True)
-    expect = state(root)
+    expect, outside = state(root), state(OUTSIDE)
     expect.update({p: hashlib.sha1(t.encode()).hexdigest() for p, (_, t) in files.items()})
     r = None
     for step in steps:
@@ -485,6 +544,7 @@ def run_av(cid, fx, rid, steps, code, want, files, py):
     got = state(root)
     off = sorted(p for p in set(got) | set(expect) if got.get(p) != expect.get(p))
     if off: probs.append(f"files not as expected: {', '.join(off[:4])}")
+    if state(OUTSIDE) != outside: probs.append("a file outside the repository changed")
     return probs, (r.returncode, r.stdout, r.stderr)
 
 def mutants():
@@ -510,7 +570,7 @@ def mutants():
 
 def main():
     if "--mutants" in sys.argv: mutants()
-    want = [a for a in sys.argv[1:] if re.match(r"^[dcav]\d", a)]
+    want = [a for a in sys.argv[1:] if re.match(r"^[dcavs]\d", a)]
     build()
     fails = 0
     cases = ([(c[0], lambda py, c=c: run(c[0], c[1], c[2], c[3], c[4], py)) for c in C] +

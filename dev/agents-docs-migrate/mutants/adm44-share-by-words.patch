@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -91,7 +91,7 @@
+@@ -98,7 +98,7 @@
  GENERATED = "<!-- Generated from"
  KNOWN_GUIDES = ("codex-review", "docs-sync", "pr-drafter")   # the guides an agent of this plugin reads
  DATE = re.compile(r"20\d\d-\d\d-\d\d")

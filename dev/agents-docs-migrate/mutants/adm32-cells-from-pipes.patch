@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -330,7 +330,7 @@
+@@ -363,7 +363,7 @@
      """A table row's cells, a cell that is one code span unwrapped: `AGENTS.md` is AGENTS.md,
      and `needs` field keeps both its backticks."""
      out = []

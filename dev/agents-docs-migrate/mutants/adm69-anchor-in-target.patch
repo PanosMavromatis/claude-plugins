@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -574,7 +574,7 @@
+@@ -640,7 +640,7 @@
  def target(base, url):
      """Where a relative link in the file base points, in the repository."""
      bare = url[1:-1] if url.startswith("<") else url

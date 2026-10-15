@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -209,7 +209,7 @@
+@@ -232,7 +232,7 @@
              guide = join(os.path.dirname(cx), "codex-review/AGENTS.md")
              tinfo[-1].update(cx=cx, guide=guide)
              codex.append(f"{cx} -> {guide}")
 -            if os.path.exists(guide):
 +            if False:
                  clashes.append((cx, guide))
-         # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
-         gone = state == "legacy" or ck in ("dispatcher", "empty")
+         for p_ in tinfo[-1]["src"] + ([cx, tinfo[-1]["guide"]] if cx else []) + [ag]:
+             l = link_in(p_)

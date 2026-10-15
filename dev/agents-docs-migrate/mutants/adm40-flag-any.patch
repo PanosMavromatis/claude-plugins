@@ -1,8 +1,8 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -385,7 +385,7 @@
-         if kind is None:
-             bad(f"row {i}'s destination {dest} {where}", f"{again}: each destination one of the five forms, naming a target or a file that exists")
+@@ -421,7 +421,7 @@
+                 if "symbolic link" in (where or "") else
+                 f"{again}: each destination one of the five forms, naming a target or a file that exists")
              continue
 -        if not (flag == "sure" or re.fullmatch(r"unsure: \S.*", flag)):
 +        if not flag:

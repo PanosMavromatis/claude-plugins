@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -184,7 +184,7 @@
+@@ -207,7 +207,7 @@
              if ck == "legacy":
                  beside = src + ([cx] if cx else [])
                  problems.append(f"{cl} has prose beside the dispatcher's sources {', '.join(beside)}")

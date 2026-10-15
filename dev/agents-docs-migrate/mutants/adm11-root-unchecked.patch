@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -152,7 +152,7 @@
+@@ -175,7 +175,7 @@
      each a dict of its path, state, sources, codex.md and the guide that becomes, for check."""
      problems, fixes, warnings, tinfo, clashes = [], [], [], [], []
      top = git("rev-parse", "--show-toplevel")

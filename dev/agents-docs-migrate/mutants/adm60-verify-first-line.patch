@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -593,7 +593,7 @@
+@@ -660,7 +660,7 @@
          links = []
          want = relink(text, src, dest, mv, [], links)
          have = read(dest).decode("utf-8", "replace") if os.path.isfile(dest) else None
--        if have is None or want.rstrip("\n") not in have:
-+        if have is None or want.splitlines()[0] not in have:
+-        n = occurrences(want, have) if have is not None else 0
++        n = occurrences(want.splitlines()[0], have) if have is not None else 0
+         if not n:
              probs.append(f"{label}: its text is not in {dest}" + (", which is not there" if have is None else ""))
              fixes.append("run apply on this reply; if it ran, restore what it wrote, and run it again")
-             continue

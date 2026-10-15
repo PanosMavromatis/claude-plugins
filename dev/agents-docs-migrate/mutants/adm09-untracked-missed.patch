@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -157,7 +157,7 @@
+@@ -180,7 +180,7 @@
          return [("result", "error"), ("problem", f"run {where}"),
                  ("fix", "run it from the repository's root, the directory git rev-parse --show-toplevel names"),
                  ("message", "Nothing was read: the targets are found from the repository's root.")], True, []

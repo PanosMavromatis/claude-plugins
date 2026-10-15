@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -436,7 +436,7 @@
+@@ -478,7 +478,7 @@
              chunks[path], how[path] = [read(path).decode("utf-8", "replace")], "appends"
          else:
              how[path] = "replaces the generated file" if os.path.isfile(path) else "new"

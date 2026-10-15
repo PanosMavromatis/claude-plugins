@@ -10,7 +10,10 @@ Run from the repository's root. Each mode reports in `key: value` lines, a key w
 items continuing on lines indented two spaces and `—` standing for none, `message:` last;
 `problem:` and `fix:` pair up, line for line, on what stops the migration.
 
-detect, check and verify are read-only; apply writes, and nothing here deletes.
+detect, check and verify are read-only; apply writes, and nothing here deletes. No mode reads
+or writes through a symbolic link: a source, codex.md, guide, AGENTS.md, destination or drop file
+with a link at any component of its path is a problem, since a repository being migrated may be
+another's, and its table is written by an agent reading text it is told not to trust.
 
 detect is read-only. Its targets are the root and each directory with a CLAUDE.md or with
 dispatcher sources, docs/agents/<path>/{core,claude,codex}.md, found in git's list of tracked
@@ -63,12 +66,16 @@ its rows bring and nothing else, since AGENTS.md takes no agent's words. It repo
 
 apply writes what check plans, after the user approves it, and deletes nothing. It writes only
 over files git has committed, or none: a file it would write that git shows changed or untracked
-stops it before it writes anything, so a second run finds its own work and stops rather than
-append it again. It reports wrote, each file with how and its size, and repointed.
+stops it before it writes anything, which keeps it off the user's unsaved edits. A file it would
+append to that already carries a row's text, as whole lines, stops it too: that is a run before
+this one, which committing would hide from git. A generated AGENTS.md, which apply replaces,
+carries its source's text by construction and is not counted. It reports wrote, each file with
+how and its size, and repointed.
 
 verify is read-only, and runs after apply and before the destructive step. Every row moved, and
-each codex.md, must be found in its destination as apply writes it, links rewritten; every other
-row was dropped with a reason. Each relative link the move wrote is checked twice: a link that
+each codex.md, must be found in its destination as apply writes it, links rewritten, as whole
+lines, and as many times as rows put it there, so that a row written twice is a problem too;
+every other row was dropped with a reason. Each relative link the move wrote is checked twice: a link that
 resolved from its source and does not from where it was written was broken by the move, and
 stops the destructive step; a link already dead in its source is listed under dead and does not.
 A codex-review/AGENTS.md that opens with its codex.md, moved, is apply's own work, which detect
@@ -124,6 +131,22 @@ def shown(p):
 
 def tokens(n):
     return n * 3 // 7
+
+
+def link_in(path):
+    """The first component of path, from the repository's root, that is a symbolic link, or
+    None. Nothing here reads or writes through one: a link in a repository being migrated would
+    carry a read or a write outside it, wherever the link points."""
+    acc = ""
+    for part in path.split("/"):
+        acc = join(acc, part)
+        if os.path.islink(acc):
+            return acc
+    return None
+
+
+def linked(path, l):
+    return f"{path} is a symbolic link" if l == path else f"{path} passes through the symbolic link {l}"
 
 
 def claude_kind(path):
@@ -211,6 +234,11 @@ def detect():
             codex.append(f"{cx} -> {guide}")
             if os.path.exists(guide):
                 clashes.append((cx, guide))
+        for p_ in tinfo[-1]["src"] + ([cx, tinfo[-1]["guide"]] if cx else []) + [ag]:
+            l = link_in(p_)
+            if l:
+                problems.append(linked(p_, l))
+                fixes.append(f"replace {l} with the file or folder it points to, or remove it, and run this again")
         # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
         gone = state == "legacy" or ck in ("dispatcher", "empty")
         delete += ([cl] if gone else []) + src + ([cx] if cx else [])
@@ -304,6 +332,11 @@ def destination(dest, tpaths):
     if OBSOLETE.fullmatch(dest):
         return "obsolete", None
     m = DROP.fullmatch(dest)
+    at = os.path.normpath(m["f"]) if m else dest
+    l = link_in(at)
+    if l:
+        what = "is a symbolic link" if l == at else f"passes through the symbolic link {l}"
+        return None, f"names {m['f']}, which {what}" if m else what
     if m:
         p = os.path.normpath(m["f"])
         if p.startswith("..") or not os.path.isfile(p):
@@ -383,7 +416,10 @@ def parse(text, sources, tpaths):
             cover[f].setdefault(k, []).append(i)
         kind, where = destination(dest, tpaths)
         if kind is None:
-            bad(f"row {i}'s destination {dest} {where}", f"{again}: each destination one of the five forms, naming a target or a file that exists")
+            bad(f"row {i}'s destination {dest} {where}",
+                f"replace the link with the file or folder it points to, or {again}: route the row elsewhere"
+                if "symbolic link" in (where or "") else
+                f"{again}: each destination one of the five forms, naming a target or a file that exists")
             continue
         if not (flag == "sure" or re.fullmatch(r"unsure: \S.*", flag)):
             bad(f"row {i}'s flag is {flag!r}", f"{again}: each flag sure, or unsure: and why")
@@ -397,6 +433,12 @@ def parse(text, sources, tpaths):
                 bad(f"{f}: {len(ks)} non-blank line{'s' if len(ks) > 1 else ''} {what}, from line {ks[0]}",
                     f"{again}: every non-blank line of every source in exactly one row")
     return rows, probs, fixes
+
+
+def occurrences(text, within):
+    """How often text occurs in within as whole lines, repeats side by side counted each."""
+    t = text.rstrip("\n")
+    return sum(1 for _ in re.finditer("(?=" + re.escape("\n" + t + "\n") + ")", "\n" + within + "\n")) if t else 0
 
 
 def owner(path):
@@ -544,6 +586,13 @@ def apply(reply):
     if stop:
         return stop, True
     text, how, repointed, _ = plan(rows, tinfo)
+    # Again, at the write: detect and check refuse a link already, and this is the last chance.
+    links = [(p, l) for p in text for l in [link_in(p)] if l]
+    if links:
+        return out(result="problems", input=reply, problem=[linked(p, l) for p, l in links],
+                   fix=[f"replace {l} with the file or folder it points to, or remove it, and run this again"
+                        for _, l in links],
+                   message="Nothing was written: apply writes through no symbolic link."), True
     status = git("status", "--porcelain", "-z", "--untracked-files=all", "--", *text)
     if status is None:
         return out(result="error", input=reply, problem=["git status failed in this repository"],
@@ -557,6 +606,23 @@ def apply(reply):
                    fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again"
                         for p in dirty],
                    message="Nothing was written: apply writes only over files git has committed, or none."), True
+    # What a file already carries is the record of a run, whatever git says: committed between two
+    # runs, a first run's writes look clean. A file apply replaces is the old build's copy of a
+    # source, which carries the source's text by construction, and is not counted.
+    mv, already = moves(tinfo), {}
+    for r in rows:
+        if r["kind"] not in ("drop", "obsolete") and how.get(r["dest"]) == "appends" and \
+                occurrences(relink(r["text"], r["f"], r["dest"], mv, []), read(r["dest"]).decode("utf-8", "replace")):
+            already.setdefault(r["dest"], []).append(r["src"])
+    for t in tinfo:
+        if t["cx"] and os.path.isfile(t["guide"]) and read(t["guide"]).decode("utf-8", "replace").startswith(
+                relink(read(t["cx"]).decode("utf-8", "replace"), t["cx"], t["guide"], mv, [])):
+            already.setdefault(t["guide"], []).append(t["cx"])
+    if already:
+        return out(result="problems", input=reply,
+                   problem=[f"{d} already carries {describe(ls)}: apply has run already" for d, ls in already.items()],
+                   fix=["go on to verify, or restore what apply wrote and start again"] * len(already),
+                   message="Nothing was written: apply has run already."), True
     wrote = []
     for p, t in text.items():
         os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
@@ -589,14 +655,19 @@ def verify(reply):
     items = [(r["src"], r["f"], r["text"], r["dest"]) for r in rows if r["kind"] not in ("drop", "obsolete")]
     items += [(t["cx"], t["cx"], read(t["cx"]).decode("utf-8", "replace"), t["guide"]) for t in tinfo if t["cx"]]
     probs, fixes, dead, found = [], [], [], 0
+    wants = [(relink(text, src, dest, mv, []), dest) for _, src, text, dest in items]
     for label, src, text, dest in items:
         links = []
         want = relink(text, src, dest, mv, [], links)
         have = read(dest).decode("utf-8", "replace") if os.path.isfile(dest) else None
-        if have is None or want.rstrip("\n") not in have:
+        n = occurrences(want, have) if have is not None else 0
+        if not n:
             probs.append(f"{label}: its text is not in {dest}" + (", which is not there" if have is None else ""))
             fixes.append("run apply on this reply; if it ran, restore what it wrote, and run it again")
             continue
+        if n > wants.count((want, dest)):   # more than the rows that carry the same text there
+            probs.append(f"{label}: its text is in {dest} {n} times")
+            fixes.append("restore what apply wrote, and run apply once")
         found += 1
         for old, new in links:
             if not os.path.exists(target(src, old)):

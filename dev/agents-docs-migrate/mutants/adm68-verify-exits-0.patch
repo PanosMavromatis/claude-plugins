@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -611,7 +611,7 @@
+@@ -682,7 +682,7 @@
      if probs:
          return out(result="problems", input=reply, moved=moved, drops=drops, dead=dead, problem=probs, fix=fixes,
                     message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "

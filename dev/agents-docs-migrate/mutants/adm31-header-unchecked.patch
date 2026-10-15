@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -353,7 +353,7 @@
+@@ -386,7 +386,7 @@
              bad("the reply has no ## Table followed by ## Notes", "ask docs-classifier again for the two sections its Output section gives")
          return [], probs, fixes
      table = [l for l in lines[t + 1:n] if l.startswith("|")]

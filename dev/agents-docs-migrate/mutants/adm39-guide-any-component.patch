@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -315,7 +315,7 @@
+@@ -348,7 +348,7 @@
          return "history", ""
      m = GUIDE.fullmatch(dest)
      if m and m["g"] != "_history":

@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -476,7 +476,7 @@
+@@ -518,7 +518,7 @@
      that stops mode here as the third."""
      report, bad, tinfo = detect()
      result = dict(report)["result"]

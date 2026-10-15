@@ -1,7 +1,7 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -599,7 +599,7 @@
-             continue
+@@ -670,7 +670,7 @@
+             fixes.append("restore what apply wrote, and run apply once")
          found += 1
          for old, new in links:
 -            if not os.path.exists(target(src, old)):

@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -508,7 +508,7 @@
+@@ -550,7 +550,7 @@
      text, how, repointed, unread = plan(rows, tinfo)
      writes, flags, drops = [], [], []
      for p, t in text.items():

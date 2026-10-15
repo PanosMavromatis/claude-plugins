@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -134,7 +134,7 @@
+@@ -157,7 +157,7 @@
      lines = [l.strip() for l in text.splitlines() if l.strip()]
      if not lines:
          return "empty"

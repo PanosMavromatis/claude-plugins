@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -195,7 +195,7 @@
+@@ -218,7 +218,7 @@
          tpaths.append(p)
          tinfo.append(dict(p=p, state=state, src=[], cx=None, guide=None))
          if state == "migrated":

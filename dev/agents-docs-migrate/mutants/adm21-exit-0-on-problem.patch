@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -636,7 +636,7 @@
+@@ -707,7 +707,7 @@
          print("usage: migrate-agents-docs.py detect | check <reply> | apply <reply> | verify <reply>", file=sys.stderr)
          return 2
      emit(report)
