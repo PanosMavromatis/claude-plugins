@@ -26,3 +26,5 @@ R2 subgoal 9. One command, `/agents-docs-migrate`, takes a repository from a leg
 - The installed plugin is 0.10.1, so this branch's commands reach a session only at 0.11.0 (subgoal 14). End-to-end runs load the branch's plugin with `--plugin-dir`, as `dev/docs-sync-e2e/` does.
 
 ## Notes
+
+- 2026-10-15 — Goal 01 under way. `agents/docs-classifier.md` is in: sonnet, `Read, Grep, Glob`, a 2,606-character body. Five Q&As in its goal file settle the table: one row per line range, every non-blank line in exactly one; a closed set of destinations, with `drop: obsolete` always flagged; each `codex.md` moved whole by rule; guide names from those with a reader, any other flagged. §4.1's `Bash(find:*)` was dropped, since `guard-agent-git.py` refuses `find` for this plugin's agents and subagents keep `Glob`. Reading anything under `tmp/pfsmgraph` loads its nested `CLAUDE.md` and both imports into the session, so goal 05's fixtures go outside the repository. Next is subgoal 3: a headless run on pfsmgraph's sources and a small legacy `CLAUDE.md`, graded by a scratchpad checker whose self-test passes 17/17.

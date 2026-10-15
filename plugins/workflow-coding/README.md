@@ -15,7 +15,7 @@ A collection of Claude Code commands, hooks, and scripts bundled together as a p
   - `memory-check.sh` measures the plan files `/memory-check` reports on: each one's size, classed by how the commands read it, against a threshold.
 
   They share their rules through `scripts/lib/plan-rules.sh`, so a writer and a reader cannot disagree. Because they never write, they are safe to run directly, in a hook, or in CI.
-- **`agents/`** — `plan-drafter`, which `/master-plan` spawns to draft a revision's master plan from a spec. It reads and returns text; it writes nothing. `docs-sync` brings a project's docs in line with a staged diff and stages its edits; it never commits.
+- **`agents/`** — `plan-drafter`, which `/master-plan` spawns to draft a revision's master plan from a spec. It reads and returns text; it writes nothing. `docs-sync` brings a project's docs in line with a staged diff and stages its edits; it never commits. `docs-classifier` proposes where each part of a project's agent instructions goes, for `/agents-docs-migrate`; like `plan-drafter`, it reads and returns text and writes nothing.
 - **`references/`** — `subdividing.md`, the rules a revision is drafted by: one subgoal per branch, ordered by dependency, nothing invented, everything left out listed with its reason.
 
 ## Installing & the `commit-commands` overlap
