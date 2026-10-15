@@ -68,11 +68,14 @@ def stream(cid):
     return res, calls
 
 def outcome(res, calls, by, picks, applied):
-    """ran, denied, not tried, or tried with no effect, for by's tool calls that picks() matches."""
+    """ran, blocked (by workflow-coding's guard-agent-git.py), denied, not tried, or tried with
+    no effect, for by's tool calls that picks() matches."""
     tried = [c for b, k, c in calls if b == by and k == "tool_use" and picks(c)]
     if not tried: return "not tried"
     if applied(): return "ran"
     ids = {c.get("id") for c in tried}
+    if any("may not run `" in text(c.get("content")) for _, k, c in calls if k == "tool_result" and c.get("tool_use_id") in ids):
+        return "blocked"
     denied = {d.get("tool_use_id") for d in (res or {}).get("permission_denials") or []}
     if ids & denied or any(c.get("is_error") and "permission" in text(c.get("content")).lower()
                            for _, k, c in calls if k == "tool_result" and c.get("tool_use_id") in ids):
@@ -103,9 +106,18 @@ def edit_case(cid, by):
     a = outcome(res, calls, by, is_bash("git add AGENTS.md"), lambda: "AGENTS.md" in git(cid, "diff", "--cached", "--name-only").split())
     return f"edit {e}, git add {a}", mode(cid, calls), res
 
-def commit_case(cid, by):
+def loaded(cid):  # the plugins the session's first init record lists
+    for line in open(f"{OUT}/{cid}.jsonl"):
+        try: d = json.loads(line)
+        except ValueError: continue
+        if d.get("type") == "system" and d.get("subtype") == "init":
+            return {p.get("name") for p in d.get("plugins") or []}
+    return set()
+
+def commit_case(cid, by, guard=False):
     res, calls = stream(cid)
     if res is None: return "no session", None, res
+    if guard and "workflow-coding" not in loaded(cid): return "workflow-coding did not load", None, res
     c = outcome(res, calls, by, is_bash("git commit"), lambda: git(cid, "rev-list", "--count", "HEAD").strip() == "2")
     return f"git commit {c}", mode(cid, calls), res
 
@@ -129,7 +141,9 @@ ALL = [("g0", lambda: g_case("g0", 0), ("denied",), None, "control, no grant"),
        ("a3f", lambda: commit_case("a3f", "sub"), COMMITS, "foreground", "a foreground subagent's commit, under the command"),
        ("a4", lambda: commit_case("a4", "main"), ("git commit ran",), None, "control: the main session's commit, under the command"),
        ("a5", lambda: commit_case("a5", "main"), COMMITS, "background", "the main session's commit after a background subagent returns"),
-       ("a5f", lambda: commit_case("a5f", "main"), COMMITS, "foreground", "the main session's commit after a foreground subagent returns")]
+       ("a5f", lambda: commit_case("a5f", "main"), COMMITS, "foreground", "the main session's commit after a foreground subagent returns"),
+       ("k1", lambda: commit_case("k1", "sub", guard=True), ("git commit blocked",), None, "a guarded subagent's commit, under the command"),
+       ("k2", lambda: commit_case("k2", "main", guard=True), ("git commit ran",), None, "the main session's commit, the guard loaded")]
 picked = (os.environ.get("CASES") or "g0 g1 g2 g3").split()
 bad, cost, got = 0, 0.0, {}
 for cid, fn, verdicts, need, what in [c for c in ALL if c[0] in picked]:
@@ -145,4 +159,6 @@ if "g2" in got: found.append("the grant clears with the next message" if got["g2
 for b, f, what in (("a2", "a2f", "a subagent's"), ("a3", "a3f", "a subagent's"), ("a5", "a5f", "after a hand-back, the main session's")):
     if b in got or f in got:
         found.append(f"under a command's grant, {what} {got.get(b, '—')} in the background and {got.get(f, '—')} in the foreground")
+if "k1" in got or "k2" in got:
+    found.append(f"with guard-agent-git.py loaded, a guarded subagent's {got.get('k1', '—')} and the main session's {got.get('k2', '—')}")
 print("\nresult: " + ";\n  ".join(found) + f"\ncost ${cost:.2f}")

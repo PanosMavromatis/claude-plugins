@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -67,8 +67,6 @@
+     while tokens:
+         if tokens[0] in WRAPPERS:              # env, time and the rest, and their options
+             tokens = tokens[1:]
+-            while tokens and tokens[0].startswith("-"):
+-                tokens = tokens[1:]
+         elif "=" in tokens[0] and not tokens[0].startswith("-"):   # VAR=value
+             tokens = tokens[1:]
+         else:

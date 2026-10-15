@@ -8,7 +8,7 @@ standalone repository.
 
 | Plugin | What it does |
 |---|---|
-| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources, and commands that hand a session to the next or export its whole log. Applicable to most projects. |
+| [`workflow-coding`](plugins/workflow-coding) | Branch, plan, commit and merge commands, with hooks that keep generated agent docs in sync with their sources and keep its agents from committing or pushing, and commands that hand a session to the next or export its whole log. Applicable to most projects. |
 | [`dp-compile`](plugins/dp-compile) | Staged translation of dynamic-programming kernels — formalization → Python → Cython → CPU-parallel → CUDA — enforcing equivalence against the reference implementation at every stage. Requires a `dp-compile.toml` at the consumer's repository root. |
 
 `dp-compile` declares `workflow-coding` in its `dependencies`: it delegates branches, plans,
@@ -161,6 +161,14 @@ them. The check runs the build beside it, so one suite tests all three:
 ```bash
 python3 -I dev/agents-docs/suite.py                      # 43 cases, no model, ~20 s
 python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch each mutant, ~3 min
+```
+
+Test the hook that keeps `workflow-coding`'s own agents to the `git` and `gh` subcommands they
+need, `hooks/guard-agent-git.py`, after any change to it:
+
+```bash
+python3 -I dev/agent-git-guard/suite.py                  # 76 cases, no model, ~10 s
+python3 -I dev/agent-git-guard/suite.py --mutants        # the suite must catch each mutant, ~1 min
 ```
 
 Check the commands' phrasing after a change to a command's `allowed-tools` or to the text

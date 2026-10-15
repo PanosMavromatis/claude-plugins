@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -116,7 +116,7 @@
+             i, base = 1, cwd
+             while i < len(w) and w[i].startswith("-"):
+                 if w[i] == "-C" and i + 1 < len(w):
+-                    base = os.path.join(base, w[i + 1])
++                    pass
+                 i += 2 if w[i] in GIT_VALUED else 1
+             if i < len(w) and w[i] not in GIT_OK:
+                 return f"git {w[i]}"

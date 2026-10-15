@@ -1,0 +1,10 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -153,7 +153,6 @@
+         "git status, diff, log, show, rev-parse and ls-files, git add of named files, and gh pr "
+         "list and pr view: commits, pushes, tags and every other git or gh write are the main "
+         "session's, made after the user confirms them.",
+-        file=sys.stderr,
+     )
+     sys.exit(2)
+ 

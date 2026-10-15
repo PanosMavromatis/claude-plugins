@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -100,7 +100,7 @@
+ 
+ def refused(command, cwd):
+     """The first disallowed `git ...` or `gh ...` in command, run in cwd, or None."""
+-    for part in re.split(r"&&|\|\||[;|&\n]", command):
++    for part in re.split(r"&&|\|\||[;|&]", command):
+         w = words(part)
+         if not w:
+             continue

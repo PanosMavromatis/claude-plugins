@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -83,7 +83,7 @@
+     edit, the user's unstaged work among it, for /smart-commit to commit and push."""
+     paths, rest = [], False
+     for a in args:
+-        if not rest and a == "--":
++        if False:
+             rest = True
+         elif not rest and a.startswith("-"):
+             return a

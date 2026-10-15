@@ -84,6 +84,8 @@ writes are denied headless and prompt interactively; if it does, a subagent coul
 A="a0 a1 a2 a2f a3 a3f a4 a5 a5f"
 CASES="$A" RUN=a1 dev/grant-lifetime/run.sh                        # nine sessions, on haiku
 CASES="$A" RUN=a1 python3 -I dev/grant-lifetime/check.py
+CASES="k1 k2" RUN=k1 dev/grant-lifetime/run.sh                     # the guard: two sessions
+CASES="k1 k2" RUN=k1 python3 -I dev/grant-lifetime/check.py
 ```
 
 `/grant-probe:spawn <task>` hands its task to a `general-purpose` subagent, and
@@ -101,6 +103,8 @@ whether anything else would stop it.
 | a4 | `/grant-probe:direct`: the main session commits | land: the control that the commit grant works |
 | a5 | `/grant-probe:relay`: a subagent reads a file, then the main session commits once it returns | the measurement: `/smart-commit`'s shape, where the commit may fall in a later turn |
 | a2f, a3f, a5f | a2, a3 and a5 with `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` | the same, with the subagent in the foreground, inside the command's turn |
+| k1 | a3 with `workflow-coding` loaded and `WORKFLOW_CODING_GUARDED_AGENTS=general-purpose` | be blocked by its `guard-agent-git.py`, which the grant alone would pass |
+| k2 | a4, loaded the same way | land: the main session's commit carries no `agent_type`, so the guard leaves it alone |
 
 The `Agent` tool starts a subagent in the background by default, and the main session ends
 its turn and resumes in a new one on the hand-back. A grant lasts one turn, so a denial in a
@@ -139,3 +143,10 @@ cannot count on either mode; the main session's commit after a foreground hand-b
 a5f). Not yet measured: the main session's own commit in the turn that resumes after a
 background hand-back. The first grade crashed on a record whose `message` is a string, which
 the synthetic streams lacked; `check.py` now skips such records.
+
+Run `k1`, 2026-10-14, haiku, $0.01: **`guard-agent-git.py` holds where the grant would not.**
+With `workflow-coding` loaded and `WORKFLOW_CODING_GUARDED_AGENTS=general-purpose`, the
+subagent's `git commit -m probe` under `/grant-probe:spawn` came back `PreToolUse:Bash hook
+error: […/guard-agent-git.py]: Blocked: general-purpose may not run `git commit`…` and no
+commit was made (k1); the main session's commit under `/grant-probe:direct`, loaded the same
+way, landed (k2).

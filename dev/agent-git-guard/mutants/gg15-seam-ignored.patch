@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -50,7 +50,7 @@
+     """Whether calls from agent_type are held to the allowlist."""
+     if not agent_type:
+         return False
+-    named = os.environ.get("WORKFLOW_CODING_GUARDED_AGENTS")
++    named = None
+     if named is not None:
+         return agent_type in {a.strip() for a in named.split(",") if a.strip()}
+     return agent_type.startswith(PREFIX)

@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -104,7 +104,7 @@
+         w = words(part)
+         if not w:
+             continue
+-        name = os.path.basename(w[0])
++        name = w[0]
+         if name in SHELLS and "-c" in w[1:]:
+             i = w.index("-c", 1)
+             if i + 1 < len(w):

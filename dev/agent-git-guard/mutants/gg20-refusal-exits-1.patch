@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -155,7 +155,7 @@
+         "session's, made after the user confirms them.",
+         file=sys.stderr,
+     )
+-    sys.exit(2)
++    sys.exit(1)
+ 
+ 
+ if __name__ == "__main__":

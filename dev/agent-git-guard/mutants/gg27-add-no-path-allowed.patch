@@ -1,0 +1,11 @@
+--- a/hooks/guard-agent-git.py
++++ b/hooks/guard-agent-git.py
+@@ -90,7 +90,7 @@
+         else:
+             paths.append(a)
+     if not paths:
+-        return ""
++        return None
+     for p in paths:
+         if p.rstrip("/") in ("", ".") or any(c in p for c in "*?[") or p.startswith(":") \
+                 or os.path.isdir(os.path.join(base, p)):

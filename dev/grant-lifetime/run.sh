@@ -26,7 +26,11 @@
 #   a2f, a3f, a5f  a2, a3 and a5 with CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1: the subagent runs
 #       in the foreground, inside the command's turn, so a denial in the background twin alone
 #       means the grant expired with the turn, and in both means it never passed down.
-# The a-cases load no user settings, so no allow rule of the user's can pass a write.
+#   k1  a3 again with workflow-coding loaded and WORKFLOW_CODING_GUARDED_AGENTS=general-purpose:
+#       its guard-agent-git.py hook must refuse the subagent's commit, which the grant would pass.
+#   k2  a4 again, loaded the same way: the main session's commit carries no agent_type, so the
+#       guard must leave it alone and it must land.
+# The a- and k-cases load no user settings, so no allow rule of the user's can pass a write.
 # CASES picks which to run: g0 g1 g2 g3 by default, the a-cases only when named.
 # Each session runs in --permission-mode default, whatever defaultMode the settings name: in
 # auto or acceptEdits mode the write could pass with no grant, and the run would measure nothing.
@@ -75,14 +79,16 @@ afx() {
   git -C "$1" -c user.email=probe@example.invalid -c user.name=probe -c commit.gpgsign=false commit -qm fixture
   if [ "${2:-}" = staged ]; then printf 'a staged change\n' > "$1/notes.txt"; git -C "$1" add notes.txt; fi
 }
-# sa <id> <prompt> [VAR=value]: one headless turn in fixture <id>, with no user settings loaded;
-# CLAUDE_CODE_DISABLE_BACKGROUND_TASKS is unset unless the case sets it.
+# sa <id> <prompt> [VAR=value] [plugin-dir]: one headless turn in fixture <id>, with no user
+# settings loaded and grant-probe, plus any plugin named; CLAUDE_CODE_DISABLE_BACKGROUND_TASKS
+# and WORKFLOW_CODING_GUARDED_AGENTS are unset unless the case sets one.
 sa() {
-  local id="$1" prompt="$2" set=()
+  local id="$1" prompt="$2" set=() plug=(--plugin-dir "$HERE/plugin")
   [ -n "${3:-}" ] && set=("$3")
+  [ -n "${4:-}" ] && plug+=(--plugin-dir "$4")
   printf '%-4s ' "$id"
-  ( cd "$FX/$id" && env -u CLAUDE_CODE_DISABLE_BACKGROUND_TASKS ${set[@]+"${set[@]}"} \
-      claude -p "$prompt" --plugin-dir "$HERE/plugin" --model haiku --permission-mode default \
+  ( cd "$FX/$id" && env -u CLAUDE_CODE_DISABLE_BACKGROUND_TASKS -u WORKFLOW_CODING_GUARDED_AGENTS ${set[@]+"${set[@]}"} \
+      claude -p "$prompt" "${plug[@]}" --model haiku --permission-mode default \
       --setting-sources project,local --output-format stream-json --verbose </dev/null ) \
       > "$OUT/$id.jsonl" 2> "$OUT/$id.err" || true
   echo "done"
@@ -91,7 +97,8 @@ EDIT="Use the Edit tool once to replace PROBE-OLD with PROBE-NEW in AGENTS.md in
 COMMIT="Run this shell command, alone, once: git commit -m probe. Report its result verbatim, and do not retry a refused call."
 FG=CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1
 for id in a0 a1 a2 a2f; do want "$id" && afx "$FX/$id"; done
-for id in a3 a3f a4 a5 a5f; do want "$id" && afx "$FX/$id" staged; done
+for id in a3 a3f a4 a5 a5f k1 k2; do want "$id" && afx "$FX/$id" staged; done
+WC="$(cd "$HERE/../../plugins/workflow-coding" && pwd -P)"; GUARD=WORKFLOW_CODING_GUARDED_AGENTS=general-purpose
 want a0 && sa a0 "Use the Agent tool once, with subagent_type general-purpose, and give it exactly this task, word for word: $EDIT Use no other tool yourself. When it returns, reply with its answer verbatim."
 want a1 && sa a1 "/grant-probe:direct $EDIT"
 want a2 && sa a2 "/grant-probe:spawn $EDIT"
@@ -101,4 +108,6 @@ want a5 && sa a5 "/grant-probe:relay"
 want a2f && sa a2f "/grant-probe:spawn $EDIT" "$FG"
 want a3f && sa a3f "/grant-probe:spawn $COMMIT" "$FG"
 want a5f && sa a5f "/grant-probe:relay" "$FG"
+want k1 && sa k1 "/grant-probe:spawn $COMMIT" "$GUARD" "$WC"
+want k2 && sa k2 "/grant-probe:direct $COMMIT" "$GUARD" "$WC"
 echo "results: $OUT   grade: LOCATE_PLAN_WORK=$P RUN=$RUN CASES=\"$CASES\" python3 -I dev/grant-lifetime/check.py"
