@@ -1,6 +1,6 @@
 # feat/docs-sync-agent
 
-**Status**: active
+**Status**: merged — PR #30 — 2026-10-15
 **Created**: 2026-10-14
 **Revision**: 08-subagent-refactor-R2
 **Subgoal**: 8. `agents/docs-sync.md` does `/agents-docs-update`'s work. `/agents-docs-update` thins to a wrapper around it, and `/smart-commit` spawns it with the `Agent` tool. Two things are tested before the agent is built: that `protect-agent-docs.py` fires on a subagent's `Edit`, and that `dp-compile`'s gate still sees the docs the agent stages.
