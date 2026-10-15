@@ -217,7 +217,7 @@ The build reads only the `codex-review/` guides, so it refuses the dispatcher la
 |--------------------------|------|
 | `/agents-docs-init`      | One-time migration: splits an existing `CLAUDE.md` into `docs/agents/{core,claude}.md` and replaces `CLAUDE.md` with the dispatcher. Handles root and every component (any nesting depth). |
 | `/agents-docs-codex-init`| Generates `docs/agents/[<path>/]codex.md` sidecars that configure Codex as a cross-provider reviewer. One per target. |
-| `/agents-docs-update`    | Standalone or invoked by `/smart-commit`. Reviews the staged diff, edits the relevant `docs/agents/*.md` sources to match, runs `/agents-docs-build` if `core.md` or `codex.md` changed, and stages everything. Idempotent. |
+| `/agents-docs-update`    | Standalone or invoked by `/smart-commit`. Spawns the `docs-sync` agent, which brings `AGENTS.md`, the guides under `docs/agents/`, `README.md` and the other docs in line with the staged diff, rebuilds `AGENTS.override.md` only when a `codex-review/` guide changed, and stages its edits; the command shows the agent's report. It never commits. Idempotent. |
 | `/agents-docs-build`     | Builds `AGENTS.override.md` (root and per-component) from each `codex-review/AGENTS.md` guide under `docs/agents/`. Deterministic. Refuses the dispatcher layout, naming the move. |
 | `/agents-docs-check`     | Verifies each committed `AGENTS.override.md` matches what `/agents-docs-build` would write, and warns, without failing, on an `AGENTS.md` over 200 lines or with a dated line. Useful in pre-commit hooks or CI. |
 
