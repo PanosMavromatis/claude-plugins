@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -583,8 +583,6 @@
+     def out(**kw):
+         return [(k, kw.get(k, [])) for k in VERIFY_KEYS]
+     tinfo, rows, stop = prepare(reply, out, "verify")
+-    if stop:
+-        return stop, True
+     mv = moves(tinfo)
+     items = [(r["src"], r["f"], r["text"], r["dest"]) for r in rows if r["kind"] not in ("drop", "obsolete")]
+     items += [(t["cx"], t["cx"], read(t["cx"]).decode("utf-8", "replace"), t["guide"]) for t in tinfo if t["cx"]]

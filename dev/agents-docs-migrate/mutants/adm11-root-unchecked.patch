@@ -1,8 +1,8 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -131,7 +131,7 @@
+@@ -152,7 +152,7 @@
      each a dict of its path, state, sources, codex.md and the guide that becomes, for check."""
-     problems, fixes, warnings, tinfo = [], [], [], []
+     problems, fixes, warnings, tinfo, clashes = [], [], [], [], []
      top = git("rev-parse", "--show-toplevel")
 -    if top is None or os.path.realpath(top.strip()) != os.path.realpath(os.getcwd()):
 +    if top is None:

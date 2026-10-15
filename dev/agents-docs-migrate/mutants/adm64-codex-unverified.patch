@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -587,7 +587,7 @@
+         return stop, True
+     mv = moves(tinfo)
+     items = [(r["src"], r["f"], r["text"], r["dest"]) for r in rows if r["kind"] not in ("drop", "obsolete")]
+-    items += [(t["cx"], t["cx"], read(t["cx"]).decode("utf-8", "replace"), t["guide"]) for t in tinfo if t["cx"]]
++    items += []
+     probs, fixes, dead, found = [], [], [], 0
+     for label, src, text, dest in items:
+         links = []

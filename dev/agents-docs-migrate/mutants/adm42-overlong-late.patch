@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -466,7 +466,7 @@
+@@ -515,7 +515,7 @@
      for r in rows:
          kinds = (["obsolete"] if r["kind"] == "obsolete" else []) + \
                  (["dated"] if r["kind"] == "agents" and DATE.search(r["text"]) else []) + \

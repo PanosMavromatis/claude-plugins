@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -574,7 +574,7 @@
+ def target(base, url):
+     """Where a relative link in the file base points, in the repository."""
+     bare = url[1:-1] if url.startswith("<") else url
+-    return os.path.normpath(os.path.join(os.path.dirname(base), bare.partition("#")[0]))
++    return os.path.normpath(os.path.join(os.path.dirname(base), bare))
+ 
+ 
+ def verify(reply):

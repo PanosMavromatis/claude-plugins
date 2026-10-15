@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -609,7 +609,7 @@
+              else f"{r['src']} -> {r['dest']}" for r in rows if r["kind"] in ("drop", "obsolete")]
+     moved = f"{found} of {len(items)} rows and codex.md moves found in their destinations"
+     if probs:
+-        return out(result="problems", input=reply, moved=moved, drops=drops, dead=dead, problem=probs, fix=fixes,
++        return out(result="problems", input=reply, moved=moved, drops=drops, dead=dead, delete=dict(detect()[0])["delete"], problem=probs, fix=fixes,
+                    message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "
+                            "each with its fix."), True
+     delete = dict(detect()[0])["delete"]

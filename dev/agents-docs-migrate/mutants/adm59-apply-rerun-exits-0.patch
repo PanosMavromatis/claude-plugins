@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -556,7 +556,7 @@
+                    problem=[f"{p} has changes git has not committed: apply may have run already" for p in dirty],
+                    fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again"
+                         for p in dirty],
+-                   message="Nothing was written: apply writes only over files git has committed, or none."), True
++                   message="Nothing was written: apply writes only over files git has committed, or none."), False
+     wrote = []
+     for p, t in text.items():
+         os.makedirs(os.path.dirname(p) or ".", exist_ok=True)

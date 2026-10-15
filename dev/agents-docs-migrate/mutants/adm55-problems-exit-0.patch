@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -455,7 +455,7 @@
-         return out(result="problems", input=reply, problem=probs, fix=fixes, message=(
-             "The reply was copied in its frame: write it again alone, and check it again." if framed else
-             f"docs-classifier's table has {len(probs)} problem{'s' if len(probs) > 1 else ''}: ask it again, "
--            "giving it each problem: line with its fix: line.")), True
-+            "giving it each problem: line with its fix: line.")), False
+@@ -503,7 +503,7 @@
+         return [(k, kw.get(k, [])) for k in CHECK_KEYS]
+     tinfo, rows, stop = prepare(reply, out, "check")
+     if stop:
+-        return stop, True
++        return stop, False
+     sources = [s for t in tinfo for s in t["src"]]
      text, how, repointed, unread = plan(rows, tinfo)
      writes, flags, drops = [], [], []
-     for p, t in text.items():

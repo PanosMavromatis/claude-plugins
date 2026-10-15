@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -470,7 +470,7 @@
+@@ -519,7 +519,7 @@
          if r["kind"] == "drop":
              pct = share(r["text"], r["where"])
              drops.append(f"{r['src']} -> {r['where']}: {pct}% found")

@@ -165,11 +165,11 @@ python3 -I dev/agents-docs/suite.py --mutants            # the suite must catch 
 ```
 
 Test the script `/agents-docs-migrate` is built on, `scripts/migrate-agents-docs.py`, which
-finds a repository's agent instructions and checks `docs-classifier`'s table against them,
-after a change to it:
+finds a repository's agent instructions, checks `docs-classifier`'s table against them, moves
+them and checks the moves, after a change to it:
 
 ```bash
-python3 -I dev/agents-docs-migrate/suite.py              # 45 cases, no model
+python3 -I dev/agents-docs-migrate/suite.py              # 58 cases, no model
 python3 -I dev/agents-docs-migrate/suite.py --mutants    # the suite must catch each mutant
 ```
 

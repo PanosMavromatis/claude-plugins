@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -276,7 +276,7 @@
+@@ -308,7 +308,7 @@
          p = os.path.normpath(m["f"])
          if p.startswith("..") or not os.path.isfile(p):
              return None, f"names {m['f']}, which is not a file in this repository"

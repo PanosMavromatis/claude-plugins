@@ -161,8 +161,24 @@ REPLIES = {"c01": ("lx", reply(LX_ROWS)), "c02": ("dx", reply(DX_ROWS)), "c03": 
            "c17": ("lx", reply(put(LX_ROWS, 0, "| CLAUDE.md:1-3 | AGENTS.md | what Widget is | maybe |"))),
            "c18": ("migrated", reply(LX_ROWS)), "c19": ("conflict", reply(LX_ROWS)), "c21": ("px", reply(PX_ROWS))}
 def reply_path(cid): return f"{FX}/replies/{cid}.md"
+# kx: a link already dead in its source, which verify lists and does not count against the move.
+FIX["kx"] = {"CLAUDE.md": "# K\n\nSee [gone](docs/gone.md) and [here](docs/here.md).\n\n## Notes\n\nA note, see [here](docs/here.md).\n",
+             "docs/here.md": "# Here\n"}
+KX_ROWS = ["| CLAUDE.md:1-3 | AGENTS.md | intro | sure |", "| CLAUDE.md:5-7 | docs/agents/_history/notes.md | a note | sure |"]
+KX_W = {"AGENTS.md": ("new", "# K\n\nSee [gone](docs/gone.md) and [here](docs/here.md).\n\n## Guides and history\n\n"
+                      "- `docs/agents/_history/notes.md`: Notes\n"),
+        "docs/agents/_history/notes.md": ("new", "# notes history\n\n## Notes\n\nA note, see [here](../../here.md).\n")}
+# bx: a link to ui/CLAUDE.md, re-pointed to ui/AGENTS.md, which nothing writes since every ui row
+# is dropped: a link the move breaks, which stops the destructive step.
+FIX["bx"] = {"CLAUDE.md": "# B\n\nSee [the ui notes](ui/CLAUDE.md).\n", "ui/CLAUDE.md": "# UI\n\nOld UI rule.\n"}
+BX_ROWS = ["| CLAUDE.md:1-3 | AGENTS.md | intro | sure |",
+           "| ui/CLAUDE.md:1-3 | drop: obsolete — the retired ui rule | ui | unsure: obsolete |"]
+BX_W = {"AGENTS.md": ("new", "# B\n\nSee [the ui notes](ui/AGENTS.md).\n")}
+REPLIES.update({"a-lx": ("lx", reply(LX_ROWS)), "a-dx": ("dx", reply(DX_ROWS)), "a-mx": ("mx", reply(MX_ROWS)),
+                "a-px": ("px", reply(PX_ROWS)), "a-kx": ("kx", reply(KX_ROWS)), "a-bx": ("bx", reply(BX_ROWS))})
 
-COMMITTED = {"monorepo": ["CLAUDE.md", "docs", "a"]}   # the rest stays untracked
+COMMITTED = {"monorepo": ["CLAUDE.md", "docs", "a"],   # the rest stays untracked
+             **{n: ["."] for n in ("lx", "dx", "mx", "px", "kx", "bx")}}   # apply writes only over committed files
 NOT_GIT = {"plain"}
 FIX["plain"] = {"CLAUDE.md": LEG}
 
@@ -349,6 +365,70 @@ C += [
            "and ≈0 tokens go to guides no agent reads.")),
 ]
 
+# apply and verify, each case on a fresh copy of its fixture: the steps run in order, the last
+# one's report is compared, and the copy's files must be the fixture's but for the expected ones.
+APPLY_KEYS = ["result", "input", "wrote", "repointed", "problem", "fix", "message"]
+VERIFY_KEYS = ["result", "input", "moved", "drops", "dead", "delete", "problem", "fix", "message"]
+def report(keys, rid, **kw):
+    kw["input"] = reply_path(rid)
+    return "".join(f"{k}: " + (("\n  ".join(v) if v else "—") if isinstance(v, list) else v) + "\n"
+                   for k, v in ((k, kw.get(k, [])) for k in keys))
+def wrote(rid, w, repointed=()):
+    n = len(w)
+    return report(APPLY_KEYS, rid, result="written", wrote=writes(w), repointed=list(repointed),
+                  message=f"Wrote {n} file{'s' if n > 1 else ''} and deleted nothing: run verify before the destructive step.")
+def clean(rid, moved, drops, delete, dead=()):
+    n = len(delete)
+    return report(VERIFY_KEYS, rid, result="clean", moved=moved, drops=drops, dead=list(dead), delete=delete,
+                  message="Every non-blank line of every source is moved or dropped with a reason, and the move broke no "
+                          f"link: the destructive step may remove the {n} file{'s' if n > 1 else ''} under delete:.")
+def blocked(rid, moved, drops, pairs):
+    n = len(pairs)
+    return report(VERIFY_KEYS, rid, result="problems", moved=moved, drops=drops, problem=[p for p, _ in pairs],
+                  fix=[f for _, f in pairs], message=f"The destructive step is not offered: {n} problem{'s' if n > 1 else ''}, "
+                                                     "each with its fix.")
+MOVED = "{} of {} rows and codex.md moves found in their destinations"
+LX_DROPS = ["CLAUDE.md:5 -> drop: obsolete — describes CLAUDE.md, which the migration removes",
+            "CLAUDE.md:15 -> docs/adr/0003-renderer.md: 100% found"]
+DIRTY = sorted(LX_W)
+RERUN = "run apply on this reply; if it ran, restore what it wrote, and run it again"
+TAMPERED = {**LX_W, "AGENTS.md": ("new", LX_W["AGENTS.md"][1].replace("- `make test` runs the suite — every test of it.\n", ""))}
+def tamper(root):
+    open(f"{root}/AGENTS.md", "w").write(TAMPERED["AGENTS.md"][1])
+AV = [
+ ("a01", "lx", "a-lx", ["apply"], 0, wrote("a-lx", LX_W), LX_W),
+ ("a02", "dx", "a-dx", ["apply"], 0, wrote("a-dx", DX_W, ["AGENTS.md: claude.md -> AGENTS.md"]), DX_W),
+ ("a03", "mx", "a-mx", ["apply"], 0, wrote("a-mx", MX_W), MX_W),
+ ("a04", "px", "a-px", ["apply"], 0, wrote("a-px", PX_W), PX_W),
+ ("a05", "lx", "a-lx", ["apply", "apply"], 1, report(APPLY_KEYS, "a-lx", result="problems",
+   problem=[f"{p} has changes git has not committed: apply may have run already" for p in DIRTY],
+   fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again" for p in DIRTY],
+   message="Nothing was written: apply writes only over files git has committed, or none."), LX_W),
+ ("a06", "lx", "c07", ["apply"], 1, report(APPLY_KEYS, "c07", result="problems", problem=[gap(2, 7)[0]], fix=[COVER],
+   message="docs-classifier's table has 1 problem: ask it again, giving it each problem: line with its fix: line."), {}),
+ ("v01", "lx", "a-lx", ["apply", "verify"], 0, clean("a-lx", MOVED.format(4, 4), LX_DROPS, ["CLAUDE.md"]), LX_W),
+ ("v02", "dx", "a-dx", ["apply", "verify"], 0, clean("a-dx", MOVED.format(4, 4),
+   ["docs/agents/claude.md:1-3 -> drop: obsolete — routes text to the retired core.md",
+    "docs/agents/claude.md:5-7 -> docs/adr/0001.md: 0% found"],
+   ["CLAUDE.md", "docs/agents/core.md", "docs/agents/claude.md", "docs/agents/codex.md"]), DX_W),
+ ("v03", "lx", "a-lx", ["verify"], 1, blocked("a-lx", MOVED.format(0, 4), LX_DROPS,
+   [(f"CLAUDE.md:{r}: its text is not in {d}, which is not there", RERUN) for r, d in
+    (("1-3", "AGENTS.md"), ("7-9", "AGENTS.md"), ("11-13", "docs/agents/_history/parser.md"),
+     ("17-19", "docs/agents/release/AGENTS.md"))]), {}),
+ ("v04", "lx", "a-lx", ["apply", tamper, "verify"], 1, blocked("a-lx", MOVED.format(3, 4), LX_DROPS,
+   [("CLAUDE.md:7-9: its text is not in AGENTS.md", RERUN)]), TAMPERED),
+ ("v05", "kx", "a-kx", ["apply", "verify"], 0, clean("a-kx", MOVED.format(2, 2), [], ["CLAUDE.md"],
+   ["CLAUDE.md:1-3: docs/gone.md, already dead in CLAUDE.md"]), KX_W),
+ ("v06", "bx", "a-bx", ["apply", "verify"], 1, blocked("a-bx", MOVED.format(1, 1),
+   ["ui/CLAUDE.md:1-3 -> drop: obsolete — the retired ui rule"],
+   [("CLAUDE.md:1-3: ui/CLAUDE.md resolves in CLAUDE.md, but ui/AGENTS.md does not in AGENTS.md",
+     "restore what apply wrote; then point the link elsewhere in CLAUDE.md, or route a row to ui/AGENTS.md, and start again")]),
+   BX_W),
+ # A table that does not parse is never verified: a verify that read no rows would find nothing missing.
+ ("v07", "lx", "c07", ["verify"], 1, report(VERIFY_KEYS, "c07", result="problems", problem=[gap(2, 7)[0]], fix=[COVER],
+   message="docs-classifier's table has 1 problem: ask it again, giving it each problem: line with its fix: line."), {}),
+]
+
 # --- running and grading -------------------------------------------------------------------
 
 def state(root):
@@ -387,6 +467,26 @@ def run(cid, fx, sub, code, want, py):
         if r.stdout != want: probs.append(first(r.stdout.splitlines(), want.splitlines()))
     return probs, (r.returncode, r.stdout, r.stderr)
 
+def run_av(cid, fx, rid, steps, code, want, files, py):
+    root = f"{FX}-run/{cid}"
+    shutil.rmtree(root, ignore_errors=True); shutil.copytree(f"{FX}/{fx}", root, symlinks=True)
+    expect = state(root)
+    expect.update({p: hashlib.sha1(t.encode()).hexdigest() for p, (_, t) in files.items()})
+    r = None
+    for step in steps:
+        if callable(step):
+            step(root); continue
+        r = subprocess.run([py, "-I", SCRIPT, step, reply_path(rid)], cwd=root, capture_output=True, text=True)
+    assert r is not None, f"{cid} runs no mode"
+    probs = []
+    if r.returncode != code: probs.append(f"exit {r.returncode}, want {code} (stderr: {r.stderr.strip()[:120]!r})")
+    if r.stderr: probs.append(f"stderr {r.stderr.strip()[:120]!r}")
+    if r.stdout != want: probs.append(first(r.stdout.splitlines(), want.splitlines()))
+    got = state(root)
+    off = sorted(p for p in set(got) | set(expect) if got.get(p) != expect.get(p))
+    if off: probs.append(f"files not as expected: {', '.join(off[:4])}")
+    return probs, (r.returncode, r.stdout, r.stderr)
+
 def mutants():
     d = HERE + "/mutants"; tmp = W + "/adm-mut"; bad = 0
     shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp)
@@ -410,15 +510,17 @@ def mutants():
 
 def main():
     if "--mutants" in sys.argv: mutants()
-    want = [a for a in sys.argv[1:] if re.match(r"^[dc]\d", a)]
+    want = [a for a in sys.argv[1:] if re.match(r"^[dcav]\d", a)]
     build()
     fails = 0
-    for cid, fx, sub, code, exp in C:
+    cases = ([(c[0], lambda py, c=c: run(c[0], c[1], c[2], c[3], c[4], py)) for c in C] +
+             [(c[0], lambda py, c=c: run_av(c[0], c[1], c[2], c[3], c[4], c[5], c[6], py)) for c in AV])
+    for cid, go in cases:
         if want and cid not in want: continue
         outs, probs = set(), []
         for py in PYTHONS:
             for _ in range(1 if "--once" in sys.argv else 2):
-                p, o = run(cid, fx, sub, code, exp, py); outs.add(o)
+                p, o = go(py); outs.add(o)
                 probs += [q for q in p if q not in probs]
         if len(outs) > 1: probs.append("output differs between runs or pythons")
         print(f"{'PASS' if not probs else 'FAIL'} {cid:<4} " + "; ".join(probs))
@@ -426,7 +528,7 @@ def main():
         if probs:
             fails += 1
             if "--first" in sys.argv: break
-    print(f"\n{fails} failing of {len(C) if not want else len(want)}")
+    print(f"\n{fails} failing of {len(cases) if not want else len(want)}")
     sys.exit(1 if fails else 0)
 
 main()

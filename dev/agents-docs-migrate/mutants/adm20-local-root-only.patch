@@ -1,8 +1,8 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -195,7 +195,7 @@
-         gone = state == "legacy" or ck in ("dispatcher", "empty")
-         delete += ([cl] if gone else []) + src + ([cx] if cx else [])
+@@ -221,7 +221,7 @@
+             problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
+             fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
      # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
 -    for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
 +    for f in [".claude/CLAUDE.md"] + ["CLAUDE.local.md"]:

@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -254,7 +254,7 @@
-             to = moved[to]
+@@ -283,7 +283,7 @@
          elif os.path.dirname(src) == os.path.dirname(dst):
-             return url
--        new = os.path.relpath(to, os.path.dirname(dst) or ".") + mark + frag
-+        new = os.path.relpath(to, os.path.dirname(dst) or ".")
-         return f"<{new}>" if url.startswith("<") else new
-     out, fence = [], False
-     for line in text.splitlines(True):
+             new = url
+         if new is None:
+-            new = os.path.relpath(to, os.path.dirname(dst) or ".") + mark + frag
++            new = os.path.relpath(to, os.path.dirname(dst) or ".")
+             new = f"<{new}>" if url.startswith("<") else new
+         if links is not None:
+             links.append((url, new))

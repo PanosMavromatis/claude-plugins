@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -192,7 +192,7 @@
-                 problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
-                 fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
+@@ -212,7 +212,7 @@
+             if os.path.exists(guide):
+                 clashes.append((cx, guide))
          # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
 -        gone = state == "legacy" or ck in ("dispatcher", "empty")
 +        gone = ck != "absent"
          delete += ([cl] if gone else []) + src + ([cx] if cx else [])
-     # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
-     for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
+     # A guide that opens with its codex.md, moved, is apply's own work, as verify finds it.
+     for cx, guide in clashes:

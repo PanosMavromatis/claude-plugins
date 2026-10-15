@@ -1,7 +1,7 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -196,7 +196,7 @@
-         delete += ([cl] if gone else []) + src + ([cx] if cx else [])
+@@ -222,7 +222,7 @@
+             fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
      # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
      for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
 -        if os.path.isfile(f):

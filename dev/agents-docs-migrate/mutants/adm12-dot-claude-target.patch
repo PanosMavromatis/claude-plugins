@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -145,7 +145,7 @@
+@@ -166,7 +166,7 @@
      paths = {""}
      for f in files:
          d, name = os.path.split(f)

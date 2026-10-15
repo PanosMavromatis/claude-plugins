@@ -6,15 +6,17 @@ behind `/agents-docs-migrate`: it finds what a repository's agent instructions a
 deleted. They live here, outside the plugin, so they don't ship with it. Its design was settled
 in goal 02 of the `feat-agents-docs-migrate` branch plan, where each decision is logged.
 
-So far the suite covers the two read-only modes: `detect`, which finds the targets and their
-state, and `check`, which checks the table and reports what `apply` would write.
+The suite covers all four modes: `detect`, which finds the targets and their state; `check`,
+which checks the table and reports what `apply` would write; `apply`, which writes it; and
+`verify`, the check before the destructive step. The destructive step itself is the command's,
+not the script's.
 
 ## Running it: no model, no cost
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/adm-suite                  # outside this repository: each fixture is a git repository
-python3 -I dev/agents-docs-migrate/suite.py             # 45 cases, twice under each python3 found
-python3 -I dev/agents-docs-migrate/suite.py --mutants   # 57 mutants, every one must be caught
+python3 -I dev/agents-docs-migrate/suite.py             # 58 cases, twice under each python3 found
+python3 -I dev/agents-docs-migrate/suite.py --mutants   # 70 mutants, every one must be caught: over 10 minutes
 ```
 
 `-v` prints each report. `--plugin PATH` tests the script under another plugin root.
@@ -56,6 +58,18 @@ python3 -I dev/agents-docs-migrate/suite.py --mutants   # 57 mutants, every one 
   an overlap, five cells, a misnamed source, a range past the end, rows out of order, a bad
   destination, a missing or short drop file, a guide of no target, a bad flag. Two more run
   `check` where `detect` cannot migrate, and one names a reply that is not there.
+- **`apply` and `verify`** run on a fresh copy of a committed fixture, under
+  `$LOCATE_PLAN_WORK/adm-run/`, a case's steps in order. The last step's report is checked
+  whole, and the copy's files must then be the fixture's, but for the expected files, byte for
+  byte. `apply` writes each of `lx`, `dx`, `mx` and `px` as `check` planned it; a second
+  `apply` finds its own uncommitted writes and stops; and a table with a missing row writes
+  nothing. `verify` passes after `apply` on `lx` and `dx`, and stops the destructive step when
+  `apply` has not run, when a moved line was edited away afterwards, and when the table does
+  not parse. Two fixtures test the links:
+  - `kx`, a link already dead in its source, which `verify` lists under `dead:` and does not
+    count against the move;
+  - `bx`, a link to `ui/CLAUDE.md`, re-pointed to `ui/AGENTS.md`, which nothing writes since
+    every row of `ui` is dropped: a link the move broke, which stops the destructive step.
 - **Each report is checked whole**, line for line, against the expected report, with its exit
   status, the same output across runs and pythons, and the fixture's files left as they were.
 - **`mutants/`** holds one unified diff per mutant, each one exact substitution, applied fresh
@@ -66,4 +80,6 @@ python3 -I dev/agents-docs-migrate/suite.py --mutants   # 57 mutants, every one 
   could find, `adm57-size-in-chars` until `lx` had two em dashes rather than one, since 2 bytes
   × 3 / 7 can round to no token, and `adm44-share-by-words` would survive any ADR that shared
   no words with its drop. A weaker four-cell rule cannot fail but by a crash, so
-  `adm32-cells-from-pipes` breaks the cell parser instead.
+  `adm32-cells-from-pipes` breaks the cell parser instead. `adm70-verify-ungated` survived
+  until `v07` ran `verify` on a table that does not parse: without its stop, `verify` read no
+  rows, found nothing missing, and offered the destructive step.

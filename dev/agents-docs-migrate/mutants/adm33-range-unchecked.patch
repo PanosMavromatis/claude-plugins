@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -341,7 +341,7 @@
+@@ -373,7 +373,7 @@
              continue
          f, a = m["f"], int(m["a"])
          b = int(m["b"]) if m["b"] else a

@@ -3,10 +3,14 @@
 
   python3 -I migrate-agents-docs.py detect
   python3 -I migrate-agents-docs.py check <reply>
+  python3 -I migrate-agents-docs.py apply <reply>
+  python3 -I migrate-agents-docs.py verify <reply>
 
 Run from the repository's root. Each mode reports in `key: value` lines, a key with several
 items continuing on lines indented two spaces and `—` standing for none, `message:` last;
 `problem:` and `fix:` pair up, line for line, on what stops the migration.
+
+detect, check and verify are read-only; apply writes, and nothing here deletes.
 
 detect is read-only. Its targets are the root and each directory with a CLAUDE.md or with
 dispatcher sources, docs/agents/<path>/{core,claude,codex}.md, found in git's list of tracked
@@ -57,8 +61,25 @@ its rows bring and nothing else, since AGENTS.md takes no agent's words. It repo
   drops      every duplicate drop, with the share of it its file carries
   repointed  each link pointed from a deleted source to where it goes
 
+apply writes what check plans, after the user approves it, and deletes nothing. It writes only
+over files git has committed, or none: a file it would write that git shows changed or untracked
+stops it before it writes anything, so a second run finds its own work and stops rather than
+append it again. It reports wrote, each file with how and its size, and repointed.
+
+verify is read-only, and runs after apply and before the destructive step. Every row moved, and
+each codex.md, must be found in its destination as apply writes it, links rewritten; every other
+row was dropped with a reason. Each relative link the move wrote is checked twice: a link that
+resolved from its source and does not from where it was written was broken by the move, and
+stops the destructive step; a link already dead in its source is listed under dead and does not.
+A codex-review/AGENTS.md that opens with its codex.md, moved, is apply's own work, which detect
+does not count as a clash. It reports:
+  moved   how many rows and codex.md moves were found in their destinations
+  drops   every dropped row, with the share of it its file carries, or why it is obsolete
+  dead    each link already dead in its source
+  delete  what the destructive step may remove, given only when nothing failed
+
 Exit: 0, a report with no problem; 1, a report with problems; 2, a usage error and no report.
-Python 3.8 or later, the standard library only, and no file written.
+Python 3.8 or later, and the standard library only.
 """
 import os
 import re
@@ -129,7 +150,7 @@ def agents_kind(path):
 def detect():
     """The detect report, as (key, value) pairs; whether it found a problem; and its targets,
     each a dict of its path, state, sources, codex.md and the guide that becomes, for check."""
-    problems, fixes, warnings, tinfo = [], [], [], []
+    problems, fixes, warnings, tinfo, clashes = [], [], [], [], []
     top = git("rev-parse", "--show-toplevel")
     if top is None or os.path.realpath(top.strip()) != os.path.realpath(os.getcwd()):
         where = "not in a git repository" if top is None else f"in {os.getcwd()}, not at the root {top.strip()}"
@@ -189,11 +210,16 @@ def detect():
             tinfo[-1].update(cx=cx, guide=guide)
             codex.append(f"{cx} -> {guide}")
             if os.path.exists(guide):
-                problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
-                fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
+                clashes.append((cx, guide))
         # A dispatcher target's CLAUDE.md goes only if it holds no prose: prose there is a problem.
         gone = state == "legacy" or ck in ("dispatcher", "empty")
         delete += ([cl] if gone else []) + src + ([cx] if cx else [])
+    # A guide that opens with its codex.md, moved, is apply's own work, as verify finds it.
+    for cx, guide in clashes:
+        mine = relink(read(cx).decode("utf-8", "replace"), cx, guide, moves(tinfo), [])
+        if not read(guide).decode("utf-8", "replace").startswith(mine):
+            problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
+            fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
     # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.
     for f in [".claude/CLAUDE.md"] + [join(p, "CLAUDE.local.md") for p in tpaths]:
         if os.path.isfile(f):
@@ -236,11 +262,12 @@ def heading(text):
     return next(h for n, h in hs if n == min(n for n, _ in hs)) if hs else None
 
 
-def relink(text, src, dst, moved, repointed):
+def relink(text, src, dst, moved, repointed, links=None):
     """text from src as it reads at dst. Each relative link, image and reference definition is
     re-expressed from dst's folder, anchor kept; a link to a source being deleted is pointed at
     where that source goes, and logged in repointed. URLs, #anchors, absolute paths, links out
-    of the repository and code fences are left alone, and so is a link that keeps its folder."""
+    of the repository and code fences are left alone, and so is a link that keeps its folder.
+    Each relative link in the repository is logged in links, if given, as it was and as it is."""
     def fix(url):
         bare = url[1:-1] if url.startswith("<") else url
         if re.match(r"[A-Za-z][A-Za-z0-9+.-]*:", bare) or bare.startswith(("#", "/")):
@@ -249,13 +276,18 @@ def relink(text, src, dst, moved, repointed):
         to = os.path.normpath(os.path.join(os.path.dirname(src), path)) if path else ""
         if not path or to == ".." or to.startswith("../"):
             return url
+        new = None
         if to in moved:
             repointed.append(f"{dst}: {url} -> {moved[to]}")
             to = moved[to]
         elif os.path.dirname(src) == os.path.dirname(dst):
-            return url
-        new = os.path.relpath(to, os.path.dirname(dst) or ".") + mark + frag
-        return f"<{new}>" if url.startswith("<") else new
+            new = url
+        if new is None:
+            new = os.path.relpath(to, os.path.dirname(dst) or ".") + mark + frag
+            new = f"<{new}>" if url.startswith("<") else new
+        if links is not None:
+            links.append((url, new))
+        return new
     out, fence = [], False
     for line in text.splitlines(True):
         if re.match(r" {0,3}(```|~~~)", line):
@@ -380,15 +412,22 @@ def describe(items):
     return "; ".join(seen[:4] + ([f"and {len(seen) - 4} more"] if len(seen) > 4 else []))
 
 
-def plan(rows, tinfo):
-    """What apply writes, {path: text} in the order first written; how each is written; the
-    links re-pointed; and each new guide no agent of this plugin reads, with its ≈ tokens."""
-    moved, repointed, chunks, how, about = {}, [], {}, {}, {}
+def moves(tinfo):
+    """Where each source being deleted goes: a core.md, claude.md or CLAUDE.md to its target's
+    AGENTS.md, a codex.md to its codex-review/ guide."""
+    moved = {}
     for t in tinfo:
         for s in t["src"]:
             moved[s] = join(t["p"], "AGENTS.md")
         if t["cx"]:
             moved[t["cx"]] = t["guide"]
+    return moved
+
+
+def plan(rows, tinfo):
+    """What apply writes, {path: text} in the order first written; how each is written; the
+    links re-pointed; and each new guide no agent of this plugin reads, with its ≈ tokens."""
+    moved, repointed, chunks, how, about = moves(tinfo), [], {}, {}, {}
     def begin(path, title):
         if path in chunks:
             return
@@ -432,30 +471,40 @@ def plan(rows, tinfo):
 CHECK_KEYS = ("result", "input", "rows", "writes", "unread", "flags", "drops", "repointed", "problem", "fix", "message")
 
 
-def check(reply):
-    """The check report, as (key, value) pairs, and whether it found a problem."""
-    def out(**kw):
-        return [(k, kw.get(k, [])) for k in CHECK_KEYS]
+def prepare(reply, out, mode):
+    """detect, then reply's table parsed against its sources: (tinfo, rows, None), or the report
+    that stops mode here as the third."""
     report, bad, tinfo = detect()
     result = dict(report)["result"]
     if bad or result != "migrate":
         why = "detect reports problems" if bad else f"detect reports {result}: there is nothing to migrate"
-        return out(result="error", input=reply, problem=[why], fix=["run detect, and act on its report first"],
-                   message="The table was not read: check works on a repository detect can migrate."), True
+        return [], [], out(result="error", input=reply, problem=[why], fix=["run detect, and act on its report first"],
+                               message=f"The table was not read: {mode} works on a repository detect can migrate.")
     sources = [s for t in tinfo for s in t["src"]]
     try:
         text = read(reply).decode("utf-8", "replace")
     except OSError as e:
-        return out(result="error", input=reply, problem=[f"cannot read {reply}: {e.strerror}"],
-                   fix=["write docs-classifier's report to that file, then run this again"],
-                   message="The table was not read."), True
+        return [], [], out(result="error", input=reply, problem=[f"cannot read {reply}: {e.strerror}"],
+                               fix=["write docs-classifier's report to that file, then run this again"],
+                               message="The table was not read.")
     rows, probs, fixes = parse(text, sources, [t["p"] for t in tinfo])
     if probs:
         framed = probs[0].startswith("the reply was copied")
-        return out(result="problems", input=reply, problem=probs, fix=fixes, message=(
+        return [], [], out(result="problems", input=reply, problem=probs, fix=fixes, message=(
             "The reply was copied in its frame: write it again alone, and check it again." if framed else
             f"docs-classifier's table has {len(probs)} problem{'s' if len(probs) > 1 else ''}: ask it again, "
-            "giving it each problem: line with its fix: line.")), True
+            "giving it each problem: line with its fix: line."))
+    return tinfo, rows, None
+
+
+def check(reply):
+    """The check report, as (key, value) pairs, and whether it found a problem."""
+    def out(**kw):
+        return [(k, kw.get(k, [])) for k in CHECK_KEYS]
+    tinfo, rows, stop = prepare(reply, out, "check")
+    if stop:
+        return stop, True
+    sources = [s for t in tinfo for s in t["src"]]
     text, how, repointed, unread = plan(rows, tinfo)
     writes, flags, drops = [], [], []
     for p, t in text.items():
@@ -484,6 +533,92 @@ def check(reply):
                    "no agent reads.")), False
 
 
+APPLY_KEYS = ("result", "input", "wrote", "repointed", "problem", "fix", "message")
+
+
+def apply(reply):
+    """Write what check plans, over files git has committed or that are not there, and report."""
+    def out(**kw):
+        return [(k, kw.get(k, [])) for k in APPLY_KEYS]
+    tinfo, rows, stop = prepare(reply, out, "apply")
+    if stop:
+        return stop, True
+    text, how, repointed, _ = plan(rows, tinfo)
+    status = git("status", "--porcelain", "-z", "--untracked-files=all", "--", *text)
+    if status is None:
+        return out(result="error", input=reply, problem=["git status failed in this repository"],
+                   fix=["run git status here and repair what it reports, then run this again"],
+                   message="Nothing was written."), True
+    # A file apply wrote is uncommitted, so a second run stops here rather than append it again.
+    dirty = sorted({e[3:] for e in status.split("\0") if len(e) > 3})
+    if dirty:
+        return out(result="problems", input=reply,
+                   problem=[f"{p} has changes git has not committed: apply may have run already" for p in dirty],
+                   fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again"
+                        for p in dirty],
+                   message="Nothing was written: apply writes only over files git has committed, or none."), True
+    wrote = []
+    for p, t in text.items():
+        os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+        with open(p, "wb") as f:
+            f.write(t.encode("utf-8"))
+        wrote.append(f"{p} ({how[p]}): {len(t.splitlines())} lines, ≈{tokens(len(t.encode())):,} tokens")
+    return out(result="written", input=reply, wrote=wrote, repointed=repointed,
+               message=f"Wrote {len(wrote)} file{'s' if len(wrote) > 1 else ''} and deleted nothing: "
+                       "run verify before the destructive step."), False
+
+
+VERIFY_KEYS = ("result", "input", "moved", "drops", "dead", "delete", "problem", "fix", "message")
+
+
+def target(base, url):
+    """Where a relative link in the file base points, in the repository."""
+    bare = url[1:-1] if url.startswith("<") else url
+    return os.path.normpath(os.path.join(os.path.dirname(base), bare.partition("#")[0]))
+
+
+def verify(reply):
+    """Check, after apply and before the destructive step, that every row and codex.md is in
+    its destination, its links rewritten as apply rewrites them, and that the move broke no link."""
+    def out(**kw):
+        return [(k, kw.get(k, [])) for k in VERIFY_KEYS]
+    tinfo, rows, stop = prepare(reply, out, "verify")
+    if stop:
+        return stop, True
+    mv = moves(tinfo)
+    items = [(r["src"], r["f"], r["text"], r["dest"]) for r in rows if r["kind"] not in ("drop", "obsolete")]
+    items += [(t["cx"], t["cx"], read(t["cx"]).decode("utf-8", "replace"), t["guide"]) for t in tinfo if t["cx"]]
+    probs, fixes, dead, found = [], [], [], 0
+    for label, src, text, dest in items:
+        links = []
+        want = relink(text, src, dest, mv, [], links)
+        have = read(dest).decode("utf-8", "replace") if os.path.isfile(dest) else None
+        if have is None or want.rstrip("\n") not in have:
+            probs.append(f"{label}: its text is not in {dest}" + (", which is not there" if have is None else ""))
+            fixes.append("run apply on this reply; if it ran, restore what it wrote, and run it again")
+            continue
+        found += 1
+        for old, new in links:
+            if not os.path.exists(target(src, old)):
+                dead.append(f"{label}: {old}, already dead in {src}")
+            elif not os.path.exists(target(dest, new)):
+                probs.append(f"{label}: {old} resolves in {src}, but {new} does not in {dest}")
+                fixes.append(f"restore what apply wrote; then point the link elsewhere in {src}, or route a row "
+                             f"to {target(dest, new)}, and start again")
+    drops = [f"{r['src']} -> {r['where']}: {share(r['text'], r['where'])}% found" if r["kind"] == "drop"
+             else f"{r['src']} -> {r['dest']}" for r in rows if r["kind"] in ("drop", "obsolete")]
+    moved = f"{found} of {len(items)} rows and codex.md moves found in their destinations"
+    if probs:
+        return out(result="problems", input=reply, moved=moved, drops=drops, dead=dead, problem=probs, fix=fixes,
+                   message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "
+                           "each with its fix."), True
+    delete = dict(detect()[0])["delete"]
+    return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete,
+               message="Every non-blank line of every source is moved or dropped with a reason, and the move broke "
+                       f"no link: the destructive step may remove the {len(delete)} file{'s' if len(delete) > 1 else ''} "
+                       "under delete:."), False
+
+
 def emit(report):
     for key, value in report:
         items = value if isinstance(value, list) else [value]
@@ -495,10 +630,10 @@ def emit(report):
 def main(argv):
     if argv[1:] == ["detect"]:
         report, bad, _ = detect()
-    elif len(argv) == 3 and argv[1] == "check":
-        report, bad = check(argv[2])
+    elif len(argv) == 3 and argv[1] in ("check", "apply", "verify"):
+        report, bad = {"check": check, "apply": apply, "verify": verify}[argv[1]](argv[2])
     else:
-        print("usage: migrate-agents-docs.py detect | check <reply>", file=sys.stderr)
+        print("usage: migrate-agents-docs.py detect | check <reply> | apply <reply> | verify <reply>", file=sys.stderr)
         return 2
     emit(report)
     return 1 if bad else 0

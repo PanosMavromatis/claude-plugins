@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -599,7 +599,7 @@
+             continue
+         found += 1
+         for old, new in links:
+-            if not os.path.exists(target(src, old)):
++            if False:
+                 dead.append(f"{label}: {old}, already dead in {src}")
+             elif not os.path.exists(target(dest, new)):
+                 probs.append(f"{label}: {old} resolves in {src}, but {new} does not in {dest}")

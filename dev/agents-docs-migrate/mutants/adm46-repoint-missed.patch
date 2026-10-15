@@ -1,9 +1,9 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -249,7 +249,7 @@
-         to = os.path.normpath(os.path.join(os.path.dirname(src), path)) if path else ""
+@@ -277,7 +277,7 @@
          if not path or to == ".." or to.startswith("../"):
              return url
+         new = None
 -        if to in moved:
 +        if False:
              repointed.append(f"{dst}: {url} -> {moved[to]}")

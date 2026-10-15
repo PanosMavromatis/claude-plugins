@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -551,7 +551,7 @@
+                    message="Nothing was written."), True
+     # A file apply wrote is uncommitted, so a second run stops here rather than append it again.
+     dirty = sorted({e[3:] for e in status.split("\0") if len(e) > 3})
+-    if dirty:
++    if False:
+         return out(result="problems", input=reply,
+                    problem=[f"{p} has changes git has not committed: apply may have run already" for p in dirty],
+                    fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again"

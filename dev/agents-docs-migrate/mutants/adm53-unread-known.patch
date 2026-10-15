@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -425,7 +425,7 @@
+@@ -464,7 +464,7 @@
                  f"- `{p}`" + (f": {describe(about[p])}" if describe(about[p]) else "") + "\n" for p in mine))
      text = {p: "\n".join(c if c.endswith("\n") else c + "\n" for c in cs) for p, cs in chunks.items()}
      unread = [(p, tokens(len(text[p].encode()))) for p in text
