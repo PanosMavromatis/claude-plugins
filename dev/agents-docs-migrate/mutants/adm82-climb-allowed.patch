@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -156,7 +156,7 @@
+         return "is an absolute path"
+     if os.path.normpath(path) != path:
+         return f"is not in normal form, {os.path.normpath(path)}"
+-    if path == ".." or path.startswith("../"):
++    if False:
+         return "climbs out of the repository"
+     l = link_in(path)
+     if l:

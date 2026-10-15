@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -660,7 +660,7 @@
+@@ -708,7 +708,7 @@
          links = []
          want = relink(text, src, dest, mv, [], links)
          have = read(dest).decode("utf-8", "replace") if os.path.isfile(dest) else None

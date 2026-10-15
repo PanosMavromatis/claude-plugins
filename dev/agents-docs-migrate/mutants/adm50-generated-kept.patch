@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -474,7 +474,7 @@
+@@ -491,7 +491,7 @@
          if path in chunks:
              return
          top = not path.startswith("docs/agents/")

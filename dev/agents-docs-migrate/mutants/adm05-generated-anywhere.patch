@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -167,7 +167,7 @@
+@@ -186,7 +186,7 @@
  def agents_kind(path):
      if not os.path.isfile(path):
          return "absent"

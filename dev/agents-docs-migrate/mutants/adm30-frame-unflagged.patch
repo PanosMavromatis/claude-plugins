@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -379,7 +379,7 @@
+@@ -396,7 +396,7 @@
      t = lines.index("## Table") if "## Table" in lines else -1
      n = lines.index("## Notes", t) if t >= 0 and "## Notes" in lines[t:] else -1
      if n < 0:

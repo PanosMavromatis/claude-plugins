@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -496,7 +496,7 @@
+@@ -513,7 +513,7 @@
                   hm["a"] + " history" if r["kind"] == "history" and hm else None)
          begin(r["dest"], title)
          chunks[r["dest"]].append(relink(r["text"], r["f"], r["dest"], moved, repointed))

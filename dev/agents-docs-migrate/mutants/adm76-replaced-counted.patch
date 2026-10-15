@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -611,7 +611,7 @@
+@@ -628,7 +628,7 @@
      # source, which carries the source's text by construction, and is not counted.
      mv, already = moves(tinfo), {}
      for r in rows:

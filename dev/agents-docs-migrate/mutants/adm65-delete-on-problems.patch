@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -680,7 +680,7 @@
+@@ -728,7 +728,7 @@
               else f"{r['src']} -> {r['dest']}" for r in rows if r["kind"] in ("drop", "obsolete")]
      moved = f"{found} of {len(items)} rows and codex.md moves found in their destinations"
      if probs:

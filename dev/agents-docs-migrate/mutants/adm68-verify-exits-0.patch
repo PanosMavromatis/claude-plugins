@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -682,7 +682,7 @@
+@@ -730,7 +730,7 @@
      if probs:
          return out(result="problems", input=reply, moved=moved, drops=drops, dead=dead, problem=probs, fix=fixes,
                     message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "
 -                           "each with its fix."), True
 +                           "each with its fix."), False
      delete = dict(detect()[0])["delete"]
-     return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete,
+     return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete, pointers=pointers(delete),
                 message="Every non-blank line of every source is moved or dropped with a reason, and the move broke "

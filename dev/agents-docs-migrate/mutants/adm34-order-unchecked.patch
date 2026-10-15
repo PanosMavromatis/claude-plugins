@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -409,7 +409,7 @@
+@@ -426,7 +426,7 @@
          if not 1 <= a <= b <= len(body[f]):
              bad(f"row {i}'s range {src} is not within {f}, which has {len(body[f])} lines", f"{again}: each range within its source")
              continue

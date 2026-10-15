@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -588,7 +588,7 @@
+@@ -605,7 +605,7 @@
      text, how, repointed, _ = plan(rows, tinfo)
      # Again, at the write: detect and check refuse a link already, and this is the last chance.
      links = [(p, l) for p in text for l in [link_in(p)] if l]

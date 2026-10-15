@@ -83,7 +83,10 @@ does not count as a clash. It reports:
   moved   how many rows and codex.md moves were found in their destinations
   drops   every dropped row, with the share of it its file carries, or why it is obsolete
   dead    each link already dead in its source
-  delete  what the destructive step may remove, given only when nothing failed
+  delete    what the destructive step may remove, given only when nothing failed
+  pointers  with delete, each line elsewhere that points at a file it removes: a Markdown link
+            resolving to it, or its exact path where it has a folder, but not in docs/plan/ or an
+            AGENTS.override.md; listed for the user to repoint, blocking nothing
 
 Exit: 0, a report with no problem; 1, a report with problems; 2, a usage error and no report.
 Python 3.8 or later, and the standard library only.
@@ -142,6 +145,22 @@ def link_in(path):
         acc = join(acc, part)
         if os.path.islink(acc):
             return acc
+    return None
+
+
+def outside(path):
+    """Why path, as the table names it, is no plain repository path, or None: absolute, not in
+    normal form, climbing out by .., or through a symbolic link. Normal form is required so that
+    every check reads the very string the read or the write uses."""
+    if os.path.isabs(path):
+        return "is an absolute path"
+    if os.path.normpath(path) != path:
+        return f"is not in normal form, {os.path.normpath(path)}"
+    if path == ".." or path.startswith("../"):
+        return "climbs out of the repository"
+    l = link_in(path)
+    if l:
+        return "is a symbolic link" if l == path else f"passes through the symbolic link {l}"
     return None
 
 
@@ -332,14 +351,12 @@ def destination(dest, tpaths):
     if OBSOLETE.fullmatch(dest):
         return "obsolete", None
     m = DROP.fullmatch(dest)
-    at = os.path.normpath(m["f"]) if m else dest
-    l = link_in(at)
-    if l:
-        what = "is a symbolic link" if l == at else f"passes through the symbolic link {l}"
-        return None, f"names {m['f']}, which {what}" if m else what
+    why = outside(m["f"] if m else dest)
+    if why:
+        return None, f"names {m['f']}, which {why}" if m else why
     if m:
-        p = os.path.normpath(m["f"])
-        if p.startswith("..") or not os.path.isfile(p):
+        p = m["f"]
+        if not os.path.isfile(p):
             return None, f"names {m['f']}, which is not a file in this repository"
         if m["l"] and int(m["l"]) > len(read(p).splitlines()):
             return None, f"names line {m['l']} of {m['f']}, which is shorter"
@@ -634,7 +651,38 @@ def apply(reply):
                        "run verify before the destructive step."), False
 
 
-VERIFY_KEYS = ("result", "input", "moved", "drops", "dead", "delete", "problem", "fix", "message")
+VERIFY_KEYS = ("result", "input", "moved", "drops", "dead", "delete", "pointers", "problem", "fix", "message")
+
+
+def pointers(gone):
+    """Each line of the repository's text files, but for the files the destructive step deletes,
+    that points at one of them: a Markdown link resolving to it, or its exact path where it has a
+    folder, since a bare CLAUDE.md in prose names the idea far more often than the file. Two kinds
+    of file are not the user's live text and are skipped: docs/plan/, records of past work no one
+    rewrites, and each AGENTS.override.md, which the build after the delete replaces. Listed for
+    the user, who decides where each should point now; nothing here blocks."""
+    listed = git("ls-files", "-z", "--cached", "--others", "--exclude-standard") or ""
+    paths = [g for g in gone if "/" in g]
+    found = []
+    for f in sorted(p for p in listed.split("\0") if p and p not in gone and not outside(p)
+                    and not p.startswith("docs/plan/") and os.path.basename(p) != "AGENTS.override.md"):
+        try:
+            b = read(f)
+        except OSError:
+            continue
+        if b"\0" in b:   # binary
+            continue
+        for n, line in enumerate(b.decode("utf-8", "replace").splitlines(), 1):
+            hits = [g for g in paths if re.search(r"(?<![\w./-])" + re.escape(g) + r"(?![\w-])", line)]
+            if f.endswith(".md"):
+                for url in [m.group(2) for m in LINK.finditer(line)] + [m.group(2) for m in REFDEF.finditer(line)]:
+                    bare = url[1:-1] if url.startswith("<") else url
+                    if not re.match(r"[A-Za-z][A-Za-z0-9+.-]*:", bare) and not bare.startswith(("#", "/")) and \
+                            target(f, url) in gone:
+                        hits.append(target(f, url))
+            if hits:
+                found.append(f"{f}:{n}: {', '.join(sorted(set(hits)))}")
+    return found
 
 
 def target(base, url):
@@ -684,7 +732,7 @@ def verify(reply):
                    message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "
                            "each with its fix."), True
     delete = dict(detect()[0])["delete"]
-    return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete,
+    return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete, pointers=pointers(delete),
                message="Every non-blank line of every source is moved or dropped with a reason, and the move broke "
                        f"no link: the destructive step may remove the {len(delete)} file{'s' if len(delete) > 1 else ''} "
                        "under delete:."), False

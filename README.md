@@ -169,7 +169,7 @@ finds a repository's agent instructions, checks `docs-classifier`'s table agains
 them and checks the moves, after a change to it:
 
 ```bash
-python3 -I dev/agents-docs-migrate/suite.py              # 65 cases, no model
+python3 -I dev/agents-docs-migrate/suite.py              # 68 cases, no model
 python3 -I dev/agents-docs-migrate/suite.py --mutants    # the suite must catch each mutant
 ```
 

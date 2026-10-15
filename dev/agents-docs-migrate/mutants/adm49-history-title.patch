@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -493,7 +493,7 @@
+@@ -510,7 +510,7 @@
              continue
          gm, hm = GUIDE.fullmatch(r["dest"]), HISTORY.fullmatch(r["dest"])
          title = (gm["g"] if r["kind"] == "guide" and gm else

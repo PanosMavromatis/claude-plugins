@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -156,7 +156,7 @@
+@@ -175,7 +175,7 @@
      text = re.sub(r"<!--.*?-->", "", read(path).decode("utf-8", "replace"), flags=re.S)
      lines = [l.strip() for l in text.splitlines() if l.strip()]
      if not lines:

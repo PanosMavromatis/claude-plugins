@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -311,7 +311,7 @@
+@@ -330,7 +330,7 @@
          elif os.path.dirname(src) == os.path.dirname(dst):
              new = url
          if new is None:

@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -658,7 +658,7 @@
+@@ -706,7 +706,7 @@
      wants = [(relink(text, src, dest, mv, []), dest) for _, src, text, dest in items]
      for label, src, text, dest in items:
          links = []

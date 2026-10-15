@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -649,8 +649,6 @@
+@@ -697,8 +697,6 @@
      def out(**kw):
          return [(k, kw.get(k, [])) for k in VERIFY_KEYS]
      tinfo, rows, stop = prepare(reply, out, "verify")

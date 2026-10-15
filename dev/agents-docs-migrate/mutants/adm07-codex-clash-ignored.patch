@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -232,7 +232,7 @@
+@@ -251,7 +251,7 @@
              guide = join(os.path.dirname(cx), "codex-review/AGENTS.md")
              tinfo[-1].update(cx=cx, guide=guide)
              codex.append(f"{cx} -> {guide}")

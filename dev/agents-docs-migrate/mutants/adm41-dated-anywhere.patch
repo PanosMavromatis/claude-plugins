@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -556,7 +556,7 @@
+@@ -573,7 +573,7 @@
          writes.append(f"{p} ({how[p]}): {n} lines, ≈{k:,} tokens" + (" — " + ", ".join(over) if over else ""))
      for r in rows:
          kinds = (["obsolete"] if r["kind"] == "obsolete" else []) + \

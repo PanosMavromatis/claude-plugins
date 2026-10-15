@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -499,7 +499,7 @@
+@@ -516,7 +516,7 @@
          about[r["dest"]].append(heading(r["text"]))   # never the what cell: AGENTS.md takes no agent's words
      for t in tinfo:
          home = join(t["p"], "AGENTS.md")

@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -195,7 +195,7 @@
+@@ -214,7 +214,7 @@
              paths.add(d[len("docs/agents/"):])
      present = set(files)
      targets, tpaths, sources, codex, delete, local, sizes = [], [], [], [], [], [], []

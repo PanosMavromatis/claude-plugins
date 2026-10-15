@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -198,7 +198,7 @@
+@@ -217,7 +217,7 @@
      for p in sorted(paths, key=lambda x: (x != "", x)):
          cl, ag = join(p, "CLAUDE.md"), join(p, "AGENTS.md")
          ck, ak = claude_kind(cl), agents_kind(ag)

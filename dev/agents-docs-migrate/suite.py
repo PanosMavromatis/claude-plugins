@@ -114,7 +114,11 @@ FIX["dx"] = {"CLAUDE.md": DISP, "AGENTS.md": GEN.split("# Project")[0] + DX_CORE
                                       "## Plugins\n\nLoad plugins with --plugin-dir.\n",
              "docs/agents/codex.md": "## Codex reviewer\n\nCheck [the runbook](../ops/runbook.md) first.\n",
              "docs/agents/_history/notes.md": "# notes history\n\nOlder entry.\n",
-             "docs/ops/runbook.md": "# Runbook\n", "docs/adr/0001.md": "# ADR 1\n\nWith --plugin-dir, plugins load plugins.\n"}
+             "docs/ops/runbook.md": "# Runbook\n\nSee [the core rules](../agents/core.md). The old CLAUDE.md is gone.\n",
+             "tool.toml": 'invariants = ["docs/agents/core.md"]\n',
+             # A plan is a record of past work, and its mention of core.md is not a pointer to repair.
+             "docs/plan/old/TODO.md": "- [x] Moved the rules out of `docs/agents/core.md`.\n",
+             "docs/adr/0001.md": "# ADR 1\n\nWith --plugin-dir, plugins load plugins.\n"}
 DX_ROWS = ["| docs/agents/core.md:1-3 | AGENTS.md | what Proj is | sure |",
            "| docs/agents/core.md:5-7 | AGENTS.md | the scratch rule | sure |",
            "| docs/agents/core.md:9-11 | docs/agents/_history/notes.md | notes | sure |",
@@ -388,7 +392,7 @@ C += [
 # apply and verify, each case on a fresh copy of its fixture: the steps run in order, the last
 # one's report is compared, and the copy's files must be the fixture's but for the expected ones.
 APPLY_KEYS = ["result", "input", "wrote", "repointed", "problem", "fix", "message"]
-VERIFY_KEYS = ["result", "input", "moved", "drops", "dead", "delete", "problem", "fix", "message"]
+VERIFY_KEYS = ["result", "input", "moved", "drops", "dead", "delete", "pointers", "problem", "fix", "message"]
 def report(keys, rid, **kw):
     kw["input"] = reply_path(rid)
     return "".join(f"{k}: " + (("\n  ".join(v) if v else "—") if isinstance(v, list) else v) + "\n"
@@ -397,9 +401,10 @@ def wrote(rid, w, repointed=()):
     n = len(w)
     return report(APPLY_KEYS, rid, result="written", wrote=writes(w), repointed=list(repointed),
                   message=f"Wrote {n} file{'s' if n > 1 else ''} and deleted nothing: run verify before the destructive step.")
-def clean(rid, moved, drops, delete, dead=()):
+def clean(rid, moved, drops, delete, dead=(), pointers=()):
     n = len(delete)
     return report(VERIFY_KEYS, rid, result="clean", moved=moved, drops=drops, dead=list(dead), delete=delete,
+                  pointers=list(pointers),
                   message="Every non-blank line of every source is moved or dropped with a reason, and the move broke no "
                           f"link: the destructive step may remove the {n} file{'s' if n > 1 else ''} under delete:.")
 def blocked(rid, moved, drops, pairs):
@@ -411,7 +416,20 @@ MOVED = "{} of {} rows and codex.md moves found in their destinations"
 LINK_ROW = "row 1's destination docs/agents/release/AGENTS.md passes through the symbolic link docs/agents/release"
 LINK_FIX = f"replace the link with the file or folder it points to, or {AGAIN}: route the row elsewhere"
 REPLIES["s01"] = REPLIES["a-sl"]
+# A drop path the table names must be a plain repository path: not absolute, in normal form, not
+# out by .., each checked on the very string that would be read. The absolute one and the escape
+# name a real file outside, so that dropping either rule would read it.
+REPLIES.update({"c22": ("lx", reply(put(LX_ROWS, 4, f"| CLAUDE.md:15 | drop: {OUTSIDE}/CLAUDE.md | renderer | sure |"))),
+                "c23": ("lx", reply(put(LX_ROWS, 4, "| CLAUDE.md:15 | drop: ./docs/adr/0003-renderer.md | renderer | sure |"))),
+                "c24": ("lx", reply(put(LX_ROWS, 4, "| CLAUDE.md:15 | drop: ../outside/CLAUDE.md | renderer | sure |")))})
+FORMS = f"{AGAIN}: each destination one of the five forms, naming a target or a file that exists"
 C += [
+ ("c22", "lx", None, 1, problems("c22", [(f"row 5's destination drop: {OUTSIDE}/CLAUDE.md names {OUTSIDE}/CLAUDE.md, "
+                                          "which is an absolute path", FORMS)])),
+ ("c23", "lx", None, 1, problems("c23", [("row 5's destination drop: ./docs/adr/0003-renderer.md names "
+                                          "./docs/adr/0003-renderer.md, which is not in normal form, docs/adr/0003-renderer.md", FORMS)])),
+ ("c24", "lx", None, 1, problems("c24", [("row 5's destination drop: ../outside/CLAUDE.md names ../outside/CLAUDE.md, "
+                                          "which climbs out of the repository", FORMS)])),
  ("s01", "sl", None, 1, problems("s01", [(LINK_ROW, LINK_FIX)])),
  ("s03", "ss", None, 1, rep(result="error", targets=[". legacy claude=legacy agents=absent"], sources=["CLAUDE.md"],
    delete=["CLAUDE.md"], problem=["CLAUDE.md is a symbolic link"],
@@ -453,7 +471,8 @@ AV = [
  ("v02", "dx", "a-dx", ["apply", "verify"], 0, clean("a-dx", MOVED.format(4, 4),
    ["docs/agents/claude.md:1-3 -> drop: obsolete — routes text to the retired core.md",
     "docs/agents/claude.md:5-7 -> docs/adr/0001.md: 0% found"],
-   ["CLAUDE.md", "docs/agents/core.md", "docs/agents/claude.md", "docs/agents/codex.md"]), DX_W),
+   ["CLAUDE.md", "docs/agents/core.md", "docs/agents/claude.md", "docs/agents/codex.md"],
+   pointers=["docs/ops/runbook.md:3: docs/agents/core.md", "tool.toml:1: docs/agents/core.md"]), DX_W),
  ("v03", "lx", "a-lx", ["verify"], 1, blocked("a-lx", MOVED.format(0, 4), LX_DROPS,
    [(f"CLAUDE.md:{r}: its text is not in {d}, which is not there", RERUN) for r, d in
     (("1-3", "AGENTS.md"), ("7-9", "AGENTS.md"), ("11-13", "docs/agents/_history/parser.md"),

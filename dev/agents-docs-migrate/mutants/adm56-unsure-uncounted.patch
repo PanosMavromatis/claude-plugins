@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -564,7 +564,7 @@
+@@ -581,7 +581,7 @@
              kinds += [f"duplicate, {pct}% found"] if pct < SHARE else []
          if kinds:
              flags.append(f"{r['src']} -> {r['dest']}: {', '.join(kinds)}")

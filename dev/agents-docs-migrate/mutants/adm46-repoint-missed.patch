@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -305,7 +305,7 @@
+@@ -324,7 +324,7 @@
          if not path or to == ".." or to.startswith("../"):
              return url
          new = None

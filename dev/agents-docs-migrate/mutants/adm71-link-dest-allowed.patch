@@ -1,11 +1,11 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -334,7 +334,7 @@
-     m = DROP.fullmatch(dest)
-     at = os.path.normpath(m["f"]) if m else dest
-     l = link_in(at)
+@@ -159,7 +159,7 @@
+     if path == ".." or path.startswith("../"):
+         return "climbs out of the repository"
+     l = link_in(path)
 -    if l:
 +    if False:
-         what = "is a symbolic link" if l == at else f"passes through the symbolic link {l}"
-         return None, f"names {m['f']}, which {what}" if m else what
-     if m:
+         return "is a symbolic link" if l == path else f"passes through the symbolic link {l}"
+     return None
+ 

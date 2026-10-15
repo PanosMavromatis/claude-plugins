@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -662,7 +662,7 @@
+     rewrites, and each AGENTS.override.md, which the build after the delete replaces. Listed for
+     the user, who decides where each should point now; nothing here blocks."""
+     listed = git("ls-files", "-z", "--cached", "--others", "--exclude-standard") or ""
+-    paths = [g for g in gone if "/" in g]
++    paths = list(gone)
+     found = []
+     for f in sorted(p for p in listed.split("\0") if p and p not in gone and not outside(p)
+                     and not p.startswith("docs/plan/") and os.path.basename(p) != "AGENTS.override.md"):

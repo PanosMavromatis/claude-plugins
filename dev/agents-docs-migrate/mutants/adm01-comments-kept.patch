@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -153,7 +153,7 @@
+@@ -172,7 +172,7 @@
      """absent, empty, dispatcher, shim or legacy: what a CLAUDE.md holds, comments aside."""
      if not os.path.isfile(path):
          return "absent"

@@ -1,8 +1,8 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -341,7 +341,7 @@
-         p = os.path.normpath(m["f"])
-         if p.startswith("..") or not os.path.isfile(p):
+@@ -358,7 +358,7 @@
+         p = m["f"]
+         if not os.path.isfile(p):
              return None, f"names {m['f']}, which is not a file in this repository"
 -        if m["l"] and int(m["l"]) > len(read(p).splitlines()):
 +        if False:

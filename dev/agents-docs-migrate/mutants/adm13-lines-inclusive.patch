@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -222,7 +222,7 @@
+@@ -241,7 +241,7 @@
                  warnings.append(f"{ag} opens with the old build's header, but nothing builds it now: delete the header")
              b = read(ag)
              n = len(b.decode("utf-8", "replace").splitlines())

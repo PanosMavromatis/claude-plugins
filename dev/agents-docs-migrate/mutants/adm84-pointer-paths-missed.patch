@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -673,7 +673,7 @@
+         if b"\0" in b:   # binary
+             continue
+         for n, line in enumerate(b.decode("utf-8", "replace").splitlines(), 1):
+-            hits = [g for g in paths if re.search(r"(?<![\w./-])" + re.escape(g) + r"(?![\w-])", line)]
++            hits = []
+             if f.endswith(".md"):
+                 for url in [m.group(2) for m in LINK.finditer(line)] + [m.group(2) for m in REFDEF.finditer(line)]:
+                     bare = url[1:-1] if url.startswith("<") else url

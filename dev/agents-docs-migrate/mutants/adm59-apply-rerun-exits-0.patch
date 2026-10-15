@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -605,7 +605,7 @@
+@@ -622,7 +622,7 @@
                     problem=[f"{p} has changes git has not committed: apply may have run already" for p in dirty],
                     fix=[f"commit {p}, or restore it with git restore, or remove it if untracked, then run this again"
                          for p in dirty],

@@ -15,8 +15,8 @@ not the script's.
 
 ```bash
 export LOCATE_PLAN_WORK=/tmp/adm-suite                  # outside this repository: each fixture is a git repository
-python3 -I dev/agents-docs-migrate/suite.py             # 65 cases, twice under each python3 found
-python3 -I dev/agents-docs-migrate/suite.py --mutants   # 79 mutants, every one caught but one: over 10 minutes
+python3 -I dev/agents-docs-migrate/suite.py             # 68 cases, twice under each python3 found
+python3 -I dev/agents-docs-migrate/suite.py --mutants   # 89 mutants, every one caught but one: over 10 minutes
 ```
 
 `-v` prints each report. `--plugin PATH` tests the script under another plugin root.
@@ -79,6 +79,14 @@ python3 -I dev/agents-docs-migrate/suite.py --mutants   # 79 mutants, every one 
   `ss`'s `CLAUDE.md` is one: `detect` refuses it. A commit security review found that `apply`
   followed such a link on 2026-10-15, and it was reproduced on a scratch repository before the
   fix.
+- **Paths the table names** must be plain repository paths: `c22`, `c23` and `c24` drop a row
+  as a duplicate of an absolute path, of a `./` path and of one climbing out with `..`. The
+  first and last name a real file in `outside/`, so that losing either rule would read it. A
+  push security review found the absolute path read, on 2026-10-15: the old check normalized
+  the path while the link check walked it as relative, two readings of one string.
+- **`pointers:`**, after a clean `verify` on `dx`, lists a runbook's link to `core.md` and a
+  configuration file naming it, and not its plan record of the same path, its old
+  `AGENTS.override.md`'s header, or its prose mention of `CLAUDE.md`.
 - **Each report is checked whole**, line for line, against the expected report, with its exit
   status, the same output across runs and pythons, and the fixture's files left as they were.
 - **`mutants/`** holds one unified diff per mutant, each one exact substitution, applied fresh

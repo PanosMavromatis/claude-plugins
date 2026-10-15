@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -249,7 +249,7 @@
+@@ -268,7 +268,7 @@
              problems.append(f"{cx} and {guide} both exist, and the move would overwrite the guide")
              fixes.append(f"fold what {cx} adds into {guide} and remove {cx}, or move {guide} aside, and run this again")
      # On disk, not from git: a CLAUDE.local.md is usually ignored, and is no less loaded for it.

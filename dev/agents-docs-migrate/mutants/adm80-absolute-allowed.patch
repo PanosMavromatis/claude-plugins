@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -152,7 +152,7 @@
+     """Why path, as the table names it, is no plain repository path, or None: absolute, not in
+     normal form, climbing out by .., or through a symbolic link. Normal form is required so that
+     every check reads the very string the read or the write uses."""
+-    if os.path.isabs(path):
++    if False:
+         return "is an absolute path"
+     if os.path.normpath(path) != path:
+         return f"is not in normal form, {os.path.normpath(path)}"

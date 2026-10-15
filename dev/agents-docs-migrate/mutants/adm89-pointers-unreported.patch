@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -732,7 +732,7 @@
+                    message=f"The destructive step is not offered: {len(probs)} problem{'s' if len(probs) > 1 else ''}, "
+                            "each with its fix."), True
+     delete = dict(detect()[0])["delete"]
+-    return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete, pointers=pointers(delete),
++    return out(result="clean", input=reply, moved=moved, drops=drops, dead=dead, delete=delete,
+                message="Every non-blank line of every source is moved or dropped with a reason, and the move broke "
+                        f"no link: the destructive step may remove the {len(delete)} file{'s' if len(delete) > 1 else ''} "
+                        "under delete:."), False

@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -236,7 +236,7 @@
+@@ -255,7 +255,7 @@
                  clashes.append((cx, guide))
          for p_ in tinfo[-1]["src"] + ([cx, tinfo[-1]["guide"]] if cx else []) + [ag]:
              l = link_in(p_)

@@ -1,0 +1,11 @@
+--- a/scripts/migrate-agents-docs.py
++++ b/scripts/migrate-agents-docs.py
+@@ -665,7 +665,7 @@
+     paths = [g for g in gone if "/" in g]
+     found = []
+     for f in sorted(p for p in listed.split("\0") if p and p not in gone and not outside(p)
+-                    and not p.startswith("docs/plan/") and os.path.basename(p) != "AGENTS.override.md"):
++                    and os.path.basename(p) != "AGENTS.override.md"):
+         try:
+             b = read(f)
+         except OSError:

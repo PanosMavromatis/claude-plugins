@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -618,7 +618,7 @@
+@@ -635,7 +635,7 @@
          if t["cx"] and os.path.isfile(t["guide"]) and read(t["guide"]).decode("utf-8", "replace").startswith(
                  relink(read(t["cx"]).decode("utf-8", "replace"), t["cx"], t["guide"], mv, [])):
              already.setdefault(t["guide"], []).append(t["cx"])

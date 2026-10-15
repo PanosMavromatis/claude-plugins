@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -653,7 +653,7 @@
+@@ -701,7 +701,7 @@
          return stop, True
      mv = moves(tinfo)
      items = [(r["src"], r["f"], r["text"], r["dest"]) for r in rows if r["kind"] not in ("drop", "obsolete")]

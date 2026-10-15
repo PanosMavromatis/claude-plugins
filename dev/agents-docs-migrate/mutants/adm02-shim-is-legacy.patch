@@ -1,6 +1,6 @@
 --- a/scripts/migrate-agents-docs.py
 +++ b/scripts/migrate-agents-docs.py
-@@ -159,8 +159,6 @@
+@@ -178,8 +178,6 @@
          return "empty"
      if all(re.fullmatch(r"@docs/agents/\S+\.md", l) for l in lines):
          return "dispatcher"
