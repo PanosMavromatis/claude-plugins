@@ -8,7 +8,7 @@
 
 ## Goals
 
-- [~] 01 — Build the docs-classifier agent
+- [x] 01 — Build the docs-classifier agent
 - [ ] 02 — Write /agents-docs-migrate
 - [ ] 03 — Add the version check and the @AGENTS.md shim
 - [ ] 04 — Remove /agents-docs-init and /agents-docs-codex-init
